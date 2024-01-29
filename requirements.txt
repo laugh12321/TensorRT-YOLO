@@ -1,0 +1,20 @@
+numpy<=1.23.5
+onnx
+onnxruntime
+onnxsim
+opencv-python
+pycuda
+
+# IN YOUR TensorRT
+# onnx-graphsurgeon
+# tensorrt
+
+# FOR PP-YOLOE
+# paddle2onnx==1.0.6
+# paddlepaddle-gpu==2.5.2
+
+# FOR YOLOv5 and YOLOv8
+# torch
+# torchvision
+# ultralytics
+# yolort
