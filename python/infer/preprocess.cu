@@ -1,3 +1,5 @@
+#include <cstdint>
+
 #define _X  ( threadIdx.x + blockIdx.x * blockDim.x )
 #define _Y  ( threadIdx.y + blockIdx.y * blockDim.y )
 
