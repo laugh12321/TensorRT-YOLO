@@ -279,6 +279,8 @@ class Exporter:
         if self.args.verbose:
             logger.min_severity = trt.Logger.Severity.VERBOSE
 
+        trt.init_libnvinfer_plugins(logger, namespace="")
+
         builder = trt.Builder(logger)
         config = builder.create_builder_config()
         config.max_workspace_size = self.args.workspace * 1 << 30
@@ -307,13 +309,9 @@ class Exporter:
         torch.cuda.empty_cache()
 
         # Write file
-        with builder.build_engine(network, config) as engine, open(f, "wb") as t:
-            # Metadata
-            meta = json.dumps(self.metadata)
-            t.write(len(meta).to_bytes(4, byteorder="little", signed=True))
-            t.write(meta.encode())
-            # Model
-            t.write(engine.serialize())
+        with builder.build_serialized_network(network, config) as engine, open(f, "wb") as t:
+            t.write(engine)
+            LOGGER.info(f"Serialize engine success, saved as {f}")
 
         return f, None
 
