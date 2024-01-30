@@ -129,8 +129,6 @@ class Exporter:
         y = None
         for _ in range(2):
             y = model(im)  # dry runs
-        if self.args.precision == 'fp16' and self.device.type != "cpu":
-            im, model = im.half(), model.half()  # to FP16
 
         # Filter warnings
         warnings.filterwarnings("ignore", category=torch.jit.TracerWarning)  # suppress TracerWarning
@@ -179,12 +177,11 @@ class Exporter:
             f"work. Use export 'imgsz={max(self.imgsz)}' if val is required."
         )
         imgsz = self.imgsz[0] if square else str(self.imgsz)[1:-1].replace(" ", "")
-        q = "half" if self.args.precision == 'fp16' else ""  # quantization
         LOGGER.info(
             f'\nExport complete ({time.time() - t:.1f}s)'
             f"\nResults saved to {colorstr('bold', self.args.output)}"
-            f'\nPredict:         yolo predict task={model.task} model={f} imgsz={imgsz} {q}'
-            f'\nValidate:        yolo val task={model.task} model={f} imgsz={imgsz} data={data} {q} {s}'
+            f'\nPredict:         yolo predict task={model.task} model={f} imgsz={imgsz}'
+            f'\nValidate:        yolo val task={model.task} model={f} imgsz={imgsz} data={data} {s}'
             f'\nVisualize:       https://netron.app'
         )
 
@@ -304,6 +301,7 @@ class Exporter:
         )
         if builder.platform_has_fast_fp16 and self.args.precision == 'fp16':
             config.set_flag(trt.BuilderFlag.FP16)
+            config.set_flag(trt.BuilderFlag.STRICT_TYPES)
 
         del self.model
         torch.cuda.empty_cache()
