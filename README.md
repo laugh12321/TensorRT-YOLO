@@ -5,8 +5,8 @@ Accelerated YOLOv5, YOLOv8, PP-YOLOE, PP-YOLOE+ inference with NVIDIA TensorRT. 
 
 ## Requirements
 
-- CUDA >= 11.7
-- TensorRT >= 8.4
+- Recommended CUDA >= 11.4
+- Recommended TensorRT >= 8.4
 
 Install python requirements.
 
