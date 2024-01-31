@@ -99,7 +99,6 @@ def export_tensorrt_engine(
         opset=opset,
         batch_size=batch_size,
         imgsz=imgsz,
-        precision=precision,
         simplify=simplify,
     )
 
