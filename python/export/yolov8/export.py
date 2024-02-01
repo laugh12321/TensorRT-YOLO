@@ -222,9 +222,9 @@ class Exporter:
 
         shapes = {
             'num_detections': [self.args.batch, 1],
-            'detection_boxes': [self.args.batch, 100, 4],
-            'detection_scores': [self.args.batch, 100],
-            'detection_classes': [self.args.batch, 100]
+            'detection_boxes': [self.args.batch, self.args.max_boxes, 4],
+            'detection_scores': [self.args.batch, self.args.max_boxes],
+            'detection_classes': [self.args.batch, self.args.max_boxes]
         }
         for output in model_onnx.graph.output:
             for idx, dim in enumerate(output.type.tensor_type.shape.dim):
