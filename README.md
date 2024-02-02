@@ -22,7 +22,7 @@ Install additional Python packages:
 
 ```bash
 pip install torch torchvision
-pip install "git+https://github.com/zhiqwang/yolort.git"
+pip install ultralytics
 ```
 
 Run the export script:
@@ -39,7 +39,8 @@ python python/export/yolov5/export.py \
 -p fp16 \
 -s \
 --verbose \
---workspace 4
+--workspace 4 \
+--opset 11
 ```
 
 ### YOLOv8
