@@ -38,14 +38,14 @@ import warnings
 from copy import deepcopy
 
 import torch
-from nms import Detect
+from common import Detect
 
 from ultralytics.utils.files import file_size
 from ultralytics.engine.exporter import try_export
-from ultralytics.utils import LOGGER, colorstr, __version__, LINUX
+from ultralytics.utils import LOGGER, colorstr, __version__
+from ultralytics.utils.checks import check_imgsz, check_requirements
 from ultralytics.nn.autobackend import check_class_names, default_class_names
 from ultralytics.utils.torch_utils import get_latest_opset, smart_inference_mode
-from ultralytics.utils.checks import check_imgsz, check_requirements, check_version
 
 
 def parse_opt() -> argparse.Namespace:
@@ -57,10 +57,8 @@ def parse_opt() -> argparse.Namespace:
     parser.add_argument('--conf-thres', type=float, default=0.25, help='Confidence threshold for object detection.')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='NMS IoU threshold for post-processing.')
     parser.add_argument('--max-boxes', type=int, default=100, help='Maximum number of detections to output per image.')
-    parser.add_argument('-p', '--precision', type=str, default='fp32', choices=['fp32', 'fp16'], help="Data type for the engine inference.")
     parser.add_argument('-s', '--simplify', action='store_true', help='Whether to simplify the exported ONNX. Default is False.')
-    parser.add_argument('--verbose', action='store_true', help='Enable verbose output.')
-    parser.add_argument('--workspace', type=int, default=4, help='Workspace size for TensorRT engine.')
+    parser.add_argument("--half", action="store_true", help="FP16 half-precision export")
     parser.add_argument('--opset', type=int, default=11, help='ONNX opset version.')
 
     opt = parser.parse_args()
@@ -85,9 +83,9 @@ class Exporter:
         if not hasattr(model, "names"):
             model.names = default_class_names()
         model.names = check_class_names(model.names)
-        if self.args.precision == 'fp16' and self.device.type == "cpu":
+        if self.args.half and self.device.type == "cpu":
             LOGGER.warning("WARNING ⚠️ FP16 only compatible with GPU export, i.e. use device=0")
-            self.args.precision == 'fp32'
+            self.args.half = False
         self.imgsz = check_imgsz(self.args.imgsz, stride=model.stride, min_dim=2)  # check image size
 
         # Input
@@ -105,6 +103,7 @@ class Exporter:
                 detect.inplace = False
                 detect.dynamic = False
                 detect.export = True
+                detect.half = self.args.half
                 detect.conf_thres = self.args.conf_thres
                 detect.iou_thres = self.args.iou_thres
                 detect.max_det = self.args.max_boxes
@@ -112,6 +111,8 @@ class Exporter:
 
         for _ in range(2):
             model(im)  # dry runs
+        if self.args.half:
+            model.half()
 
         # Filter warnings
         warnings.filterwarnings("ignore", category=torch.jit.TracerWarning)  # suppress TracerWarning
@@ -121,11 +122,10 @@ class Exporter:
         # Assign
         self.im = im
         self.model = model
-
         LOGGER.info(f"\n{colorstr('PyTorch:')} starting from {self.args.weights} ({file_size(self.args.weights):.1f} MB)")
 
         # Exports
-        f, _ = self.export_engine() # TensorRT required before ONNX
+        f, _ = self.export_onnx()
 
         square = self.imgsz[0] == self.imgsz[1]
         s = (
@@ -197,66 +197,6 @@ class Exporter:
 
         onnx.save(model_onnx, f)
         return f, model_onnx
-
-
-    @try_export
-    def export_engine(self, prefix=colorstr("TensorRT:")):
-        """YOLOv8 TensorRT export https://developer.nvidia.com/tensorrt."""
-        # assert self.im.device.type != "cpu", "export running on CPU but must be on GPU, i.e. use 'device=0'"
-        f_onnx, _ = self.export_onnx()  # run before trt import https://github.com/ultralytics/ultralytics/issues/7016
-
-        try:
-            import tensorrt as trt  # noqa
-        except ImportError:
-            if LINUX:
-                check_requirements("nvidia-tensorrt", cmds="-U --index-url https://pypi.ngc.nvidia.com")
-            import tensorrt as trt  # noqa
-
-        check_version(trt.__version__, "7.0.0", hard=True)  # require tensorrt>=7.0.0
-
-        LOGGER.info(f"\n{prefix} starting export with TensorRT {trt.__version__}...")
-        assert Path(f_onnx).exists(), f"failed to export ONNX file: {f_onnx}"
-        f = str(Path(self.args.output, Path(self.args.weights).stem).with_suffix(".engine"))
-        logger = trt.Logger(trt.Logger.INFO)
-        if self.args.verbose:
-            logger.min_severity = trt.Logger.Severity.VERBOSE
-
-        trt.init_libnvinfer_plugins(logger, namespace="")
-
-        builder = trt.Builder(logger)
-        config = builder.create_builder_config()
-        config.max_workspace_size = self.args.workspace * 1 << 30
-        # config.set_memory_pool_limit(trt.MemoryPoolType.WORKSPACE, workspace << 30)  # fix TRT 8.4 deprecation notice
-
-        flag = 1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
-        network = builder.create_network(flag)
-        parser = trt.OnnxParser(network, logger)
-        if not parser.parse_from_file(f_onnx):
-            raise RuntimeError(f"failed to load ONNX file: {f_onnx}")
-
-        inputs = [network.get_input(i) for i in range(network.num_inputs)]
-        outputs = [network.get_output(i) for i in range(network.num_outputs)]
-        for inp in inputs:
-            LOGGER.info(f'{prefix} input "{inp.name}" with shape{inp.shape} {inp.dtype}')
-        for out in outputs:
-            LOGGER.info(f'{prefix} output "{out.name}" with shape{out.shape} {out.dtype}')
-
-        LOGGER.info(
-            f"{prefix} building FP{16 if builder.platform_has_fast_fp16 and self.args.precision == 'fp16' else 32} engine as {f}"
-        )
-        if builder.platform_has_fast_fp16 and self.args.precision == 'fp16':
-            config.set_flag(trt.BuilderFlag.FP16)
-            config.set_flag(trt.BuilderFlag.STRICT_TYPES)
-
-        del self.model
-        torch.cuda.empty_cache()
-
-        # Write file
-        with builder.build_serialized_network(network, config) as engine, open(f, "wb") as t:
-            t.write(engine)
-            LOGGER.info(f"Serialize engine success, saved as {f}")
-
-        return f, None
 
 
 if __name__ == '__main__':
