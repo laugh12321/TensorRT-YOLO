@@ -20,7 +20,7 @@
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/01/26 16:55:22
-# Desc    :   This script exports a YOLOv5 model to TensorRT engine.
+# Desc    :   This script exports a YOLOv5 model to ONNX.
 # ==============================================================================
 import os
 import sys
@@ -44,45 +44,37 @@ from ultralytics.utils.files import file_size
 from ultralytics.engine.exporter import try_export
 from ultralytics.utils import LOGGER, colorstr, __version__
 from ultralytics.utils.checks import check_imgsz, check_requirements
-from ultralytics.nn.autobackend import check_class_names, default_class_names
 from ultralytics.utils.torch_utils import get_latest_opset, smart_inference_mode
 
 
-def parse_opt() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description='Export YOLOv5 model to TensorRT engine.')
-    parser.add_argument('-w', '--weights', required=True, help='Path to Ultralytics YOLOv5 model weights file.')
-    parser.add_argument('-o', '--output', required=True, type=str, help='Directory path to save the exported model.')
-    parser.add_argument('-b', '--batch', type=int, default=1, help='Total batch size for the model.')
-    parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640], help='Inference size (height, width).')
-    parser.add_argument('--conf-thres', type=float, default=0.25, help='Confidence threshold for object detection.')
-    parser.add_argument('--iou-thres', type=float, default=0.45, help='NMS IoU threshold for post-processing.')
-    parser.add_argument('--max-boxes', type=int, default=100, help='Maximum number of detections to output per image.')
-    parser.add_argument('-s', '--simplify', action='store_true', help='Whether to simplify the exported ONNX. Default is False.')
-    parser.add_argument("--half", action="store_true", help="FP16 half-precision export")
-    parser.add_argument('--opset', type=int, default=11, help='ONNX opset version.')
-
-    opt = parser.parse_args()
-    opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1  # Expand imgsz if only one value is provided
-
-    return opt
-
-
 class Exporter:
+    """
+    A class for exporting a model.
+
+    Ref: https://github.com/ultralytics/ultralytics/blob/main/ultralytics/engine/exporter.py#L141
+
+    Attributes:
+        args (argparse.Namespace): Configuration for the exporter.
+    """
 
     def __init__(self, args: argparse.Namespace) -> None:
+        """
+        Initializes the Exporter class.
+
+        Args:
+            args (argparse.Namespace): Configuration for the exporter.
+        """
         self.args = args
 
     @smart_inference_mode()
     def __call__(self, model=None) -> None:
+        """Returns exported file."""
         t = time.time()
 
         # Device
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         # Checks
-        if not hasattr(model, "names"):
-            model.names = default_class_names()
-        model.names = check_class_names(model.names)
         if self.args.half and self.device.type == "cpu":
             LOGGER.warning("WARNING ⚠️ FP16 only compatible with GPU export, i.e. use device=0")
             self.args.half = False
@@ -140,6 +132,8 @@ class Exporter:
             f'\nDetails:         yolo model={f} imgsz={imgsz} {s}'
             f'\nVisualize:       https://netron.app'
         )
+
+        return f  # return exported file
 
     @try_export
     def export_onnx(self, prefix=colorstr("ONNX:")):
@@ -199,8 +193,30 @@ class Exporter:
         return f, model_onnx
 
 
+def parse_opt() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description='Export YOLOv5 model to ONNX.')
+    parser.add_argument('-w', '--weights', required=True, help='Path to Ultralytics YOLOv5 model weights file.')
+    parser.add_argument('-o', '--output', required=True, type=str, help='Directory path to save the exported model.')
+    parser.add_argument('-b', '--batch', type=int, default=1, help='Total batch size for the model.')
+    parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640], help='Inference size (height, width).')
+    parser.add_argument('--conf-thres', type=float, default=0.25, help='Confidence threshold for object detection.')
+    parser.add_argument('--iou-thres', type=float, default=0.45, help='NMS IoU threshold for post-processing.')
+    parser.add_argument('--max-boxes', type=int, default=100, help='Maximum number of detections to output per image.')
+    parser.add_argument('-s', '--simplify', action='store_true', help='Whether to simplify the exported ONNX. Default is False.')
+    parser.add_argument("--half", action="store_true", help="FP16 half-precision export")
+    parser.add_argument('--opset', type=int, default=11, help='ONNX opset version.')
+
+    opt = parser.parse_args()
+    opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1  # Expand imgsz if only one value is provided
+
+    return opt
+
+
 if __name__ == '__main__':
     opt = parse_opt()
-    # Load model
+
+    # Load a model
     model = torch.hub.load('ultralytics/yolov5', 'custom', path=opt.weights)
+
+    # Export ONNX model
     Exporter(opt)(model)
