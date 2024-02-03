@@ -104,7 +104,7 @@ class Exporter:
         for _ in range(2):
             model(im)  # dry runs
         if self.args.half:
-            model.half()
+            im, model = im.half(), model.half()  # to FP16
 
         # Filter warnings
         warnings.filterwarnings("ignore", category=torch.jit.TracerWarning)  # suppress TracerWarning
