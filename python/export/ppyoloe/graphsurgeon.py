@@ -15,8 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-# File    :   trt_graphsurgeon.py
-# Version :   1.0
+# File    :   graphsurgeon.py
+# Version :   2.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/01/28 14:37:43
@@ -27,22 +27,22 @@ This code is based on the following repository:
     - https://github.com/zhiqwang/yolort/blob/main/yolort/relay/trt_graphsurgeon.py
 """
 import logging
-from collections import OrderedDict
 from pathlib import Path
 from typing import Tuple
+from collections import OrderedDict
 
 import onnx_graphsurgeon as gs
 import numpy as np
 import onnx
 
 logging.basicConfig(level=logging.INFO)
-logging.getLogger("YOLOTRTGraphSurgeon").setLevel(logging.INFO)
-logger = logging.getLogger("YOLOTRTGraphSurgeon")
+logging.getLogger("PPYOLOEGraphSurgeon").setLevel(logging.INFO)
+logger = logging.getLogger("PPYOLOEGraphSurgeon")
 
-__all__ = ["PPYOLOETRTGraphSurgeon"]
+__all__ = ["PPYOLOEGraphSurgeon"]
 
 
-class PPYOLOETRTGraphSurgeon:
+class PPYOLOEGraphSurgeon:
     """
     PP-YOLOE Graph Surgeon for TensorRT inference.
 
@@ -54,7 +54,7 @@ class PPYOLOETRTGraphSurgeon:
         opset (int): ONNX opset version. Default: 11
         batch_size (int): Batch size for inference. Default: 1
         imgsz (Tuple[int, int]): Input image size. Default: (640, 640)
-        precision (str): The datatype to use for the engine inference, either 'fp32' or 'fp16'. Default: 'fp32'
+        half (bool, optional): FP16 half-precision export. Default: False
         simplify (bool, optional): Whether to simplify the exported ONNX. Default to False
     """
 
@@ -68,11 +68,12 @@ class PPYOLOETRTGraphSurgeon:
         opset: int = 11,
         batch_size: int = 1,
         imgsz: Tuple[int, int] = (640, 640),
-        precision: str = "fp32",
+        half: bool = False,
         simplify: bool = False,
     ):
         # Ensure the required modules are imported within the function scope
-        from paddle2onnx.legacy.command import program2onnx
+        from paddle2onnx.command import c_paddle_to_onnx
+        import paddle2onnx.paddle2onnx_cpp2py_export as c_p2o
 
         model_dir = Path(model_dir)
 
@@ -86,14 +87,18 @@ class PPYOLOETRTGraphSurgeon:
         }
 
         # Export the model to ONNX
-        program2onnx(
-            model_dir=str(model_dir),
+        c_paddle_to_onnx(
+            model_file=str(model_dir / model_filename),
+            params_file=str(model_dir / params_filename),
             save_file=onnx_path,
-            model_filename=model_filename,
-            params_filename=params_filename,
             opset_version=opset,
-            input_shape_dict=input_shape_dict
+            export_fp16_model=half,
+            auto_upgrade_opset=True,
+            enable_onnx_checker=True
         )
+
+        # Convert Static Shape
+        c_p2o.optimize(onnx_path, onnx_path, input_shape_dict)
 
         # Use YOLOTRTInference to modify an existed ONNX graph.
         self.graph = gs.import_onnx(onnx.load(onnx_path))
@@ -101,7 +106,7 @@ class PPYOLOETRTGraphSurgeon:
 
         # Fold constants via ONNX-GS
         self.graph.fold_constants()
-        self.precision = precision
+        self.half = half
         self.simplify = simplify
         self.batch_size = batch_size
 
@@ -111,7 +116,7 @@ class PPYOLOETRTGraphSurgeon:
         and fold constant inputs values. When possible, run shape inference on the
         ONNX graph to determine tensor shapes.
         """
-        for _ in range(3):
+        for _ in range(2):
             count_before = len(self.graph.nodes)
 
             self.graph.cleanup().toposort()
@@ -214,14 +219,8 @@ class PPYOLOETRTGraphSurgeon:
 
         self.infer()
 
-        if self.precision == "fp32":
-            dtype_output = np.float32
-        elif self.precision == "fp16":
-            dtype_output = np.float16
-        else:
-            raise NotImplementedError(f"Currently not supports precision: {self.precision}")
-
-        self._process(dtype_output)
+        dtype = np.float16 if self.half else np.float32
+        self._process(dtype)
 
         op = "EfficientNMS_TRT"
         attrs = OrderedDict(
@@ -242,12 +241,12 @@ class PPYOLOETRTGraphSurgeon:
             ),
             gs.Variable(
                 name="detection_boxes",
-                dtype=dtype_output,
+                dtype=dtype,
                 shape=[self.batch_size, detections_per_img, 4],
             ),
             gs.Variable(
                 name="detection_scores",
-                dtype=dtype_output,
+                dtype=dtype,
                 shape=[self.batch_size, detections_per_img],
             ),
             gs.Variable(
