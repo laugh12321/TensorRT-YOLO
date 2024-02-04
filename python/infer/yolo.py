@@ -51,8 +51,8 @@ class YOLO:
 
     def __init__(self, engine_path: str, max_image_size: int = 1080*1920) -> None:
         self._init_variables()
-        self._init_cuda_kernel()
         self._init_model(engine_path)
+        self._init_cuda_kernel()
         self._setup_variables(max_image_size)
 
         # for benchmark
@@ -66,8 +66,11 @@ class YOLO:
 
     def _init_cuda_kernel(self) -> None:
         # preprocess kernel
-        preprocess = SourceModule(open(ROOT / 'preprocess.cu').read())
-        self._preprocess_kernel = preprocess.get_function("preprocess_kernel")
+        preprocess = SourceModule(open(ROOT / 'preprocess.cu', encoding='utf-8').read(), no_extern_c=True)
+        if np.issubdtype(self._tensors[0].dtype, np.float16):
+            self._preprocess_kernel = preprocess.get_function("preprocess_kernel_fp16")
+        else:
+            self._preprocess_kernel = preprocess.get_function("preprocess_kernel_fp32")
 
     def _init_model(self, engine_path: str) -> None:
         logger = trt.Logger(trt.Logger.ERROR)
