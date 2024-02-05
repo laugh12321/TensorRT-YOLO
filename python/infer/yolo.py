@@ -181,20 +181,21 @@ class YOLO:
     def _process_detection(self, infer: Dict[str, np.ndarray], height: int, width: int, ratio: float, x_offset: float, y_offset: float, idx: int = 0) -> DetectInfo:
         num_detections = int(infer['num_detections'][idx])
         detection_boxes = infer['detection_boxes'][idx, :num_detections]
+        detection_scores = infer['detection_scores'][idx, :num_detections]
+        detection_classes = infer['detection_classes'][idx, :num_detections]
 
         detection_boxes[:, 0] = np.maximum(detection_boxes[:, 0] * ratio - x_offset, 0.0)
         detection_boxes[:, 1] = np.maximum(detection_boxes[:, 1] * ratio - y_offset, 0.0)
         detection_boxes[:, 2] = np.minimum(detection_boxes[:, 2] * ratio - x_offset, width)
         detection_boxes[:, 3] = np.minimum(detection_boxes[:, 3] * ratio - y_offset, height)
 
-        detection_scores = infer['detection_scores'][idx, :num_detections]
-        detection_classes = infer['detection_classes'][idx, :num_detections]
+        valid_indices = np.where(np.all(detection_boxes >= 0, axis=1))[0]
 
         return DetectInfo(
-            num=num_detections,
-            boxes=detection_boxes,
-            scores=detection_scores,
-            classes=detection_classes,
+            num=len(valid_indices),
+            boxes=detection_boxes[valid_indices],
+            scores=detection_scores[valid_indices],
+            classes=detection_classes[valid_indices],
         )
 
     def _preprocess(self, image: np.ndarray, device: gpuarray) -> float:
