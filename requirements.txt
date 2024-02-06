@@ -6,8 +6,8 @@ opencv-python
 pycuda
 
 # IN YOUR TensorRT
-# onnx-graphsurgeon
-# tensorrt
+onnx-graphsurgeon
+tensorrt
 
 # FOR PP-YOLOE
 # paddle2onnx==1.0.6
