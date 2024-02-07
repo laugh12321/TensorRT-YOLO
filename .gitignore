@@ -1,0 +1,13 @@
+# Xmake Cache
+.xmake/
+build/
+
+# VSCode Cache
+.vscode
+
+# Python Cache
+__pycache__/
+
+
+# output Cache
+output/
