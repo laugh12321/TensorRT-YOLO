@@ -49,14 +49,17 @@ class Efficient_TRT_NMS(torch.autograd.Function):
         score_threshold: float = 0.25,
         max_output_boxes: float = 100,
         box_coding: int = 1,
+        background_class: int = -1,
+        score_activation: int = 0,
+        plugin_version: str = '1'
     ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         batch_size, num_boxes, num_classes = scores.shape
-        num_dets = torch.randint(0, max_output_boxes, (batch_size, 1), dtype=torch.int32)
-        boxes = torch.randn(batch_size, max_output_boxes, 4, dtype=torch.float16 if half else torch.float32)
-        scores = torch.randn(batch_size, max_output_boxes, dtype=torch.float16 if half else torch.float32)
-        labels = torch.randint(0, num_classes, (batch_size, max_output_boxes), dtype=torch.int32)
+        num_detections = torch.randint(0, max_output_boxes, (batch_size, 1), dtype=torch.int32)
+        detection_boxes = torch.randn(batch_size, max_output_boxes, 4, dtype=torch.float16 if half else torch.float32)
+        detection_scores = torch.randn(batch_size, max_output_boxes, dtype=torch.float16 if half else torch.float32)
+        detection_classes = torch.randint(0, num_classes, (batch_size, max_output_boxes), dtype=torch.int32)
 
-        return num_dets, boxes, scores, labels
+        return num_detections, detection_boxes, detection_scores, detection_classes
 
     @staticmethod
     def symbolic(
@@ -68,6 +71,9 @@ class Efficient_TRT_NMS(torch.autograd.Function):
         score_threshold: float = 0.25,
         max_output_boxes: float = 100,
         box_coding: int = 1,
+        background_class: int = -1,
+        score_activation: int = 0,
+        plugin_version: str = '1'
     ) -> Tuple[Value, Value, Value, Value]:
         out = g.op(
             'TRT::EfficientNMS_TRT',
@@ -78,9 +84,12 @@ class Efficient_TRT_NMS(torch.autograd.Function):
             iou_threshold_f=iou_threshold,
             score_threshold_f=score_threshold,
             max_output_boxes_i=max_output_boxes,
+            background_class_i=background_class,
+            score_activation_i=score_activation,
+            plugin_version_s=plugin_version,
         )
-        nums_dets, boxes, scores, classes = out
-        return nums_dets, boxes, scores, classes
+        num_detections, detection_boxes, detection_scores, detection_classes = out
+        return num_detections, detection_boxes, detection_scores, detection_classes
 
 
 class Detect(nn.Module):
