@@ -1,3 +1,4 @@
-__all__ = ['YOLO']
+__all__ = ['TRTYOLO', 'ImageBatcher']
 
-from .yolo import YOLO
+from .yolo import TRTYOLO
+from .batcher import ImageBatcher

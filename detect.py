@@ -16,19 +16,19 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   detect.py
-# Version :   1.0
+# Version :   2.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/01/29 15:13:41
 # Desc    :   YOLO Series Inference Script.
 # ==============================================================================
-import cv2
+import time
 import argparse
 from pathlib import Path
-from python.infer.yolo import YOLO
-from python.utils import visualize
+from concurrent.futures import ThreadPoolExecutor
 
-IMG_FORMATS = [".bmp", ".dng", ".jpeg", ".jpg", ".mpo", ".png", ".tif", ".tiff", ".webp", ".pfm"]
+from python.infer import TRTYOLO, ImageBatcher
+from python.utils import visualize_detections, generate_labels_with_colors
 
 
 def parse_opt() -> argparse.Namespace:
@@ -39,50 +39,44 @@ def parse_opt() -> argparse.Namespace:
         argparse.Namespace: Parsed arguments.
     """
     parser = argparse.ArgumentParser(description='YOLO Series Inference Script.')
-    parser.add_argument('-w', '--weights', required=True, type=str, help='Path to TensorRT engine file.')
-    parser.add_argument('-s', '--source', required=True, type=str, help="Path to input image or directory.")
-    parser.add_argument('-o', '--output', type=str, default=None, help='Directory path to save the output images.')
-    parser.add_argument('--max-image-size', nargs='+', type=int, default=[1080, 1920], help='Maximum inference image size (height, width).')
-    parser.add_argument('--benchmark', action='store_true', help='Enable benchmarking.')
+    parser.add_argument('-e', '--engine', required=True, type=str, help='The serialized TensorRT engine.')
+    parser.add_argument('-i', '--input', required=True, type=str, help="Path to the image or directory to process.")
+    parser.add_argument('-o', '--output', type=str, default=None, help='Directory where to save the visualization results.')
+    parser.add_argument("-l", "--labels", default="./labels.txt", help="File to use for reading the class labels from, default: ./labels.txt")
 
-    opt = parser.parse_args()
-
-    return opt
+    return parser.parse_args()
 
 
 if __name__ == '__main__':
-    from functools import reduce
-    from operator import mul
-
     opt = parse_opt()
 
-    source = Path(opt.source)
-    if opt.output is not None:
-        output = Path(opt.output)
-        output.mkdir(parents=True, exist_ok=True)
-    else:
-        output = None
-
-    # Load model
-    model = YOLO(opt.weights, reduce(mul, opt.max_image_size))
+    labels = generate_labels_with_colors(opt.labels)
+    model = TRTYOLO(opt.engine)
     model.warmup()
 
-    # Inference
-    if source.is_file():
-        image = cv2.imread(str(source))
-        det_info = model.infer(image)
-        if output is not None:
-            vis_image = visualize(image, det_info)
-            cv2.imwrite(str(output / source.name), vis_image)
-    elif source.is_dir():
-        files = [file for file in list(source.glob('**/*.*')) if file.suffix.lower() in IMG_FORMATS]
-        for idx in range(0, len(files), model.batch_size):
-            images = [cv2.imread(str(files[idx+i])) for i in range(model.batch_size) if idx+i < len(files)]
-            det_infos = model.batch_infer(images, opt.benchmark)
-            if output is not None:
-                for i, image in enumerate(images):
-                    vis_image = visualize(image, det_infos[i])
-                    cv2.imwrite(str(output / files[idx+i].name), vis_image)
-        if opt.benchmark: model.benchmark.info()
+    total_time = 0.0
+    total_infers = 0
+    total_images = 0
+    print(f"Infering data in {opt.input}")
+    batcher = ImageBatcher(opt.input, *model.input_spec())
+    for batch, images, batch_ratio_pad in batcher:
+        start_time_ns = time.perf_counter_ns()
+        detections = model.infer(batch, batch_ratio_pad)
+        end_time_ns = time.perf_counter_ns()
+        elapsed_time_ms = (end_time_ns - start_time_ns) / 1e6
+        total_time += elapsed_time_ms
+        total_images += len(images)
+        total_infers += 1
+        if opt.output:
+            output_dir = Path(opt.output)
+            output_dir.mkdir(parents=True, exist_ok=True)
+            with ThreadPoolExecutor() as executor:
+                args_list = [(str(image), str(output_dir / image.name), detections[i], labels) for i, image in enumerate(images)]
+                executor.map(visualize_detections, *zip(*args_list))
 
-    print("Finished.")
+    print("Benchmark results include time for H2D and D2H memory copies")
+    average_latency = total_time / total_infers
+    average_throughput = total_images / (total_time / 1000)
+    print(f"Average Latency: {average_latency:.3f} ms")
+    print(f"Average Throughput: {average_throughput:.1f} ips")
+    print("Finished Processing.")

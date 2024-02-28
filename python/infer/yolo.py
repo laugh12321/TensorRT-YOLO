@@ -16,222 +16,178 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   yolo.py
-# Version :   1.0
+# Version :   2.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/01/28 22:13:39
 # Desc    :   PyCUDA Inference.
 # ==============================================================================
-import os
-from pathlib import Path
-
-FILE = Path(__file__).resolve()
-ROOT = FILE.parents[0]  # root directory
-ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
-
-from typing import List, Dict, Tuple
-
-import cv2
 import time
-import numpy as np
+from typing import List, Tuple
 
+import numpy as np
 import tensorrt as trt
 import pycuda.autoinit
-from pycuda import gpuarray
-import pycuda.driver as driver
-from pycuda.compiler import SourceModule
-from pycuda.tools import DeviceMemoryPool
+import pycuda.driver as cuda
 
-from python.utils import Timer, DetectInfo, TensorInfo
+from python.utils import DetectInfo, TensorInfo, scale_boxes
 
-__all__ = ['YOLO']
+__all__ = ['TRTYOLO']
 
 
-class YOLO:
+class TRTYOLO:
+    """
+    TensorRT YOLO Wrapper
 
-    def __init__(self, engine_path: str, max_image_size: int = 1080*1920) -> None:
-        self._init_variables()
-        self._init_model(engine_path)
-        self._init_cuda_kernel()
-        self._setup_variables(max_image_size)
+    Args:
+        engine_path (str): Path to the TensorRT engine file.
+    """
+    def __init__(self, engine_path: str) -> None:
+        """
+        Initialize the TRTYOLO instance.
 
-        # for benchmark
-        self.benchmark = Timer(self._batch_size)
+        Args:
+            engine_path (str): Path to the TensorRT engine file.
+        """
+        self.logger = trt.Logger(trt.Logger.ERROR)
+        trt.init_libnvinfer_plugins(self.logger, namespace="")
+        with open(engine_path, "rb") as f, trt.Runtime(self.logger) as runtime:
+            self.engine = runtime.deserialize_cuda_engine(f.read())
+        self.inputs, self.outputs, self.allocations = self._setup_io_bindings()
+        self.stream = cuda.Stream()
+        self.width, self.height = self._handle_tensor_shape()
 
-    def _init_variables(self) -> None:
-        self._pool = DeviceMemoryPool()
-        self._stream, self._context = None, None
-        self._bindings, self._tensors = [], []
-        self._d2s_device, self._image_device = None, None
+    def _setup_io_bindings(self) -> Tuple[List[TensorInfo], List[TensorInfo], List[cuda.DeviceAllocation]]:
+        """
+        Setup input and output bindings for the TensorRT engine.
 
-    def _init_cuda_kernel(self) -> None:
-        # preprocess kernel
-        preprocess = SourceModule(open(ROOT / 'preprocess.cu', encoding='utf-8').read(), no_extern_c=True)
-        if np.issubdtype(self._tensors[0].dtype, np.float16):
-            self._preprocess_kernel = preprocess.get_function("preprocess_kernel_fp16")
+        Returns:
+            Tuple[List[TensorInfo], List[TensorInfo], List[cuda.DeviceAllocation]]: Input, output, and allocation information.
+        """
+        inputs, outputs, allocations = [], [], []
+        for binding in self.engine:
+            is_input = self.engine.binding_is_input(binding)
+            shape = tuple(self.engine.get_binding_shape(binding))
+            dtype = trt.nptype(self.engine.get_binding_dtype(binding))
+
+            host = cuda.pagelocked_empty(shape, dtype)
+            device = cuda.mem_alloc(host.nbytes)
+
+            allocations.append(device)
+            tensor = TensorInfo(binding, shape, dtype, host, device)
+            inputs.append(tensor) if is_input else outputs.append(tensor)
+
+        return inputs, outputs, allocations
+
+    def _handle_tensor_shape(self) -> Tuple[int, int]:
+        """
+        Handle the input tensor shape.
+
+        Raises:
+            ValueError: If the input shape is invalid.
+
+        Returns:
+            Tuple[int, int]: Width and height of the input tensor.
+        """
+        input_shape = self.inputs[0].shape
+        if input_shape[1] == 3:
+            height, width = input_shape[2], input_shape[3]
+        elif input_shape[3] == 3:
+            height, width = input_shape[1], input_shape[2]
         else:
-            self._preprocess_kernel = preprocess.get_function("preprocess_kernel_fp32")
+            raise ValueError("Invalid input shape")
+        return width, height
 
-    def _init_model(self, engine_path: str) -> None:
-        logger = trt.Logger(trt.Logger.ERROR)
-        trt.init_libnvinfer_plugins(logger, namespace="")
+    def __del__(self) -> None:
+        """
+        Clean up resources when the instance is deleted.
+        """
+        for allocation in self.allocations:
+            allocation.free()
+        del self.stream
+        del self.engine
 
-        # Load TRT engine
-        with open(engine_path, 'rb') as f, trt.Runtime(logger) as runtime:
-            assert runtime
-            engine = runtime.deserialize_cuda_engine(f.read())
-        assert engine
+    def _infer(self) -> None:
+        """
+        Run inference on the TensorRT engine.
+        """
+        # Copy I/O and Execute
+        for input_tensor in self.inputs:
+            cuda.memcpy_htod_async(input_tensor.device, input_tensor.host, self.stream)
 
-        self._stream = driver.Stream()
-        self._context = engine.create_execution_context()
+        with self.engine.create_execution_context() as context:
+            context.execute_async_v2(self.allocations, self.stream.handle)
 
-        # Setup I/O bindings
-        for binding in engine:
-            shape = tuple(engine.get_binding_shape(binding))
-            dtype = trt.nptype(engine.get_binding_dtype(binding))
+        for output_tensor in self.outputs:
+            cuda.memcpy_dtoh_async(output_tensor.host, output_tensor.device, self.stream)
 
-            # Allocate host and device buffers
-            host = driver.pagelocked_empty(shape, dtype)
-            device = gpuarray.to_gpu_async(host, allocator=self._pool.allocate, stream=self._stream)
+        self.stream.synchronize()
 
-            # Append to tensors
-            self._bindings.append(device.ptr)
-            self._tensors.append(TensorInfo(binding, shape, dtype, host, device))
+    def _filter(self, outputs, ratio_pad, idx: int = 0) -> DetectInfo:
+        """
+        Filter and process the inference results.
 
-    def _setup_variables(self, max_image_size: int) -> None:
-        self._batch_size, _, *self._image_size = self._tensors[0].shape
-        self._d2s_host = driver.pagelocked_empty((2, 3), dtype=np.float32)
-        self._d2s_device = gpuarray.to_gpu_async(self._d2s_host, allocator=self._pool.allocate, stream=self._stream)
-        self._image_host = driver.pagelocked_empty(max_image_size*3, dtype=np.uint8)
-        self._image_device = gpuarray.to_gpu_async(self._image_host, allocator=self._pool.allocate, stream=self._stream)
+        Args:
+            outputs (dict): Dictionary containing output tensors.
+            ratio_pad (_type_): _description_
+            idx (int, optional): Index of the batch. Defaults to 0.
 
-    @property
-    def batch_size(self) -> int:
-        return self._batch_size
+        Returns:
+            DetectInfo: Processed detection information.
+        """
+        num_detections = int(outputs['num_detections'][idx])
+        detection_boxes = outputs['detection_boxes'][idx, :num_detections]
+        detection_scores = outputs['detection_scores'][idx, :num_detections]
+        detection_classes = outputs['detection_classes'][idx, :num_detections]
 
-    @property
-    def image_size(self) -> Tuple[int, int]:
-        return tuple(self._image_size)
+        detection_boxes = scale_boxes(detection_boxes, (self.height, self.width), ratio_pad)
 
-    def __del__(self):
-        self._pool.stop_holding()
-
-        if self._tensors:
-            [tensor.device.gpudata.free() for tensor in self._tensors]
-
-        if self._image_device is not None:
-            self._image_device.gpudata.free()
-
-        if self._d2s_device is not None:
-            self._d2s_device.gpudata.free()
-
-        del self._tensors
-        del self._stream
-        del self._context
+        return DetectInfo(
+            num=num_detections,
+            boxes=detection_boxes,
+            scores=detection_scores,
+            classes=detection_classes,
+        )
 
     def warmup(self, iters: int = 10) -> None:
+        """
+        Warm up the TensorRT engine by running a specified number of inference iterations.
+
+        Args:
+            iters (int, optional): Number of warm-up iterations. Defaults to 10.
+        """
         start_time_ns = time.perf_counter_ns()
         for _ in range(iters):
-            self._tensors[0].host.fill(np.random.randint(0, 255))
-            self._tensors[0].device.set_async(self._tensors[0].host, self._stream)
             self._infer()
         end_time_ns = time.perf_counter_ns()
         elapsed_time_ms = (end_time_ns - start_time_ns) / 1e6
         print(f"warmup {iters} iters cost {elapsed_time_ms:.2f} ms.")
 
-    def infer(self, image: np.ndarray) -> DetectInfo:
-        ratio = self._preprocess(image, self._tensors[0].device)
+    def input_spec(self) -> Tuple[Tuple[int, int, int, int], np.dtype]:
+        """
+        Get the input tensor specifications.
+
+        Returns:
+            Tuple[Tuple[int, int, int, int], np.dtype]: Shape and dtype of the input tensor.
+        """    
+        return self.inputs[0].shape, self.inputs[0].dtype
+
+    def infer(self, batch, batch_ratio_pad) -> List[DetectInfo]:
+        """
+        Run inference on the TensorRT engine.
+
+        Args:
+            batch (_type_): Input batch for inference.
+            batch_ratio_pad (_type_): Ratio_pad for each batch item.
+
+        Returns:
+            List[DetectInfo]: List of processed detection information for each batch item.
+        """      
+        np.copyto(self.inputs[0].host, batch)
+
+        # Run inference
         self._infer()
-        infer = self._postprocess()
-        height, width = image.shape[:2]
-        x_offset = round((self._image_size[0] * ratio - width) / 2)
-        y_offset = round((self._image_size[1] * ratio - height) / 2)
-        return self._process_detection(infer, height, width, ratio, x_offset, y_offset)
 
-    def batch_infer(self, images: List[np.ndarray], run_benchmark: bool = False) -> List[DetectInfo]:
-        ratios = []
-        if run_benchmark:
-            self.benchmark.infer_count += 1
-            self.benchmark.pre_time.start()
-        for idx, image in enumerate(images):
-            ratios.append(self._preprocess(image, self._tensors[0].device[idx]))
-        if run_benchmark:
-            self.benchmark.pre_time.end()
-
-        if run_benchmark:
-            self.benchmark.infer_time.start()
-        self._infer()
-        if run_benchmark:
-            self.benchmark.infer_time.end()
-
-        if run_benchmark:
-            self.benchmark.post_time.start()
-        infer = self._postprocess()
-        detections = []
-        for idx, image in enumerate(images):
-            height, width = image.shape[:2]
-            x_offset = round((self._image_size[0] * ratios[idx] - width) / 2)
-            y_offset = round((self._image_size[1] * ratios[idx] - height) / 2)
-            detections.append(self._process_detection(infer, height, width, ratios[idx], x_offset, y_offset, idx))
-        if run_benchmark:
-            self.benchmark.post_time.end()
-
-        return detections
-
-    def _process_detection(self, infer: Dict[str, np.ndarray], height: int, width: int, ratio: float, x_offset: float, y_offset: float, idx: int = 0) -> DetectInfo:
-        num_detections = int(infer['num_detections'][idx])
-        detection_boxes = infer['detection_boxes'][idx, :num_detections]
-        detection_scores = infer['detection_scores'][idx, :num_detections]
-        detection_classes = infer['detection_classes'][idx, :num_detections]
-
-        detection_boxes[:, 0] = np.maximum(detection_boxes[:, 0] * ratio - x_offset, 0.0)
-        detection_boxes[:, 1] = np.maximum(detection_boxes[:, 1] * ratio - y_offset, 0.0)
-        detection_boxes[:, 2] = np.minimum(detection_boxes[:, 2] * ratio - x_offset, width)
-        detection_boxes[:, 3] = np.minimum(detection_boxes[:, 3] * ratio - y_offset, height)
-
-        valid_indices = np.where(np.all(detection_boxes >= 0, axis=1))[0]
-
-        return DetectInfo(
-            num=len(valid_indices),
-            boxes=detection_boxes[valid_indices],
-            scores=detection_scores[valid_indices],
-            classes=detection_classes[valid_indices],
-        )
-
-    def _preprocess(self, image: np.ndarray, device: gpuarray) -> float:
-        height, width = map(np.int32, image.shape[:2])
-        dst_width, dst_height = map(np.int32, self._image_size)
-
-        r = min(self._image_size[1] / height, self._image_size[0] / width)
-
-        s2d = np.array([[r, 0, -r * width * 0.5 + dst_width * 0.5],
-                        [0, r, -r * height * 0.5 + dst_height * 0.5]], dtype=np.float32)
-        cv2.invertAffineTransform(s2d, self._d2s_host)
-
-        np.copyto(self._image_host[:image.size], image.ravel())
-        self._d2s_device.set_async(self._d2s_host, stream=self._stream)
-        self._image_device.set_async(self._image_host, stream=self._stream)
-
-        self._preprocess_kernel(
-            self._image_device, width * 3, width, height, 
-            device, dst_width, dst_height, 
-            np.int32(128), self._d2s_device,
-            grid=(32, 32, 1),
-            block=(32, 32, 1),
-            stream=self._stream
-        )
-
-        self._stream.synchronize()
-
-        return 1 / r
-
-    def _infer(self) -> None:
-        self._context.execute_async_v2(self._bindings, self._stream.handle)
-
-        for tensor in self._tensors[1:]:
-            tensor.device.get_async(self._stream, tensor.host)
-
-        self._stream.synchronize()
-
-    def _postprocess(self) -> Dict[str, np.ndarray]:
-        return {tensor.name: tensor.host.reshape(tensor.shape) for tensor in self._tensors[1:]}
+        # Process the results
+        outputs = {tensor.name: tensor.host.reshape(tensor.shape) for tensor in self.outputs}
+        return [self._filter(outputs, ratio_pad, idx) for idx, ratio_pad in enumerate(batch_ratio_pad)]

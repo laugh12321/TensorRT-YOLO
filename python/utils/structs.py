@@ -16,31 +16,51 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   structs.py
-# Version :   1.0
+# Version :   2.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/01/21 14:08:33
 # Desc    :   Defines data classes.
 # ==============================================================================
 from typing import List, Union
-import numpy as np
 from dataclasses import dataclass
-from pycuda.gpuarray import GPUArray
+
+import numpy as np
+import pycuda.driver as cuda
 
 __all__ = ['TensorInfo', 'DetectInfo']
 
 
 @dataclass
 class TensorInfo:
+    """
+    A data class representing information about a tensor.
+
+    Attributes:
+        name (str): The name of the tensor.
+        shape (tuple): The shape of the tensor.
+        dtype (np.dtype): The data type of the tensor.
+        host (np.ndarray): The host (CPU) representation of the tensor.
+        device (cuda.DeviceAllocation): The device (GPU) allocation of the tensor.
+    """
     name: str
     shape: tuple
     dtype: np.dtype
     host: np.ndarray
-    device: GPUArray
+    device: cuda.DeviceAllocation
 
 
 @dataclass
 class DetectInfo:
+    """
+    A data class representing information about detections.
+
+    Attributes:
+        num (int): The number of detections.
+        boxes (Union[List, np.ndarray]): The bounding boxes of the detections.
+        scores (Union[List, np.ndarray]): The confidence scores of the detections.
+        classes (Union[List, np.ndarray]): The class indices of the detections.
+    """
     num: int
     boxes: Union[List, np.ndarray]
     scores: Union[List, np.ndarray]
