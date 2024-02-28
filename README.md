@@ -40,17 +40,17 @@ pip install paddle2onnx          # Optional, export PP-YOLOE and PP-YOLOE+
 
 **YOLOv5**
 ```bash
-python export/yolov5/export.py -w yolov5s.pt -o output -b 8 --img 640 -s --half
+python python/export/yolov5/export.py -w yolov5s.pt -o output -b 8 --img 640 -s --half
 ```
 
 **YOLOv8**
 ```bash
-python export/yolov8/export.py -w yolov8s.pt -o output --conf-thres 0.25 --iou-thres 0.45 --max-boxes 100
+python python/export/yolov8/export.py -w yolov8s.pt -o output --conf-thres 0.25 --iou-thres 0.45 --max-boxes 100
 ```
 
 **PP-YOLOE 与 PP-YOLOE+**
 ```bash
-python export/ppyoloe/export.py --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output
+python python/export/ppyoloe/export.py --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output
 ```
 
 生成的 ONNX 模型使用 `trtexec` 工具导出 TensorRT 模型。
@@ -65,10 +65,10 @@ trtexec --onnx=model.onnx --saveEngine=model.engine --fp16
 <details>
 <summary>使用 detect.py 推理</summary>
 
-`detect.py` 目前仅支持对单张图片进行推理或批量推理整个目录。其中，`--max-image-size` 用于指定推理的最大图片尺寸，默认为 `1920*1080`。推理结果可以通过 `--output` 参数指定保存的路径，默认为 `None`，表示不保存。在批量推理整个目录时，可以通过添加 `--benchmark` 参数来测试当前模型的平均推理速度。
+`detect.py` 目前支持对单张图片进行推理或批量推理整个目录，可通过 `--inputs` 参数指定推理数据。推理结果可使用 `--output` 参数指定保存路径，默认为 `None`，表示不保存。有关详细指令描述，请运行`python detect.py -h`查看。
 
 ```bash
-python detect.py  -w model.engine -o output -s img.jpg                         # image
+python detect.py  -e model.engine -o output -i img.jpg                         # image
                                                path/                           # directory
 ```
 </details>

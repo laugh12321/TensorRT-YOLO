@@ -40,17 +40,17 @@ Use the following commands to export ONNX models and add the [EfficientNMS](http
 
 **YOLOv5**
 ```bash
-python export/yolov5/export.py -w yolov5s.pt -o output -b 8 --img 640 -s --half
+python python/export/yolov5/export.py -w yolov5s.pt -o output -b 8 --img 640 -s --half
 ```
 
 **YOLOv8**
 ```bash
-python export/yolov8/export.py -w yolov8s.pt -o output --conf-thres 0.25 --iou-thres 0.45 --max-boxes 100
+python python/export/yolov8/export.py -w yolov8s.pt -o output --conf-thres 0.25 --iou-thres 0.45 --max-boxes 100
 ```
 
 **PP-YOLOE and PP-YOLOE+**
 ```bash
-python export/ppyoloe/export.py --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output
+python python/export/ppyoloe/export.py --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output
 ```
 
 Exported ONNX models are then exported to TensorRT models using the `trtexec` tool.
@@ -65,10 +65,10 @@ trtexec --onnx=model.onnx --saveEngine=model.engine --fp16
 <details>
 <summary>Inference using detect.py</summary>
 
-`detect.py` currently supports inference on a single image or batch inference on an entire directory. The `--max-image-size` parameter specifies the maximum image size for inference, defaulting to `1920*1080`. Results can be saved by specifying the `--output` parameter (default is `None` for no saving). When batch inferring on an entire directory, the `--benchmark` parameter can be added to test the average inference speed of the current model.
+`detect.py` currently supports inference on a single image or batch inference on an entire directory. You can specify the inference data using the `--inputs` parameter. The results of the inference can be saved to a specified path using the `--output` parameter, with the default being `None` indicating no saving. For detailed command descriptions, please run `python detect.py -h`.
 
 ```bash
-python detect.py  -w model.engine -o output -s img.jpg                         # image
+python detect.py  -e model.engine -o output -i img.jpg                         # image
                                                path/                           # directory
 ```
 </details>
