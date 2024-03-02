@@ -123,13 +123,13 @@ class TRTYOLO:
 
         self.stream.synchronize()
 
-    def _filter(self, outputs, ratio_pad, idx: int = 0) -> DetectInfo:
+    def _filter(self, outputs, output_shape: Tuple[int, int], idx: int = 0) -> DetectInfo:
         """
         Filter and process the inference results.
 
         Args:
             outputs (dict): Dictionary containing output tensors.
-            ratio_pad (_type_): _description_
+            output_shape (Tuple[int, int]): output image shape.
             idx (int, optional): Index of the batch. Defaults to 0.
 
         Returns:
@@ -140,7 +140,7 @@ class TRTYOLO:
         detection_scores = outputs['detection_scores'][idx, :num_detections]
         detection_classes = outputs['detection_classes'][idx, :num_detections]
 
-        detection_boxes = scale_boxes(detection_boxes, (self.height, self.width), ratio_pad)
+        detection_boxes = scale_boxes(detection_boxes, (self.height, self.width), output_shape)
 
         return DetectInfo(
             num=num_detections,
@@ -172,13 +172,13 @@ class TRTYOLO:
         """    
         return self.inputs[0].shape, self.inputs[0].dtype
 
-    def infer(self, batch, batch_ratio_pad) -> List[DetectInfo]:
+    def infer(self, batch: np.ndarray, batch_shape: List[Tuple[int, int]]) -> List[DetectInfo]:
         """
         Run inference on the TensorRT engine.
 
         Args:
-            batch (_type_): Input batch for inference.
-            batch_ratio_pad (_type_): Ratio_pad for each batch item.
+            batch (np.ndarray): Input batch for inference.
+            batch_shape (List[Tuple[int, int]]): image shape for each batch item.
 
         Returns:
             List[DetectInfo]: List of processed detection information for each batch item.
@@ -190,4 +190,4 @@ class TRTYOLO:
 
         # Process the results
         outputs = {tensor.name: tensor.host.reshape(tensor.shape) for tensor in self.outputs}
-        return [self._filter(outputs, ratio_pad, idx) for idx, ratio_pad in enumerate(batch_ratio_pad)]
+        return [self._filter(outputs, ratio_pad, idx) for idx, ratio_pad in enumerate(batch_shape)]

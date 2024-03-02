@@ -59,9 +59,9 @@ if __name__ == '__main__':
     total_images = 0
     print(f"Infering data in {opt.input}")
     batcher = ImageBatcher(opt.input, *model.input_spec())
-    for batch, images, batch_ratio_pad in batcher:
+    for batch, images, batch_shape in batcher:
         start_time_ns = time.perf_counter_ns()
-        detections = model.infer(batch, batch_ratio_pad)
+        detections = model.infer(batch, batch_shape)
         end_time_ns = time.perf_counter_ns()
         elapsed_time_ms = (end_time_ns - start_time_ns) / 1e6
         total_time += elapsed_time_ms

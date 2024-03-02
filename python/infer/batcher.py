@@ -24,7 +24,7 @@
 # ==============================================================================
 import random
 from pathlib import Path
-from typing import Tuple, List, Iterator
+from typing import Union, Tuple, List, Iterator
 
 import cv2
 import numpy as np
@@ -80,24 +80,24 @@ class ImageBatcher:
         self.num_batches = 1 + int((self.num_images - 1) / self.batch_size)
         self.batches = [self.images[i * self.batch_size: (i + 1) * self.batch_size] for i in range(self.num_batches)]
 
-    def __iter__(self) -> Iterator[Tuple[np.ndarray, List, List, List]]:
+    def __iter__(self) -> Iterator[Tuple[np.ndarray, List[Union[str, Path]], List[Tuple[int, int]]]]:
         """
         Iterator function to yield batches of preprocessed images.
 
         Yields:
-            Tuple[np.ndarray, List[str], List[Tuple[float, float]]]: Batch data, image paths, and ratio/padding information.
+            Tuple[np.ndarray, List[Union[str, Path]], List[Tuple[int, int]]]: Batch data, image paths, and image shape information.
         """
         for batch_images in self.batches:
-            batch_ratio_pad = []
+            batch_shape = []
             batch_data = np.zeros(self.shape, dtype=self.dtype)
             with ThreadPoolExecutor(max_workers=len(batch_images)) as executor:
                 results = list(executor.map(self._preprocess_image, batch_images))
 
-            for idx, (im, *ratio_pad) in enumerate(results):
+            for idx, (im, shape) in enumerate(results):
                 batch_data[idx] = im
-                batch_ratio_pad.append(ratio_pad)
+                batch_shape.append(shape)
 
-            yield np.ascontiguousarray(batch_data), batch_images, batch_ratio_pad
+            yield np.ascontiguousarray(batch_data), batch_images, batch_shape
 
     def _find_images(self, input_path: Path, shuffle_files: bool) -> None:
         """
@@ -160,7 +160,7 @@ class ImageBatcher:
 
         return width, height
 
-    def _preprocess_image(self, image_path) -> Tuple[np.ndarray, float, Tuple[float, float]]:
+    def _preprocess_image(self, image_path: Union[str, Path]) -> Tuple[np.ndarray, Tuple[int, int]]:
         """
         Preprocesses an image by reading, resizing, and normalizing.
 
@@ -168,13 +168,13 @@ class ImageBatcher:
             image_path (str): The path to the input image file.
 
         Returns:
-            Tuple[np.ndarray, float, Tuple[float, float]]: Preprocessed image, scale ratio, padding.
+            Tuple[np.ndarray, Tuple[int, int]]: Preprocessed image, image shape.
         """
         # Read the image
         image = cv2.imread(str(image_path))
-        
+
         # Resize and pad the image
-        image, ratio, pad = letterbox(image, (self.height, self.width))
+        image, shape = letterbox(image, (self.height, self.width))
         
         # Convert color format and normalize pixel values
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB).astype(self.dtype) / 255.0
@@ -182,4 +182,4 @@ class ImageBatcher:
         # Transpose the image to CHW format
         image = np.transpose(image, (2, 0, 1))
 
-        return image, ratio, pad
+        return image, shape

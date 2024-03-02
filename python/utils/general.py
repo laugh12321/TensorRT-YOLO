@@ -56,7 +56,7 @@ def generate_labels_with_colors(labels_file: str) -> List[Tuple[str, Tuple[int, 
         return [(label.strip(), generate_random_rgb()) for label in f]
 
 
-def letterbox(image: np.ndarray, new_shape: Union[Tuple[int, int], int], color: Tuple[int, int, int] = (114, 114, 114)) -> Tuple[np.ndarray, float, Tuple[float, float]]:
+def letterbox(image: np.ndarray, new_shape: Union[Tuple[int, int], int], color: Tuple[int, int, int] = (114, 114, 114)) -> Tuple[np.ndarray, Tuple[int, int]]:
     """
     Resizes and pads the input image to the specified new shape.
 
@@ -66,7 +66,7 @@ def letterbox(image: np.ndarray, new_shape: Union[Tuple[int, int], int], color: 
         color (Tuple[int, int, int], optional): The color used for padding. Defaults to (114, 114, 114).
 
     Returns:
-        Tuple[np.ndarray, float, Tuple[float, float]]: Resized image, scale ratio, padding.
+        Tuple[np.ndarray, Tuple[int, int]]: Resized image, image origal shape.
     """
     shape = image.shape[:2]  # Current shape [height, width]
     
@@ -91,34 +91,34 @@ def letterbox(image: np.ndarray, new_shape: Union[Tuple[int, int], int], color: 
     # Add border to the image for padding
     image = cv2.copyMakeBorder(image, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
 
-    return image, r, (dw, dh)
+    return image, shape
 
 
-def scale_boxes(boxes: np.ndarray, shape: Tuple[int, int], ratio_pad: Tuple[float, Tuple[float, float]]) -> np.ndarray:
+def scale_boxes(boxes: np.ndarray, input_shape: Tuple[int, int], output_shape: Tuple[int, int]) -> np.ndarray:
     """
-    Rescales (xyxy) bounding boxes to the target shape using the provided `ratio_pad`.
+    Rescales (xyxy) bounding boxes from input_shape to output_shape.
 
     Args:
         boxes (np.ndarray): Input bounding boxes in (xyxy) format.
-        shape (Tuple[int, int]): Target shape (height, width).
-        ratio_pad (Tuple[float, Tuple[float, float]]): Tuple containing the scaling ratio
-            and padding values used during preprocessing.
+        input_shape (Tuple[int, int]): Source shape (height, width).
+        output_shape (Tuple[int, int]): Target shape (height, width).
 
     Returns:
         np.ndarray: Rescaled bounding boxes.
     """
-    ratio, pad = ratio_pad
+    gain = min(input_shape[0] / output_shape[0], input_shape[1] / output_shape[1])  # gain  = old / new
+    pad = (input_shape[1] - output_shape[1] * gain) / 2, (input_shape[0] - output_shape[0] * gain) / 2  # wh padding
 
     # Adjust for padding
     boxes[..., [0, 2]] -= pad[0]  # x padding
     boxes[..., [1, 3]] -= pad[1]  # y padding
 
     # Rescale using the ratio
-    boxes /= ratio
+    boxes[..., :4] /= gain
 
     # Clip coordinates to be within the target shape
-    boxes[..., [0, 2]] = boxes[..., [0, 2]].clip(0, shape[1])  # x1, x2
-    boxes[..., [1, 3]] = boxes[..., [1, 3]].clip(0, shape[0])  # y1, y2
+    boxes[..., [0, 2]] = boxes[..., [0, 2]].clip(0, output_shape[1])  # x1, x2
+    boxes[..., [1, 3]] = boxes[..., [1, 3]].clip(0, output_shape[0])  # y1, y2
 
     return boxes
 
