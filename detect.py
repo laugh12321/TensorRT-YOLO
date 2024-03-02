@@ -26,7 +26,7 @@ import time
 import argparse
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
-
+from tqdm import tqdm
 from python.infer import TRTYOLO, ImageBatcher
 from python.utils import visualize_detections, generate_labels_with_colors
 
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     total_images = 0
     print(f"Infering data in {opt.input}")
     batcher = ImageBatcher(opt.input, *model.input_spec())
-    for batch, images, batch_shape in batcher:
+    for batch, images, batch_shape in tqdm(batcher):
         start_time_ns = time.perf_counter_ns()
         detections = model.infer(batch, batch_shape)
         end_time_ns = time.perf_counter_ns()

@@ -23,7 +23,7 @@
 # Desc    :   PyCUDA Inference.
 # ==============================================================================
 import time
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Any
 
 import numpy as np
 import tensorrt as trt
@@ -123,7 +123,7 @@ class TRTYOLO:
 
         self.stream.synchronize()
 
-    def _filter(self, outputs, output_shape: Tuple[int, int], idx: int = 0) -> DetectInfo:
+    def _filter(self, outputs: Dict[str, Any], output_shape: Tuple[int, int], idx: int = 0) -> DetectInfo:
         """
         Filter and process the inference results.
 
@@ -190,4 +190,4 @@ class TRTYOLO:
 
         # Process the results
         outputs = {tensor.name: tensor.host.reshape(tensor.shape) for tensor in self.outputs}
-        return [self._filter(outputs, ratio_pad, idx) for idx, ratio_pad in enumerate(batch_shape)]
+        return [self._filter(outputs, shape, idx) for idx, shape in enumerate(batch_shape)]
