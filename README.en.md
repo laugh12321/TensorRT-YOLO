@@ -1,11 +1,11 @@
 ## <div align="center">🚀 TensorRT YOLO</div>
 
-TensorRT-YOLO is an inference acceleration project that supports YOLOv5, YOLOv8, PP-YOLOE, and PP-YOLOE+ using NVIDIA TensorRT for optimization. The project integrates EfficientNMS TensorRT plugin for enhanced post-processing and utilizes CUDA kernel functions to accelerate the preprocessing phase. TensorRT-YOLO provides support for both C++ and Python inference, aiming to deliver a fast and optimized object detection solution.
+TensorRT-YOLO is an inference acceleration project that supports YOLOv5, YOLOv8, YOLOv9, PP-YOLOE, and PP-YOLOE+ using NVIDIA TensorRT for optimization. The project integrates EfficientNMS TensorRT plugin for enhanced post-processing and utilizes CUDA kernel functions to accelerate the preprocessing phase. TensorRT-YOLO provides support for both C++ and Python inference, aiming to deliver a fast and optimized object detection solution.
 
 ## <div align="center">✨ Key Features</div>
 
 - Supports FLOAT32, FLOAT16 ONNX export, and TensorRT inference
-- Supports YOLOv5, YOLOv8, PP-YOLOE, and PP-YOLOE+
+- Supports YOLOv5, YOLOv8, YOLOv9, PP-YOLOE, and PP-YOLOE+
 - Integrates EfficientNMS TensorRT plugin for accelerated post-processing
 - Utilizes CUDA kernel functions to accelerate preprocessing
 - Supports C++ and Python inference
@@ -20,13 +20,13 @@ TensorRT-YOLO is an inference acceleration project that supports YOLOv5, YOLOv8,
 <details open>
 <summary>Installation</summary>
 
-Clone the repo and install the dependencies from [**Python>=3.8.0**](https://www.python.org/) using [requirements.txt](https://github.com/laugh12321/TensorRT-YOLO/blob/master/requirements.txt). Ensure [**PyTorch>=1.8**](https://pytorch.org/get-started/locally/) (for YOLOv5 and YOLOv8 export) and [**PaddlePaddle>=2.5**](https://www.paddlepaddle.org.cn/install/quick/) (for PP-YOLOE and PP-YOLOE+ export) are installed.
+Clone the repo and install the dependencies from [**Python>=3.8.0**](https://www.python.org/) using [requirements.txt](https://github.com/laugh12321/TensorRT-YOLO/blob/master/requirements.txt). Ensure [**PyTorch>=1.8**](https://pytorch.org/get-started/locally/) (for YOLOv5, YOLOv8 and YOLOv9 export) and [**PaddlePaddle>=2.5**](https://www.paddlepaddle.org.cn/install/quick/) (for PP-YOLOE and PP-YOLOE+ export) are installed.
 
 ```bash
 git clone https://github.com/laugh12321/TensorRT-YOLO  # clone
 cd TensorRT-YOLO
 pip install -r requirements.txt  # install
-pip install ultralytics          # Optional, export YOLOv5 and YOLOv8
+pip install ultralytics          # Optional, export YOLOv5, YOLOv8 and YOLOv9
 pip install paddle2onnx          # Optional, export PP-YOLOE and PP-YOLOE+
 ```
 </details>
@@ -46,6 +46,11 @@ python python/export/yolov5/export.py -w yolov5s.pt -o output -b 8 --img 640 -s 
 **YOLOv8**
 ```bash
 python python/export/yolov8/export.py -w yolov8s.pt -o output --conf-thres 0.25 --iou-thres 0.45 --max-boxes 100
+```
+
+**YOLOv9**
+```bash
+python python/export/yolov9/export.py -w yolov9-e.pt -o output --conf-thres 0.25 --iou-thres 0.45 --max-boxes 100
 ```
 
 **PP-YOLOE and PP-YOLOE+**

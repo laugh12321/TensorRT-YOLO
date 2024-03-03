@@ -1,11 +1,11 @@
 ## <div align="center">🚀 TensorRT YOLO</div>
 
-TensorRT-YOLO 是一个支持 YOLOv5、YOLOv8、PP-YOLOE 和 PP-YOLOE+ 的推理加速项目，使用 NVIDIA TensorRT 进行优化。项目不仅集成了 EfficientNMS TensorRT 插件以增强后处理效果，还使用了 CUDA 核函数来加速前处理过程。TensorRT-YOLO 提供了 C++ 和 Python 推理的支持，旨在提供快速而优化的目标检测解决方案。
+TensorRT-YOLO 是一个支持 YOLOv5、YOLOv8、YOLOv9、PP-YOLOE 和 PP-YOLOE+ 的推理加速项目，使用 NVIDIA TensorRT 进行优化。项目不仅集成了 EfficientNMS TensorRT 插件以增强后处理效果，还使用了 CUDA 核函数来加速前处理过程。TensorRT-YOLO 提供了 C++ 和 Python 推理的支持，旨在提供快速而优化的目标检测解决方案。
 
 ## <div align="center">✨ 主要特性</div>
 
 - 支持 FLOAT32、FLOAT16 ONNX 导出以及TensorRT推理
-- 支持 YOLOv5、YOLOv8、PP-YOLOE 和 PP-YOLOE+
+- 支持 YOLOv5、YOLOv8、YOLOv9、PP-YOLOE 和 PP-YOLOE+
 - 集成 EfficientNMS TensorRT 插件加速后处理
 - 利用 CUDA 核函数加速前处理
 - 支持 C++ 和 Python 推理
@@ -20,13 +20,13 @@ TensorRT-YOLO 是一个支持 YOLOv5、YOLOv8、PP-YOLOE 和 PP-YOLOE+ 的推理
 <details open>
 <summary>安装</summary>
 
-克隆 repo，并要求在 [**Python>=3.8.0**](https://www.python.org/) 环境中安装 [requirements.txt](https://github.com/laugh12321/TensorRT-YOLO/blob/master/requirements.txt)，且要求 [**PyTorch>=1.8**](https://pytorch.org/get-started/locally/)（导出 YOLOv5 与 YOLOv8）、[**PaddlePaddle>=2.5**](https://www.paddlepaddle.org.cn/install/quick/)（导出 PP-YOLOE 与 PP-YOLOE+）。
+克隆 repo，并要求在 [**Python>=3.8.0**](https://www.python.org/) 环境中安装 [requirements.txt](https://github.com/laugh12321/TensorRT-YOLO/blob/master/requirements.txt)，且要求 [**PyTorch>=1.8**](https://pytorch.org/get-started/locally/)（导出 YOLOv5、YOLOv8 与 YOLOv9）、[**PaddlePaddle>=2.5**](https://www.paddlepaddle.org.cn/install/quick/)（导出 PP-YOLOE 与 PP-YOLOE+）。
 
 ```bash
 git clone https://github.com/laugh12321/TensorRT-YOLO  # clone
 cd TensorRT-YOLO
 pip install -r requirements.txt  # install
-pip install ultralytics          # Optional, export YOLOv5 and YOLOv8
+pip install ultralytics          # Optional, export YOLOv5, YOLOv8 and YOLOv9
 pip install paddle2onnx          # Optional, export PP-YOLOE and PP-YOLOE+
 ```
 </details>
@@ -46,6 +46,11 @@ python python/export/yolov5/export.py -w yolov5s.pt -o output -b 8 --img 640 -s 
 **YOLOv8**
 ```bash
 python python/export/yolov8/export.py -w yolov8s.pt -o output --conf-thres 0.25 --iou-thres 0.45 --max-boxes 100
+```
+
+**YOLOv9**
+```bash
+python python/export/yolov9/export.py -w yolov9-e.pt -o output --conf-thres 0.25 --iou-thres 0.45 --max-boxes 100
 ```
 
 **PP-YOLOE 与 PP-YOLOE+**
