@@ -16,11 +16,11 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   export.py
-# Version :   2.0
+# Version :   3.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/01/27 15:21:07
-# Desc    :   This script exports a YOLOv8 model to ONNX.
+# Desc    :   This script exports a YOLOv8 model to ONNX with EfficientNMS.
 # ==============================================================================
 import os
 import sys
@@ -42,10 +42,9 @@ from common import Detect as DetectNMS
 
 from ultralytics import YOLO
 from ultralytics.utils.files import file_size
-from ultralytics.nn.tasks import SegmentationModel
+from ultralytics.nn.modules import C2f, Detect
 from ultralytics.engine.exporter import try_export
 from ultralytics.utils import LOGGER, colorstr, __version__
-from ultralytics.nn.modules import C2f, Detect, RTDETRDecoder
 from ultralytics.utils.checks import check_imgsz, check_requirements
 from ultralytics.utils.torch_utils import get_latest_opset, smart_inference_mode
 
@@ -75,16 +74,13 @@ class Exporter:
         t = time.time()
 
         # Device
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cpu")  # FP32 no need for GPU export
 
         # Checks
-        if self.args.half and self.device.type == "cpu":
-            LOGGER.warning("WARNING ⚠️ FP16 only compatible with GPU export, i.e. use device=0")
-            self.args.half = False
         self.imgsz = check_imgsz(self.args.imgsz, stride=model.stride, min_dim=2)  # check image size
 
         # Input
-        im = torch.zeros(self.args.batch, 3, *self.imgsz, dtype=torch.float).to(self.device)
+        im = torch.zeros(self.args.batch, 3, *self.imgsz).to(self.device)
 
         # Update model
         model = deepcopy(model).to(self.device)
@@ -94,26 +90,21 @@ class Exporter:
         model.float()
         model = model.fuse()
         for m in model.modules():
-            if isinstance(m, (Detect, RTDETRDecoder)):  # Segment and Pose use Detect base class
-                m.dynamic = False
-                m.export = True
-                m.format = 'onnx'
-                # TODO support RTDETRDecoder with nms=True
-                if isinstance(m, Detect):
-                    detect = DetectNMS
-                    detect.half = self.args.half
-                    detect.conf_thres = self.args.conf_thres
-                    detect.iou_thres = self.args.iou_thres
-                    detect.max_det = self.args.max_boxes
-                    setattr(m, '__class__', detect)
+            if isinstance(m, Detect):
+                detect = DetectNMS
+                detect.export = True
+                detect.format = 'onnx'
+                detect.dynamic = self.args.dynamic
+                detect.max_det = self.args.max_boxes
+                detect.iou_thres = self.args.iou_thres
+                detect.conf_thres = self.args.conf_thres
+                setattr(m, '__class__', detect)
             elif isinstance(m, C2f):
                 # EdgeTPU does not support FlexSplitV while split provides cleaner ONNX graph
                 m.forward = m.forward_split
 
         for _ in range(2):
             model(im)  # dry runs
-        if self.args.half:
-            im, model = im.half(), model.half()  # to FP16
 
         # Filter warnings
         warnings.filterwarnings("ignore", category=torch.jit.TracerWarning)  # suppress TracerWarning
@@ -158,10 +149,20 @@ class Exporter:
 
         f = str(Path(self.args.output, Path(self.args.weights).stem).with_suffix(".onnx"))
 
-        output_names = ["output0", "output1"] if isinstance(self.model, SegmentationModel) else ['num_detections', 'detection_boxes', 'detection_scores', 'detection_classes']
+        output_names = ['num_detections', 'detection_boxes', 'detection_scores', 'detection_classes']
+
+        dynamic = {}
+        if self.args.dynamic:
+            dynamic = {
+                "images": {0: "batch", 2: "height", 3: "width"},
+                "num_detections": {0: "batch"},
+                "detection_boxes": {0: "batch"},
+                "detection_scores": {0: "batch"},
+                "detection_classes": {0: "batch"},
+            }  
 
         torch.onnx.export(
-            self.model,  # dynamic=True only compatible with cpu
+            self.model,
             self.im,
             f,
             verbose=False,
@@ -169,7 +170,7 @@ class Exporter:
             do_constant_folding=True,  # WARNING: DNN inference with torch>=1.12 may require do_constant_folding=False
             input_names=["images"],
             output_names=output_names,
-            dynamic_axes=None,
+            dynamic_axes=dynamic or None,
         )
 
         # Checks
@@ -177,10 +178,10 @@ class Exporter:
         onnx.checker.check_model(model_onnx)  # check onnx model
 
         shapes = {
-            'num_detections': [self.args.batch, 1],
-            'detection_boxes': [self.args.batch, self.args.max_boxes, 4],
-            'detection_scores': [self.args.batch, self.args.max_boxes],
-            'detection_classes': [self.args.batch, self.args.max_boxes]
+            'num_detections': ["batch" if self.args.dynamic else self.args.batch, 1],
+            'detection_boxes': ["batch" if self.args.dynamic else self.args.batch, self.args.max_boxes, 4],
+            'detection_scores': ["batch" if self.args.dynamic else self.args.batch, self.args.max_boxes],
+            'detection_classes': ["batch" if self.args.dynamic else self.args.batch, self.args.max_boxes]
         }
         for output in model_onnx.graph.output:
             for idx, dim in enumerate(output.type.tensor_type.shape.dim):
@@ -203,16 +204,16 @@ class Exporter:
 
 
 def parse_opt() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description='Export YOLOv5 model to ONNX.')
+    parser = argparse.ArgumentParser(description='Export YOLOv5 model to ONNX with EfficientNMS.')
     parser.add_argument('-w', '--weights', required=True, help='Path to Ultralytics YOLOv5 model weights file.')
     parser.add_argument('-o', '--output', required=True, type=str, help='Directory path to save the exported model.')
     parser.add_argument('-b', '--batch', type=int, default=1, help='Total batch size for the model.')
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640], help='Inference size (height, width).')
+    parser.add_argument('--dynamic', action="store_true", help="Export with dynamic axes.")
     parser.add_argument('--conf-thres', type=float, default=0.25, help='Confidence threshold for object detection.')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='NMS IoU threshold for post-processing.')
     parser.add_argument('--max-boxes', type=int, default=100, help='Maximum number of detections to output per image.')
     parser.add_argument('-s', '--simplify', action='store_true', help='Whether to simplify the exported ONNX. Default is False.')
-    parser.add_argument("--half", action="store_true", help="FP16 half-precision export")
     parser.add_argument('--opset', type=int, default=11, help='ONNX opset version.')
 
     opt = parser.parse_args()

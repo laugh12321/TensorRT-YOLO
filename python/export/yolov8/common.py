@@ -44,7 +44,6 @@ class Efficient_TRT_NMS(torch.autograd.Function):
         ctx,
         boxes,
         scores,
-        half: bool = False,
         iou_threshold: float = 0.65,
         score_threshold: float = 0.25,
         max_output_boxes: float = 100,
@@ -55,8 +54,8 @@ class Efficient_TRT_NMS(torch.autograd.Function):
     ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         batch_size, num_boxes, num_classes = scores.shape
         num_detections = torch.randint(0, max_output_boxes, (batch_size, 1), dtype=torch.int32)
-        detection_boxes = torch.randn(batch_size, max_output_boxes, 4, dtype=torch.float16 if half else torch.float32)
-        detection_scores = torch.randn(batch_size, max_output_boxes, dtype=torch.float16 if half else torch.float32)
+        detection_boxes = torch.randn(batch_size, max_output_boxes, 4, dtype=torch.float32)
+        detection_scores = torch.randn(batch_size, max_output_boxes, dtype=torch.float32)
         detection_classes = torch.randint(0, num_classes, (batch_size, max_output_boxes), dtype=torch.int32)
 
         return num_detections, detection_boxes, detection_scores, detection_classes
@@ -66,7 +65,6 @@ class Efficient_TRT_NMS(torch.autograd.Function):
         g,
         boxes,
         scores,
-        half: bool = False,
         iou_threshold: float = 0.65,
         score_threshold: float = 0.25,
         max_output_boxes: float = 100,
@@ -98,7 +96,6 @@ class Detect(nn.Module):
     dynamic = False  # force grid reconstruction
     export = False  # export mode
     shape = None
-    half = False
     max_det = 100
     iou_thres = 0.65
     conf_thres = 0.25
@@ -154,7 +151,6 @@ class Detect(nn.Module):
             return Efficient_TRT_NMS.apply(
                 torch.transpose(dbox, 1, 2), 
                 torch.transpose(cls.sigmoid(), 1, 2),
-                self.half,
                 self.iou_thres,
                 self.conf_thres,
                 self.max_det,

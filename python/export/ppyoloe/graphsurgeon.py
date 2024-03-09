@@ -16,11 +16,11 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   graphsurgeon.py
-# Version :   2.0
+# Version :   3.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/01/28 14:37:43
-# Desc    :   PP-YOLOE Graph Surgeon for TensorRT inference.
+# Desc    :   PP-YOLOE Graph Surgeon for Export ONNX with EfficientNMS.
 # ==============================================================================
 """
 This code is based on the following repository:
@@ -28,7 +28,6 @@ This code is based on the following repository:
 """
 import logging
 from pathlib import Path
-from typing import Tuple
 from collections import OrderedDict
 
 import onnx_graphsurgeon as gs
@@ -44,17 +43,16 @@ __all__ = ["PPYOLOEGraphSurgeon"]
 
 class PPYOLOEGraphSurgeon:
     """
-    PP-YOLOE Graph Surgeon for TensorRT inference.
+    PP-YOLOE Graph Surgeon for Export ONNX with EfficientNMS.
 
     Args:
         model_dir (str): Path of directory saved PaddleDetection PP-YOLOE model.
         onnx_path (str): The path to the ONNX graph to load.
         model_filename (str): The PP-YOLOE model file name.
         params_filename (str): The PP-YOLOE parameters file name.
-        opset (int): ONNX opset version. Default: 11
-        batch_size (int): Batch size for inference. Default: 1
-        imgsz (Tuple[int, int]): Input image size. Default: (640, 640)
-        half (bool, optional): FP16 half-precision export. Default: False
+        opset (int, optional): ONNX opset version. Default: 11
+        batch_size (int, optional): Batch size for inference. Default: 1
+        dynamic (bool, optional): Whether to use dynamic graph. Default: False.
         simplify (bool, optional): Whether to simplify the exported ONNX. Default to False
     """
 
@@ -67,24 +65,16 @@ class PPYOLOEGraphSurgeon:
         *,
         opset: int = 11,
         batch_size: int = 1,
-        imgsz: Tuple[int, int] = (640, 640),
-        half: bool = False,
+        dynamic: bool = False,
         simplify: bool = False,
-    ):
+    ) -> None:
         # Ensure the required modules are imported within the function scope
         from paddle2onnx.command import c_paddle_to_onnx
-        import paddle2onnx.paddle2onnx_cpp2py_export as c_p2o
 
         model_dir = Path(model_dir)
 
         # Validate model directory
         assert model_dir.exists() and model_dir.is_dir(), f"Invalid model directory: {model_dir}"
-
-        # Define input shape dictionary
-        input_shape_dict = {
-            'image': [batch_size, 3, *imgsz], 
-            'scale_factor': [batch_size, 2]
-        }
 
         # Export the model to ONNX
         c_paddle_to_onnx(
@@ -92,13 +82,37 @@ class PPYOLOEGraphSurgeon:
             params_file=str(model_dir / params_filename),
             save_file=onnx_path,
             opset_version=opset,
-            export_fp16_model=half,
+            export_fp16_model=False,
             auto_upgrade_opset=True,
             enable_onnx_checker=True
         )
 
-        # Convert Static Shape
-        c_p2o.optimize(onnx_path, onnx_path, input_shape_dict)
+        if not dynamic:
+            import paddle2onnx.paddle2onnx_cpp2py_export as c_p2o
+
+            # Use YOLOTRTInference to modify an existed ONNX graph.
+            self.graph = gs.import_onnx(onnx.load(onnx_path))
+            assert self.graph
+
+            # Fold constants via ONNX-GS
+            self.graph.fold_constants()
+
+            # Get input shape
+            input_shape_dict = {}
+            for input_info in self.graph.inputs:
+                input_shape_dict[input_info.name] = input_info.shape
+
+            # Define input shape dictionary
+            for shape in input_shape_dict.values():
+                shape[0] = batch_size
+
+            # Convert Static Shape
+            c_p2o.optimize(onnx_path, onnx_path, input_shape_dict)
+
+        self.batch_size = batch_size
+        self.onnx_path = onnx_path
+        self.simplify = simplify
+        self.dynamic = dynamic
 
         # Use YOLOTRTInference to modify an existed ONNX graph.
         self.graph = gs.import_onnx(onnx.load(onnx_path))
@@ -106,11 +120,9 @@ class PPYOLOEGraphSurgeon:
 
         # Fold constants via ONNX-GS
         self.graph.fold_constants()
-        self.half = half
-        self.simplify = simplify
-        self.batch_size = batch_size
+        self.save(onnx_path)
 
-    def infer(self):
+    def _infer(self) -> None:
         """
         Sanitize the graph by cleaning any unconnected nodes, do a topological resort,
         and fold constant inputs values. When possible, run shape inference on the
@@ -145,7 +157,7 @@ class PPYOLOEGraphSurgeon:
                 # No new folding occurred in this iteration, so we can stop for now.
                 break
 
-    def _process(self, dtype):
+    def _process(self) -> None:
 
         # Find Mul node
         mul_node = next((node.i(0) for node in self.graph.nodes if node.op == 'Div' and node.i(0).op == 'Mul'), None)
@@ -167,16 +179,18 @@ class PPYOLOEGraphSurgeon:
         assert anchors == sum_anchors, f"{mul_node.inputs[1].name}.shape[0] must equal the sum of values[2] from the three Concat nodes."
 
         # Create a new variable for 'scores' and transpose it
-        scores = gs.Variable(name='scores', shape=[self.batch_size, anchors, classes], dtype=dtype)
-        self.graph.layer(op='Transpose', name='last.Transpose',
-                    inputs=[concat_node.outputs[0]],
-                    outputs=[scores],
-                    attrs=OrderedDict(perm=[0, 2, 1]))
+        scores = gs.Variable(name='scores', shape=[self.batch_size, anchors, classes], dtype=np.float32)
+        self.graph.layer(
+            op='Transpose', name='last.Transpose',
+            inputs=[concat_node.outputs[0]],
+            outputs=[scores],
+            attrs=OrderedDict(perm=[0, 2, 1])
+        )
         self.graph.inputs[0].name = 'images'
         self.graph.inputs = [self.graph.inputs[0]]
         self.graph.outputs = [mul_node.outputs[0], scores]
 
-    def save(self, output_path):
+    def save(self, output_path) -> None:
         """
         Save the ONNX model to the given location.
 
@@ -194,7 +208,6 @@ class PPYOLOEGraphSurgeon:
             except Exception as e:
                 logger.info(f"Simplifier failure: {e}")
         onnx.save(model, output_path)
-        logger.info(f"Saved ONNX model to {output_path}")
 
     def register_nms(
         self,
@@ -202,7 +215,7 @@ class PPYOLOEGraphSurgeon:
         score_thresh: float = 0.25,
         nms_thresh: float = 0.45,
         detections_per_img: int = 100,
-    ):
+    ) -> None:
         """
         Register the ``EfficientNMS_TRT`` plugin node.
 
@@ -217,12 +230,9 @@ class PPYOLOEGraphSurgeon:
             detections_per_img (int): Number of best detections to keep after NMS.
         """
 
-        self.infer()
+        self._infer()
+        self._process()
 
-        dtype = np.float16 if self.half else np.float32
-        self._process(dtype)
-
-        op = "EfficientNMS_TRT"
         attrs = OrderedDict(
             plugin_version="1",
             background_class=-1,  # no background class
@@ -233,36 +243,43 @@ class PPYOLOEGraphSurgeon:
             box_coding=0,
         )
 
+        if self.dynamic:
+            for input_info in self.graph.inputs:
+                input_info.shape[0] = "batch"
+
         op_outputs = [
             gs.Variable(
                 name="num_detections",
                 dtype=np.int32,
-                shape=[self.batch_size, 1],
+                shape=["batch" if self.dynamic else self.batch_size, 1],
             ),
             gs.Variable(
                 name="detection_boxes",
-                dtype=dtype,
-                shape=[self.batch_size, detections_per_img, 4],
+                dtype=np.float32,
+                shape=["batch" if self.dynamic else self.batch_size, detections_per_img, 4],
             ),
             gs.Variable(
                 name="detection_scores",
-                dtype=dtype,
-                shape=[self.batch_size, detections_per_img],
+                dtype=np.float32,
+                shape=["batch" if self.dynamic else self.batch_size, detections_per_img],
             ),
             gs.Variable(
                 name="detection_classes",
                 dtype=np.int32,
-                shape=[self.batch_size, detections_per_img],
+                shape=["batch" if self.dynamic else self.batch_size, detections_per_img],
             ),
         ]
 
         # Create the NMS Plugin node with the selected inputs. The outputs of the node will also
         # become the final outputs of the graph.
         self.graph.layer(
-            op=op, name="batched_nms", inputs=self.graph.outputs, outputs=op_outputs, attrs=attrs
+            op="EfficientNMS_TRT", 
+            name="EfficientNMS_TRT", 
+            inputs=self.graph.outputs, 
+            outputs=op_outputs, 
+            attrs=attrs,
         )
-        logger.info(f"Created NMS plugin '{op}' with attributes: {attrs}")
 
         self.graph.outputs = op_outputs
 
-        self.infer()
+        self._infer()

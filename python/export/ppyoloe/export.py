@@ -16,11 +16,11 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   export.py
-# Version :   2.0
+# Version :   3.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/01/28 14:37:02
-# Desc    :   This script exports a PP-YOLOE model to ONNX.
+# Desc    :   This script exports a PP-YOLOE model to ONNX with EfficientNMS.
 # ==============================================================================
 import os
 import sys
@@ -35,22 +35,20 @@ ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
 
 def parse_opt() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description='Export PP-YOLOE model to ONNX.')
+    parser = argparse.ArgumentParser(description='Export PP-YOLOE model to ONNX with EfficientNMS.')
     parser.add_argument('--model_dir', required=True, type=str, help='Path of directory saved PaddleDetection PP-YOLOE model.')
     parser.add_argument('--model_filename', required=True, type=str, help='The PP-YOLOE model file name.')
     parser.add_argument('--params_filename', required=True, type=str, help='The PP-YOLOE parameters file name.')
     parser.add_argument('-o', '--output', required=True, type=str, help='Directory path to save the exported model.')
     parser.add_argument('-b', '--batch', type=int, default=1, help='Total batch size for the model.')
-    parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640], help='Inference size (height, width).')
+    parser.add_argument('--dynamic', action="store_true", help="Export with dynamic axes.")
     parser.add_argument('--conf-thres', type=float, default=0.25, help='Confidence threshold for object detection.')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='NMS IoU threshold for post-processing.')
     parser.add_argument('--max-boxes', type=int, default=100, help='Maximum number of detections to output per image.')
     parser.add_argument('-s', '--simplify', action='store_true', help='Whether to simplify the exported ONNX. Default is False.')
-    parser.add_argument("--half", action="store_true", help="FP16 half-precision export.")
     parser.add_argument('--opset', type=int, default=11, help='ONNX opset version.')
 
     opt = parser.parse_args()
-    opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1  # Expand imgsz if only one value is provided
 
     return opt
 
@@ -71,8 +69,7 @@ if __name__ == '__main__':
         params_filename=opt.params_filename,
         opset=opt.opset,
         batch_size=opt.batch,
-        imgsz=opt.imgsz,
-        half=opt.half,
+        dynamic=opt.dynamic,
         simplify=opt.simplify
     )
 
