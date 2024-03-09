@@ -1,4 +1,14 @@
+English | [简体中文](README.md)
+
 ## <div align="center">🚀 TensorRT YOLO</div>
+
+<p align="center">
+    <a href="./LICENSE"><img alt="GitHub License" src="https://img.shields.io/github/license/laugh12321/TensorRT-YOLO?style=for-the-badge"></a>
+    <a href="https://github.com/laugh12321/TensorRT-YOLO/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/laugh12321/TensorRT-YOLO?style=for-the-badge">
+    <a href="https://github.com/laugh12321/TensorRT-YOLO/commits"><img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/laugh12321/TensorRT-YOLO?style=for-the-badge&color=rgb(47%2C154%2C231)"></a>
+    <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/laugh12321/TensorRT-YOLO?style=for-the-badge&color=%2350e472">
+    <img alt="GitHub forks" src="https://img.shields.io/github/forks/laugh12321/TensorRT-YOLO?style=for-the-badge&color=%2320878f">
+</p>
 
 TensorRT-YOLO is an inference acceleration project that supports YOLOv5, YOLOv8, YOLOv9, PP-YOLOE, and PP-YOLOE+ using NVIDIA TensorRT for optimization. The project integrates EfficientNMS TensorRT plugin for enhanced post-processing and utilizes CUDA kernel functions to accelerate the preprocessing phase. TensorRT-YOLO provides support for both C++ and Python inference, aiming to deliver a fast and optimized object detection solution.
 
@@ -9,11 +19,11 @@ TensorRT-YOLO is an inference acceleration project that supports YOLOv5, YOLOv8,
 
 ## <div align="center">✨ Key Features</div>
 
-- Supports FLOAT32, FLOAT16 ONNX export, and TensorRT inference
 - Supports YOLOv5, YOLOv8, YOLOv9, PP-YOLOE, and PP-YOLOE+
-- Integrates EfficientNMS TensorRT plugin for accelerated post-processing
-- Utilizes CUDA kernel functions to accelerate preprocessing
-- Supports C++ and Python inference
+- Supports static and dynamic export to ONNX, as well as TensorRT inference
+- Integrated EfficientNMS TensorRT plugin for accelerated post-processing
+- Utilizes CUDA kernel functions for accelerated pre-processing (V1.0)
+- Supports inference in both C++ and Python (C++ implementation in progress)
 
 ## <div align="center">🛠️ Requirements</div>
 
@@ -41,35 +51,36 @@ pip install paddle2onnx          # Optional, export PP-YOLOE and PP-YOLOE+
 
 Use the following commands to export ONNX models and add the [EfficientNMS](https://github.com/NVIDIA/TensorRT/tree/main/plugin/efficientNMSPlugin) plugin for post-processing.
 
-**Note:** For exporting ONNX models of PP-YOLOE and PP-YOLOE+, the input image size `imgsz` must match the size exported by [PaddleDetection](https://github.com/PaddlePaddle/PaddleDetection), which is the default `640`.
+**Note:** Exporting ONNX models for PP-YOLOE and PP-YOLOE+ only modifies the `batch` dimension, and the `height` and `width` dimensions cannot be changed. These dimensions are set in [PaddleDetection](https://github.com/PaddlePaddle/PaddleDetection) and default at `640`.
 
-**YOLOv5**
-```bash
-python python/export/yolov5/export.py -w yolov5s.pt -o output -b 8 --img 640 -s --half
-```
+**YOLOv5, v8, v9**
 
-**YOLOv8**
 ```bash
-python python/export/yolov8/export.py -w yolov8s.pt -o output --conf-thres 0.25 --iou-thres 0.45 --max-boxes 100
-```
-
-**YOLOv9**
-```bash
-python python/export/yolov9/export.py -w yolov9-e.pt -o output --conf-thres 0.25 --iou-thres 0.45 --max-boxes 100
+# Static
+python python/export/{yolo version}/export.py -w your_model_path.pt -o output -b 8 --img 640 -s
+# Dynamic
+python python/export/{yolo version}/export.py -w your_model_path.pt -o output -s --dynamic
 ```
 
 **PP-YOLOE and PP-YOLOE+**
+
 ```bash
-python python/export/ppyoloe/export.py --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output
+# Static
+python python/export/ppyoloe/export.py --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output -b 8 -s
+# Dynamic
+python python/export/ppyoloe/export.py --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output -s --dynamic
 ```
 
 Exported ONNX models are then exported to TensorRT models using the `trtexec` tool.
 
-**Note:** ONNX models exported with `python export.py --half` must include `--fp16` when using `trtexec`.
 
 ```bash
+# Static
 trtexec --onnx=model.onnx --saveEngine=model.engine --fp16
+# Dynamic
+trtexec --onnx=model.onnx --saveEngine=model.engine --minShapes=images:1x3x640x640 --optShapes=images:4x3x640x640 --maxShapes=images:8x3x640x640 --fp16
 ```
+
 </details>
 
 <details>

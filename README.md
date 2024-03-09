@@ -1,4 +1,14 @@
+[English](README.en.md) | 简体中文
+
 ## <div align="center">🚀 TensorRT YOLO</div>
+
+<p align="center">
+    <a href="./LICENSE"><img alt="GitHub License" src="https://img.shields.io/github/license/laugh12321/TensorRT-YOLO?style=for-the-badge"></a>
+    <a href="https://github.com/laugh12321/TensorRT-YOLO/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/laugh12321/TensorRT-YOLO?style=for-the-badge">
+    <a href="https://github.com/laugh12321/TensorRT-YOLO/commits"><img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/laugh12321/TensorRT-YOLO?style=for-the-badge&color=rgb(47%2C154%2C231)"></a>
+    <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/laugh12321/TensorRT-YOLO?style=for-the-badge&color=%2350e472">
+    <img alt="GitHub forks" src="https://img.shields.io/github/forks/laugh12321/TensorRT-YOLO?style=for-the-badge&color=%2320878f">
+</p>
 
 TensorRT-YOLO 是一个支持 YOLOv5、YOLOv8、YOLOv9、PP-YOLOE 和 PP-YOLOE+ 的推理加速项目，使用 NVIDIA TensorRT 进行优化。项目不仅集成了 EfficientNMS TensorRT 插件以增强后处理效果，还使用了 CUDA 核函数来加速前处理过程。TensorRT-YOLO 提供了 C++ 和 Python 推理的支持，旨在提供快速而优化的目标检测解决方案。
 
@@ -9,11 +19,11 @@ TensorRT-YOLO 是一个支持 YOLOv5、YOLOv8、YOLOv9、PP-YOLOE 和 PP-YOLOE+ 
 
 ## <div align="center">✨ 主要特性</div>
 
-- 支持 FLOAT32、FLOAT16 ONNX 导出以及TensorRT推理
 - 支持 YOLOv5、YOLOv8、YOLOv9、PP-YOLOE 和 PP-YOLOE+
+- 支持 ONNX 静态、动态导出以及 TensorRT 推理
 - 集成 EfficientNMS TensorRT 插件加速后处理
-- 利用 CUDA 核函数加速前处理
-- 支持 C++ 和 Python 推理
+- 利用 CUDA 核函数加速前处理 (V1.0)
+- 支持 C++ 和 Python 推理（C++ 实现中）
 
 ## <div align="center">🛠️ 环境要求</div>
 
@@ -41,35 +51,35 @@ pip install paddle2onnx          # Optional, export PP-YOLOE and PP-YOLOE+
 
 使用下面的命令将导出 ONNX 模型并添加 [EfficientNMS](https://github.com/NVIDIA/TensorRT/tree/main/plugin/efficientNMSPlugin) 插件进行后处理。
 
-**注意：** 导出 PP-YOLOE 与 PP-YOLOE+ 的 ONNX 模型，输入图片尺寸 `imgsz` 必须与[PaddleDetection](https://github.com/PaddlePaddle/PaddleDetection)导出的尺寸一致，默认为 `640`。
+**注意：** 导出 PP-YOLOE 与 PP-YOLOE+ 的 ONNX 模型，只会对 `batch` 维度进行修改，`height` 与 `width` 维度无法被更改，需要在[PaddleDetection](https://github.com/PaddlePaddle/PaddleDetection)中设置，默认为 `640`。
 
-**YOLOv5**
-```bash
-python python/export/yolov5/export.py -w yolov5s.pt -o output -b 8 --img 640 -s --half
-```
+**YOLOv5, v8, v9**
 
-**YOLOv8**
 ```bash
-python python/export/yolov8/export.py -w yolov8s.pt -o output --conf-thres 0.25 --iou-thres 0.45 --max-boxes 100
-```
-
-**YOLOv9**
-```bash
-python python/export/yolov9/export.py -w yolov9-e.pt -o output --conf-thres 0.25 --iou-thres 0.45 --max-boxes 100
+# Static
+python python/export/{yolo version}/export.py -w your_model_path.pt -o output -b 8 --img 640 -s
+# Dynamic
+python python/export/{yolo version}/export.py -w your_model_path.pt -o output -s --dynamic
 ```
 
 **PP-YOLOE 与 PP-YOLOE+**
+
 ```bash
-python python/export/ppyoloe/export.py --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output
+# Static
+python python/export/ppyoloe/export.py --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output -b 8 -s
+# Dynamic
+python python/export/ppyoloe/export.py --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output -s --dynamic
 ```
 
 生成的 ONNX 模型使用 `trtexec` 工具导出 TensorRT 模型。
 
-**注意：** 使用 `python export.py --half` 导出的 ONNX 模型在使用 `trtexec` 时必须加上 `--fp16`。
-
 ```bash
+# Static
 trtexec --onnx=model.onnx --saveEngine=model.engine --fp16
+# Dynamic
+trtexec --onnx=model.onnx --saveEngine=model.engine --minShapes=images:1x3x640x640 --optShapes=images:4x3x640x640 --maxShapes=images:8x3x640x640 --fp16
 ```
+
 </details>
 
 <details>
