@@ -93,7 +93,6 @@ class Exporter:
             p.requires_grad = False
         model.eval()
         model.float()
-        model = model.fuse()
         for m in model.modules():
             if m.__class__.__name__ in DETECT.keys():
                 detect = DETECT[m.__class__.__name__]
