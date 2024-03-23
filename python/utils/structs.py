@@ -16,17 +16,18 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   structs.py
-# Version :   2.0
+# Version :   3.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/01/21 14:08:33
 # Desc    :   Defines data classes.
 # ==============================================================================
-from typing import List, Union
+from typing import List, Tuple, Union
 from dataclasses import dataclass
 
 import numpy as np
-import pycuda.driver as cuda
+
+from python.infer.common import HostDeviceMem
 
 __all__ = ['TensorInfo', 'DetectInfo']
 
@@ -38,16 +39,17 @@ class TensorInfo:
 
     Attributes:
         name (str): The name of the tensor.
-        shape (tuple): The shape of the tensor.
-        dtype (np.dtype): The data type of the tensor.
-        host (np.ndarray): The host (CPU) representation of the tensor.
-        device (cuda.DeviceAllocation): The device (GPU) allocation of the tensor.
+        shape (Tuple[int]): The shape of the tensor.
+        input (bool): Indicates whether the tensor is an input tensor or not.
+        memory (HostDeviceMem): The memory information of the tensor, containing both host and device memory.
+
+    Note:
+        HostDeviceMem is a placeholder for the type of memory allocation object.
     """
     name: str
-    shape: tuple
-    dtype: np.dtype
-    host: np.ndarray
-    device: cuda.DeviceAllocation
+    input: bool
+    shape: Tuple[int]
+    memory: HostDeviceMem
 
 
 @dataclass

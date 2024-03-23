@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   detect.py
-# Version :   2.0
+# Version :   3.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/01/29 15:13:41
@@ -26,7 +26,9 @@ import time
 import argparse
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
+
 from tqdm import tqdm
+
 from python.infer import TRTYOLO, ImageBatcher
 from python.utils import visualize_detections, generate_labels_with_colors
 
@@ -58,8 +60,14 @@ if __name__ == '__main__':
     total_infers = 0
     total_images = 0
     print(f"Infering data in {opt.input}")
-    batcher = ImageBatcher(opt.input, *model.input_spec())
-    for batch, images, batch_shape in tqdm(batcher):
+    batcher = ImageBatcher(
+        input_path=opt.input, 
+        batch_size=model.batch_size, 
+        imgsz=model.imgsz, 
+        dtype=model.dtype, 
+        dynamic=model.dynamic
+    )
+    for batch, images, batch_shape in tqdm(batcher, total=len(batcher.batches), desc="Processing batches", unit="batch"):
         start_time_ns = time.perf_counter_ns()
         detections = model.infer(batch, batch_shape)
         end_time_ns = time.perf_counter_ns()

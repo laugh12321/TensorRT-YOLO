@@ -16,23 +16,65 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   yolo.py
-# Version :   2.0
+# Version :   3.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/01/28 22:13:39
-# Desc    :   PyCUDA Inference.
+# Desc    :   CUDA-Python Inference.
 # ==============================================================================
-import time
-from typing import List, Tuple, Dict, Any
+from time import perf_counter_ns
+from typing import List, Dict, Tuple, Optional
 
 import numpy as np
 import tensorrt as trt
-import pycuda.autoinit
-import pycuda.driver as cuda
+from cuda import cudart
+from polygraphy.backend.trt import EngineFromBytes
+from polygraphy.backend.common import BytesFromPath
+from polygraphy.util import is_shape_dynamic, invoke_if_callable
 
+from python.infer.common import cuda_assert, HostDeviceMem
 from python.utils import DetectInfo, TensorInfo, scale_boxes
 
 __all__ = ['TRTYOLO']
+
+
+# Allocates all buffers required for an engine, i.e. host/device inputs/outputs.
+# If engine uses dynamic shapes, specify a profile to find the maximum input & output size.
+def allocate_buffers(engine: trt.ICudaEngine):
+    tensors = []
+    stream = cuda_assert(cudart.cudaStreamCreate())
+    for binding in engine:
+        # get_tensor_profile_shape returns (min_shape, optimal_shape, max_shape)
+        # Pick out the max shape to allocate enough memory for the binding.
+        input = engine.get_tensor_mode(binding) == trt.TensorIOMode.INPUT
+        shape = engine.get_tensor_shape(binding)
+        if dynamic := is_shape_dynamic(shape):
+            if input:
+                shape = engine.get_tensor_profile_shape(binding, 0)[-1]
+            else:
+                shape[0] = batch
+
+        size = trt.volume(shape)
+        dtype = np.dtype(trt.nptype(engine.get_tensor_dtype(binding)))
+
+        if input:
+            input_dtype = dtype
+            batch, _, *imgsz = shape
+
+        # Allocate host and device buffers
+        bindingMemory = HostDeviceMem(size, dtype)
+
+        # Append to the tensors list.
+        tensors.append(
+            TensorInfo(
+                name=binding,
+                shape=shape,
+                input=input,
+                memory=bindingMemory,
+            )
+        )
+        
+    return tensors, dynamic, stream, batch, imgsz, input_dtype
 
 
 class TRTYOLO:
@@ -49,88 +91,49 @@ class TRTYOLO:
         Args:
             engine_path (str): Path to the TensorRT engine file.
         """
-        self.logger = trt.Logger(trt.Logger.ERROR)
-        trt.init_libnvinfer_plugins(self.logger, namespace="")
-        with open(engine_path, "rb") as f, trt.Runtime(self.logger) as runtime:
-            self.engine = runtime.deserialize_cuda_engine(f.read())
-        self.inputs, self.outputs, self.allocations = self._setup_io_bindings()
-        self.stream = cuda.Stream()
-        self.width, self.height = self._handle_tensor_shape()
+        self._engine, _ = invoke_if_callable(EngineFromBytes(BytesFromPath(engine_path)))
+        self._tensors, self._dynamic, self._stream, self._batch_size, self._imgsz, self._dtype = allocate_buffers(self._engine)
 
-    def _setup_io_bindings(self) -> Tuple[List[TensorInfo], List[TensorInfo], List[cuda.DeviceAllocation]]:
-        """
-        Setup input and output bindings for the TensorRT engine.
-
-        Returns:
-            Tuple[List[TensorInfo], List[TensorInfo], List[cuda.DeviceAllocation]]: Input, output, and allocation information.
-        """
-        inputs, outputs, allocations = [], [], []
-        for binding in self.engine:
-            is_input = self.engine.binding_is_input(binding)
-            shape = tuple(self.engine.get_binding_shape(binding))
-            dtype = trt.nptype(self.engine.get_binding_dtype(binding))
-
-            host = cuda.pagelocked_empty(shape, dtype)
-            device = cuda.mem_alloc(host.nbytes)
-
-            allocations.append(device)
-            tensor = TensorInfo(binding, shape, dtype, host, device)
-            inputs.append(tensor) if is_input else outputs.append(tensor)
-
-        return inputs, outputs, allocations
-
-    def _handle_tensor_shape(self) -> Tuple[int, int]:
-        """
-        Handle the input tensor shape.
-
-        Raises:
-            ValueError: If the input shape is invalid.
-
-        Returns:
-            Tuple[int, int]: Width and height of the input tensor.
-        """
-        input_shape = self.inputs[0].shape
-        if input_shape[1] == 3:
-            height, width = input_shape[2], input_shape[3]
-        elif input_shape[3] == 3:
-            height, width = input_shape[1], input_shape[2]
-        else:
-            raise ValueError("Invalid input shape")
-        return width, height
-
-    def __del__(self) -> None:
+    def destory(self) -> None:
         """
         Clean up resources when the instance is deleted.
         """
-        for allocation in self.allocations:
-            allocation.free()
-        del self.stream
-        del self.engine
+        for tensor in self._tensors:
+            tensor.memory.free()
+        cuda_assert(cudart.cudaStreamDestroy(self._stream))
+        del self._engine
 
     def _infer(self) -> None:
         """
         Run inference on the TensorRT engine.
         """
-        # Copy I/O and Execute
-        for input_tensor in self.inputs:
-            cuda.memcpy_htod_async(input_tensor.device, input_tensor.host, self.stream)
+        # Transfer input data to the GPU.
+        kind = cudart.cudaMemcpyKind.cudaMemcpyHostToDevice
+        [cuda_assert(cudart.cudaMemcpyAsync(tensor.memory.device, tensor.memory.host, tensor.memory.nbytes, kind, self._stream)) for tensor in self._tensors if tensor.input]
 
-        with self.engine.create_execution_context() as context:
-            context.execute_async_v2(self.allocations, self.stream.handle)
+        # Run inference.
+        with self._engine.create_execution_context() as context:
+            for tensor in self._tensors:
+                context.set_tensor_address(tensor.name, int(tensor.memory.device))
+                if tensor.input and self._dynamic:
+                    context.set_input_shape(tensor.name, tensor.shape)
+        context.execute_async_v3(self._stream)
 
-        for output_tensor in self.outputs:
-            cuda.memcpy_dtoh_async(output_tensor.host, output_tensor.device, self.stream)
+        # Transfer predictions back from the GPU.
+        kind = cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost
+        [cuda_assert(cudart.cudaMemcpyAsync(tensor.memory.host, tensor.memory.device, tensor.memory.nbytes, kind, self._stream)) for tensor in self._tensors if not tensor.input]
 
-        self.stream.synchronize()
+        # Synchronize the stream
+        cuda_assert(cudart.cudaStreamSynchronize(self._stream))
 
-    def _filter(self, outputs: Dict[str, Any], output_shape: Tuple[int, int], idx: int = 0) -> DetectInfo:
+    def _postprocess(self, outputs: Dict[str, np.ndarray], output_shape: Tuple[int, int], idx: Optional[int] = 0) -> DetectInfo:
         """
-        Filter and process the inference results.
+        Process the inference results.
 
         Args:
-            outputs (dict): Dictionary containing output tensors.
+            outputs (Dict[str, np.ndarray]): Dictionary containing output tensors.
             output_shape (Tuple[int, int]): output image shape.
-            idx (int, optional): Index of the batch. Defaults to 0.
+            idx (Optional[int], optional): Index of the batch. Defaults to 0.
 
         Returns:
             DetectInfo: Processed detection information.
@@ -140,7 +143,7 @@ class TRTYOLO:
         detection_scores = outputs['detection_scores'][idx, :num_detections]
         detection_classes = outputs['detection_classes'][idx, :num_detections]
 
-        detection_boxes = scale_boxes(detection_boxes, (self.height, self.width), output_shape)
+        detection_boxes = scale_boxes(detection_boxes, self._imgsz, output_shape)
 
         return DetectInfo(
             num=num_detections,
@@ -149,6 +152,46 @@ class TRTYOLO:
             classes=detection_classes,
         )
 
+    @property
+    def batch_size(self) -> int:
+        """
+        Get the batch size.
+
+        Returns:
+            int: The batch size used for inference.
+        """
+        return self._batch_size
+
+    @property
+    def imgsz(self) -> List[int]:
+        """
+        Get the image size.
+
+        Returns:
+            List[int]: A list containing the height and width of the input images.
+        """
+        return self._imgsz
+
+    @property
+    def dtype(self) -> np.dtype:
+        """
+        Get the data type of the tensor.
+
+        Returns:
+            np.dtype: The data type of the tensor.
+        """
+        return self._dtype
+
+    @property
+    def dynamic(self) -> bool:
+        """
+        Check if the tensor is dynamic.
+
+        Returns:
+            bool: True if the tensor is dynamic, False otherwise.
+        """
+        return self._dynamic
+
     def warmup(self, iters: int = 10) -> None:
         """
         Warm up the TensorRT engine by running a specified number of inference iterations.
@@ -156,21 +199,12 @@ class TRTYOLO:
         Args:
             iters (int, optional): Number of warm-up iterations. Defaults to 10.
         """
-        start_time_ns = time.perf_counter_ns()
+        start_time_ns = perf_counter_ns()
         for _ in range(iters):
             self._infer()
-        end_time_ns = time.perf_counter_ns()
+        end_time_ns = perf_counter_ns()
         elapsed_time_ms = (end_time_ns - start_time_ns) / 1e6
         print(f"warmup {iters} iters cost {elapsed_time_ms:.2f} ms.")
-
-    def input_spec(self) -> Tuple[Tuple[int, int, int, int], np.dtype]:
-        """
-        Get the input tensor specifications.
-
-        Returns:
-            Tuple[Tuple[int, int, int, int], np.dtype]: Shape and dtype of the input tensor.
-        """    
-        return self.inputs[0].shape, self.inputs[0].dtype
 
     def infer(self, batch: np.ndarray, batch_shape: List[Tuple[int, int]]) -> List[DetectInfo]:
         """
@@ -183,11 +217,19 @@ class TRTYOLO:
         Returns:
             List[DetectInfo]: List of processed detection information for each batch item.
         """      
-        np.copyto(self.inputs[0].host, batch)
+        for tensor in self._tensors:
+            if tensor.input:
+                tensor.memory.host = batch
+                tensor.shape = batch.shape
+                batch_size = batch.shape[0]
+            else:
+                tensor.shape[0] = batch_size
 
         # Run inference
         self._infer()
 
-        # Process the results
-        outputs = {tensor.name: tensor.host.reshape(tensor.shape) for tensor in self.outputs}
-        return [self._filter(outputs, shape, idx) for idx, shape in enumerate(batch_shape)]
+        # Get only the host outputs.
+        outputs = {tensor.name: tensor.memory.host[:np.prod(tensor.shape)].reshape(tensor.shape) for tensor in self._tensors if not tensor.input}
+
+        # Process the outputs
+        return [self._postprocess(outputs, shape, idx) for idx, shape in enumerate(batch_shape)]

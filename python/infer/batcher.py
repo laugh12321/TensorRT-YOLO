@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   batcher.py
-# Version :   1.0
+# Version :   2.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/02/27 15:57:54
@@ -24,11 +24,11 @@
 # ==============================================================================
 import random
 from pathlib import Path
-from typing import Union, Tuple, List, Iterator
+from typing import List, Union, Tuple, Iterator
+from concurrent.futures import ThreadPoolExecutor
 
 import cv2
 import numpy as np
-from concurrent.futures import ThreadPoolExecutor
 
 from python.utils import letterbox
 
@@ -41,17 +41,19 @@ class ImageBatcher:
 
     Args:
         input_path (str): Path to the directory containing images or a single image file.
-        shape (Tuple[int, int, int, int]): Shape of the input batch (NCHW format).
+        batch_size (int): Size of each batch.
+        imgsz (List[int]): Height and width dimensions of the input images.
         dtype (np.dtype): Data type of the input batch.
-        exact_batches (bool, optional): Whether to ensure exact batches. Defaults to False.
+        dynamic (bool): Whether the batch size is dynamic.
         shuffle_files (bool, optional): Whether to shuffle the image files. Defaults to False.
     """
     def __init__(
         self, 
         input_path: str, 
-        shape: Tuple[int, int, int, int], 
-        dtype: np.dtype, 
-        exact_batches: bool = False, 
+        batch_size: int, 
+        imgsz: List[int],
+        dtype: np.dtype,
+        dynamic: bool,
         shuffle_files: bool = False
     ) -> None:
         """
@@ -59,9 +61,10 @@ class ImageBatcher:
 
         Args:
             input_path (str): Path to the directory containing images or a single image file.
-            shape (Tuple[int, int, int, int]): Shape of the input batch (NCHW format).
+            batch_size (int): Size of each batch.
+            imgsz (List[int]): Height and width dimensions of the input images.
             dtype (np.dtype): Data type of the input batch.
-            exact_batches (bool, optional): Whether to ensure exact batches. Defaults to False.
+            dynamic (bool): Whether the batch size is dynamic.
             shuffle_files (bool, optional): Whether to shuffle the image files. Defaults to False.
         """
         self.images = self._find_images(Path(input_path), shuffle_files)
@@ -71,10 +74,9 @@ class ImageBatcher:
             raise ValueError(f"No valid image files found in {input_path}")
 
         self.dtype = dtype
-        self.shape = shape
-        self.batch_size = shape[0]
-        self._handle_exact_batches(exact_batches)
-        self.width, self.height = self._handle_tensor_shape()
+        self.dynamic = dynamic
+        self.batch_size = batch_size
+        self.height, self.width = imgsz
 
         # Subdivide the list of images into batches
         self.num_batches = 1 + int((self.num_images - 1) / self.batch_size)
@@ -89,7 +91,9 @@ class ImageBatcher:
         """
         for batch_images in self.batches:
             batch_shape = []
-            batch_data = np.zeros(self.shape, dtype=self.dtype)
+            batch_size = len(batch_images) if self.dynamic else self.batch_size
+            batch_data = np.zeros((batch_size, 3, self.height, self.width), dtype=self.dtype)
+
             with ThreadPoolExecutor(max_workers=len(batch_images)) as executor:
                 results = list(executor.map(self._preprocess_image, batch_images))
 
@@ -125,40 +129,6 @@ class ImageBatcher:
             raise ValueError(f"No image files found in {input_path}")
 
         return images
-
-    def _handle_exact_batches(self, exact_batches: bool) -> None:
-        """
-        Adjust the number of images to ensure exact batches.
-
-        Args:
-            exact_batches (bool): Whether to ensure exact batches.
-
-        Raises:
-            ValueError: If there are not enough images to create batches.
-        """        
-        if exact_batches:
-            self.num_images = self.batch_size * (self.num_images // self.batch_size)
-            if self.num_images < 1:
-                raise ValueError("Not enough images to create batches")
-            self.images = self.images[:self.num_images]
-
-    def _handle_tensor_shape(self) -> Tuple[np.int32, np.int32]:
-        """
-        Determine the width and height based on the input tensor shape.
-
-        Returns:
-            Tuple[int, int]: Width and height.
-        """        
-        width, height = -1, -1
-
-        if self.shape[1] == 3:
-            height = self.shape[2]
-            width = self.shape[3]
-        elif self.shape[3] == 3:
-            height = self.shape[1]
-            width = self.shape[2]
-
-        return width, height
 
     def _preprocess_image(self, image_path: Union[str, Path]) -> Tuple[np.ndarray, Tuple[int, int]]:
         """
