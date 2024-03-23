@@ -27,8 +27,8 @@ TensorRT-YOLO is an inference acceleration project that supports YOLOv5, YOLOv8,
 
 ## <div align="center">🛠️ Requirements</div>
 
-- Recommended CUDA version >= 11.4
-- Recommended TensorRT version >= 8.4
+- Recommended CUDA version >= 11.7
+- Recommended TensorRT version >= 8.6
 
 ## <div align="center">📦 Usage Guide</div>
 

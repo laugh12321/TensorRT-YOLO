@@ -27,8 +27,8 @@ TensorRT-YOLO 是一个支持 YOLOv5、YOLOv8、YOLOv9、PP-YOLOE 和 PP-YOLOE+ 
 
 ## <div align="center">🛠️ 环境要求</div>
 
-- 推荐 CUDA 版本 >= 11.4
-- 推荐 TensorRT 版本 >= 8.4
+- 推荐 CUDA 版本 >= 11.7
+- 推荐 TensorRT 版本 >= 8.6
 
 ## <div align="center">📦 使用教程</div>
 
