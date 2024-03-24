@@ -45,6 +45,7 @@ class ImageBatcher:
         imgsz (List[int]): Height and width dimensions of the input images.
         dtype (np.dtype): Data type of the input batch.
         dynamic (bool): Whether the batch size is dynamic.
+        exact_batches (bool, optional): Whether to ensure exact batches. Defaults to False.
         shuffle_files (bool, optional): Whether to shuffle the image files. Defaults to False.
     """
     def __init__(
@@ -54,6 +55,7 @@ class ImageBatcher:
         imgsz: List[int],
         dtype: np.dtype,
         dynamic: bool,
+        exact_batches: bool = False,
         shuffle_files: bool = False
     ) -> None:
         """
@@ -65,6 +67,7 @@ class ImageBatcher:
             imgsz (List[int]): Height and width dimensions of the input images.
             dtype (np.dtype): Data type of the input batch.
             dynamic (bool): Whether the batch size is dynamic.
+            exact_batches (bool, optional): Whether to ensure exact batches. Defaults to False.
             shuffle_files (bool, optional): Whether to shuffle the image files. Defaults to False.
         """
         self.images = self._find_images(Path(input_path), shuffle_files)
@@ -77,6 +80,7 @@ class ImageBatcher:
         self.dynamic = dynamic
         self.batch_size = batch_size
         self.height, self.width = imgsz
+        self._handle_exact_batches(exact_batches)
 
         # Subdivide the list of images into batches
         self.num_batches = 1 + int((self.num_images - 1) / self.batch_size)
@@ -102,6 +106,22 @@ class ImageBatcher:
                 batch_shape.append(shape)
 
             yield np.ascontiguousarray(batch_data), batch_images, batch_shape
+
+    def _handle_exact_batches(self, exact_batches: bool) -> None:
+        """
+        Adjust the number of images to ensure exact batches.
+
+        Args:
+            exact_batches (bool): Whether to ensure exact batches.
+
+        Raises:
+            ValueError: If there are not enough images to create batches.
+        """        
+        if exact_batches:
+            self.num_images = self.batch_size * (self.num_images // self.batch_size)
+            if self.num_images < 1:
+                raise ValueError("Not enough images to create batches")
+            self.images = self.images[:self.num_images]
 
     def _find_images(self, input_path: Path, shuffle_files: bool) -> None:
         """

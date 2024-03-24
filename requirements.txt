@@ -1,3 +1,4 @@
+easydict
 numpy<=1.23.5
 onnx
 onnxruntime
