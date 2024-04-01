@@ -1,10 +1,16 @@
 #pragma once
 
-#include <opencv2/opencv.hpp>
 #include <fstream>
-#include <vector>
+#include <iostream>
+#include <iomanip>
+#include <random>
 #include <string>
-#include <stdexcept>
+#include <tuple>
+#include <vector>
+#include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgcodecs.hpp>
 
 struct Box {
     float left, top, right, bottom;
@@ -75,7 +81,7 @@ inline std::vector<char> loadFile(const std::string& filePath) {
     return fileContent;
 }
 
-inline void visualize(cv::Mat& image, const DetectInfo& detectInfo) {
+inline void visualize(cv::Mat& image, const DetectInfo& detectInfo, std::vector<std::pair<std::string, cv::Scalar>>& labelColors) {
     cv::Mat mask = cv::Mat::zeros(image.size(), CV_8UC3);
 
     for (size_t i = 0; i < detectInfo.num; i++) {
@@ -85,7 +91,7 @@ inline void visualize(cv::Mat& image, const DetectInfo& detectInfo) {
 
         std::stringstream ss;
         ss << std::fixed << std::setprecision(2) << score;
-        std::string label_text = std::to_string(cls) + " " + ss.str();
+        std::string label_text = labelColors[cls].first + " " + ss.str();
 
         // Draw rectangle with corners
         int pad = std::min((box.right - box.left) / 6, (box.bottom - box.top) / 6);
@@ -100,22 +106,48 @@ inline void visualize(cv::Mat& image, const DetectInfo& detectInfo) {
             {cv::Point(box.right, box.bottom), cv::Point(box.right, box.bottom - pad)}
         };
         for (const auto& edge : edges) {
-            cv::line(image, edge.first, edge.second, cv::Scalar(0, 255, 0), 2, cv::LINE_AA);
+            cv::line(image, edge.first, edge.second, labelColors[cls].second, 2, cv::LINE_AA);
         }
 
         // Draw label text
         cv::Size label_size = cv::getTextSize(label_text, cv::FONT_HERSHEY_SIMPLEX, 0.6, 1, nullptr);
         cv::Point text_origin(box.left, box.top - label_size.height);
-        cv::rectangle(image, text_origin + cv::Point(0, label_size.height), text_origin + cv::Point(label_size.width, 0), cv::Scalar(0, 255, 0), -1);
+        cv::rectangle(image, text_origin + cv::Point(0, label_size.height), text_origin + cv::Point(label_size.width, 0), labelColors[cls].second, -1);
         cv::putText(image, label_text, text_origin + cv::Point(0, label_size.height), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
-        cv::rectangle(mask, text_origin + cv::Point(0, label_size.height), text_origin + cv::Point(label_size.width, 0), cv::Scalar(0, 255, 0), -1);
+        cv::rectangle(mask, text_origin + cv::Point(0, label_size.height), text_origin + cv::Point(label_size.width, 0), labelColors[cls].second, -1);
         cv::putText(mask, label_text, text_origin + cv::Point(0, label_size.height), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
 
         // Draw rectangle
-        cv::rectangle(image, cv::Point(box.left, box.top), cv::Point(box.right, box.bottom), cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
-        cv::rectangle(mask, cv::Point(box.left, box.top), cv::Point(box.right, box.bottom), cv::Scalar(0, 255, 0), -1);
+        cv::rectangle(image, cv::Point(box.left, box.top), cv::Point(box.right, box.bottom), labelColors[cls].second, 1, cv::LINE_AA);
+        cv::rectangle(mask, cv::Point(box.left, box.top), cv::Point(box.right, box.bottom), labelColors[cls].second, -1);
     }
 
     // Add weighted mask to image
     cv::addWeighted(image, 0.8, mask, 0.2, 0, image);
+}
+
+
+inline std::vector<std::pair<std::string, cv::Scalar>> generateLabelsWithColors(const std::string& labelsFile) {
+    std::vector<std::pair<std::string, cv::Scalar>> labelColorPairs;
+
+    auto generateRandomRgb = []() -> cv::Scalar {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<int> dis(0, 255);
+        return cv::Scalar(dis(gen), dis(gen), dis(gen));
+    };
+
+    std::ifstream file(labelsFile);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open labels file: " << labelsFile << std::endl;
+        return labelColorPairs;
+    }
+
+    std::string label;
+    while (std::getline(file, label)) {
+        labelColorPairs.push_back(std::make_pair(label, generateRandomRgb()));
+    }
+
+    file.close();
+    return labelColorPairs;
 }
