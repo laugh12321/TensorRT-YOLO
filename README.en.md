@@ -22,8 +22,8 @@ TensorRT-YOLO is an inference acceleration project that supports YOLOv5, YOLOv8,
 - Supports YOLOv5, YOLOv8, YOLOv9, PP-YOLOE, and PP-YOLOE+
 - Supports static and dynamic export to ONNX, as well as TensorRT inference
 - Integrated EfficientNMS TensorRT plugin for accelerated post-processing
-- Utilizes CUDA kernel functions for accelerated pre-processing (V1.0)
-- Supports inference in both C++ and Python (C++ implementation in progress)
+- Utilizes CUDA kernel functions for accelerated pre-processing
+- Supports inference in both C++ and Python
 
 ## <div align="center">🛠️ Requirements</div>
 
@@ -89,8 +89,19 @@ trtexec --onnx=model.onnx --saveEngine=model.engine --minShapes=images:1x3x640x6
 `detect.py` currently supports inference on a single image or batch inference on an entire directory. You can specify the inference data using the `--inputs` parameter. The results of the inference can be saved to a specified path using the `--output` parameter, with the default being `None` indicating no saving. For detailed command descriptions, please run `python detect.py -h`.
 
 ```bash
-python detect.py  -e model.engine -o output -i img.jpg                         # image
+python detect.py -e model.engine -o output -i img.jpg                         # image
                                                path/                           # directory
+```
+</details>
+
+<details>
+<summary>Inference using detect.cpp</summary>
+
+The commands for `detect.cpp` are consistent with those for `detect.py`. Here we use `xmake` for compilation.
+
+```bash
+detect -e model.engine -o output -i img.jpg                         # image
+                                     path/                           # directory
 ```
 </details>
 

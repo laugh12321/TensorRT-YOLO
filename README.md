@@ -22,8 +22,8 @@ TensorRT-YOLO 是一个支持 YOLOv5、YOLOv8、YOLOv9、PP-YOLOE 和 PP-YOLOE+ 
 - 支持 YOLOv5、YOLOv8、YOLOv9、PP-YOLOE 和 PP-YOLOE+
 - 支持 ONNX 静态、动态导出以及 TensorRT 推理
 - 集成 EfficientNMS TensorRT 插件加速后处理
-- 利用 CUDA 核函数加速前处理 (V1.0)
-- 支持 C++ 和 Python 推理（C++ 实现中）
+- 利用 CUDA 核函数加速前处理
+- 支持 C++ 和 Python 推理
 
 ## <div align="center">🛠️ 环境要求</div>
 
@@ -88,8 +88,19 @@ trtexec --onnx=model.onnx --saveEngine=model.engine --minShapes=images:1x3x640x6
 `detect.py` 目前支持对单张图片进行推理或批量推理整个目录，可通过 `--inputs` 参数指定推理数据。推理结果可使用 `--output` 参数指定保存路径，默认为 `None`，表示不保存。有关详细指令描述，请运行`python detect.py -h`查看。
 
 ```bash
-python detect.py  -e model.engine -o output -i img.jpg                         # image
+python detect.py -e model.engine -o output -i img.jpg                         # image
                                                path/                           # directory
+```
+</details>
+
+<details>
+<summary>使用 detect.cpp 推理</summary>
+
+`detect.cpp` 的指令与 `detect.py` 的指令保持一致。这里使用[xmake](https://xmake.io)进行编译。
+
+```bash
+detect -e model.engine -o output -i img.jpg                         # image
+                                     path/                           # directory
 ```
 </details>
 
