@@ -73,7 +73,6 @@ int main(int argc, char** argv) {
     } else {
         cuda_utils::GpuTimer gpuTimer;
         cuda_utils::CpuTimer<std::chrono::high_resolution_clock> cpuTimer;
-		std::vector<std::pair<std::string, cv::Scalar>> labelColors;
 
         auto imageFiles = getImagesInDirectory(inputPath);
         const size_t batchSize = engine->batchSize;
