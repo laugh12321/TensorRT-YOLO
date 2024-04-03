@@ -5,7 +5,7 @@
 
 [English](README.en.md) | 简体中文
 
-<div>
+</div>
 
 ## <div align="center">🚀 TensorRT YOLO</div>
 
