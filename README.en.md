@@ -1,4 +1,11 @@
+<div align="center">
+  <p>
+      <img width="100%" src="assets/logo.png"></a>
+  </p>
+
 English | [简体中文](README.md)
+
+<div>
 
 ## <div align="center">🚀 TensorRT YOLO</div>
 
