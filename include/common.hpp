@@ -1,47 +1,59 @@
 #pragma once
 
 #include <fstream>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
 #include <random>
 #include <string>
 #include <tuple>
 #include <vector>
-#include <opencv2/core.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgcodecs.hpp>
 
 struct Box {
     float left, top, right, bottom;
 };
 
 struct DetectInfo {
-    int num = 0;
-    std::vector<Box> boxes{};
-    std::vector<int> classes{};
+    int                num = 0;
+    std::vector<Box>   boxes{};
+    std::vector<int>   classes{};
     std::vector<float> scores{};
+
+    // Copy assignment operator
+    DetectInfo& operator=(const DetectInfo& other) {
+        if (this != &other) {
+            num     = other.num;
+            boxes   = other.boxes;
+            classes = other.classes;
+            scores  = other.scores;
+        }
+        return *this;
+    }
 };
 
 struct AffineTransform {
-    float matrix[6];
+    float    matrix[6];
     cv::Size lastSize;
 
     void calculate(const cv::Size& fromSize, const cv::Size& toSize) {
         if (fromSize == lastSize) return;
         lastSize = fromSize;
 
-        double scale = std::min(static_cast<double>(toSize.width) / fromSize.width,
-                                static_cast<double>(toSize.height) / fromSize.height);
+        double scale =
+            std::min(static_cast<double>(toSize.width) / fromSize.width,
+                     static_cast<double>(toSize.height) / fromSize.height);
         double offset = 0.5 * scale - 0.5;
 
-        double scaleFromWidth = -0.5 * scale * fromSize.width;
+        double scaleFromWidth  = -0.5 * scale * fromSize.width;
         double scaleFromHeight = -0.5 * scale * fromSize.height;
-        double halfToWidth = 0.5 * toSize.width;
-        double halfToHeight = 0.5 * toSize.height;
+        double halfToWidth     = 0.5 * toSize.width;
+        double halfToHeight    = 0.5 * toSize.height;
 
         double invD = (scale != 0.0) ? 1.0 / (scale * scale) : 0.0;
-        double A = scale * invD;
+        double A    = scale * invD;
 
         matrix[0] = A;
         matrix[1] = 0.0;
@@ -68,7 +80,7 @@ inline std::vector<char> loadFile(const std::string& filePath) {
     file.seekg(0, std::ios::beg);
 
     if (fileSize <= 0) {
-        return {}; // If file size is zero, return an empty vector
+        return {};  // If file size is zero, return an empty vector
     }
 
     std::vector<char> fileContent(fileSize);
@@ -81,12 +93,14 @@ inline std::vector<char> loadFile(const std::string& filePath) {
     return fileContent;
 }
 
-inline void visualize(cv::Mat& image, const DetectInfo& detectInfo, std::vector<std::pair<std::string, cv::Scalar>>& labelColors) {
+inline void visualize(
+    cv::Mat& image, const DetectInfo& detectInfo,
+    std::vector<std::pair<std::string, cv::Scalar>>& labelColors) {
     cv::Mat mask = cv::Mat::zeros(image.size(), CV_8UC3);
 
     for (size_t i = 0; i < detectInfo.num; i++) {
-        Box box = detectInfo.boxes[i];
-        int cls = detectInfo.classes[i];
+        Box   box   = detectInfo.boxes[i];
+        int   cls   = detectInfo.classes[i];
         float score = detectInfo.scores[i];
 
         std::stringstream ss;
@@ -94,45 +108,68 @@ inline void visualize(cv::Mat& image, const DetectInfo& detectInfo, std::vector<
         std::string label_text = labelColors[cls].first + " " + ss.str();
 
         // Draw rectangle with corners
-        int pad = std::min((box.right - box.left) / 6, (box.bottom - box.top) / 6);
+        int pad =
+            std::min((box.right - box.left) / 6, (box.bottom - box.top) / 6);
         std::vector<std::pair<cv::Point, cv::Point>> edges = {
-            {cv::Point(box.left, box.top), cv::Point(box.left + pad, box.top)},
-            {cv::Point(box.left, box.top), cv::Point(box.left, box.top + pad)},
-            {cv::Point(box.right, box.top), cv::Point(box.right - pad, box.top)},
-            {cv::Point(box.right, box.top), cv::Point(box.right, box.top + pad)},
-            {cv::Point(box.left, box.bottom), cv::Point(box.left + pad, box.bottom)},
-            {cv::Point(box.left, box.bottom), cv::Point(box.left, box.bottom - pad)},
-            {cv::Point(box.right, box.bottom), cv::Point(box.right - pad, box.bottom)},
-            {cv::Point(box.right, box.bottom), cv::Point(box.right, box.bottom - pad)}
+            { cv::Point(box.left,    box.top),cv::Point(box.left + pad,          box.top)                                              },
+            { cv::Point(box.left,    box.top),       cv::Point(box.left,    box.top + pad)},
+            {cv::Point(box.right,    box.top),
+             cv::Point(box.right - pad,          box.top)                                 },
+            {cv::Point(box.right,    box.top),
+             cv::Point(box.right,    box.top + pad)                                       },
+            { cv::Point(box.left, box.bottom),
+             cv::Point(box.left + pad,       box.bottom)                                  },
+            { cv::Point(box.left, box.bottom),
+             cv::Point(box.left, box.bottom - pad)                                        },
+            {cv::Point(box.right, box.bottom),
+             cv::Point(box.right - pad,       box.bottom)                                 },
+            {cv::Point(box.right, box.bottom),
+             cv::Point(box.right, box.bottom - pad)                                       }
         };
         for (const auto& edge : edges) {
-            cv::line(image, edge.first, edge.second, labelColors[cls].second, 2, cv::LINE_AA);
+            cv::line(image, edge.first, edge.second, labelColors[cls].second, 2,
+                     cv::LINE_AA);
         }
 
         // Draw label text
-        cv::Size label_size = cv::getTextSize(label_text, cv::FONT_HERSHEY_SIMPLEX, 0.6, 1, nullptr);
+        cv::Size label_size = cv::getTextSize(
+            label_text, cv::FONT_HERSHEY_SIMPLEX, 0.6, 1, nullptr);
         cv::Point text_origin(box.left, box.top - label_size.height);
-        cv::rectangle(image, text_origin + cv::Point(0, label_size.height), text_origin + cv::Point(label_size.width, 0), labelColors[cls].second, -1);
-        cv::putText(image, label_text, text_origin + cv::Point(0, label_size.height), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
-        cv::rectangle(mask, text_origin + cv::Point(0, label_size.height), text_origin + cv::Point(label_size.width, 0), labelColors[cls].second, -1);
-        cv::putText(mask, label_text, text_origin + cv::Point(0, label_size.height), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+        cv::rectangle(image, text_origin + cv::Point(0, label_size.height),
+                      text_origin + cv::Point(label_size.width, 0),
+                      labelColors[cls].second, -1);
+        cv::putText(image, label_text,
+                    text_origin + cv::Point(0, label_size.height),
+                    cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 255, 255), 1,
+                    cv::LINE_AA);
+        cv::rectangle(mask, text_origin + cv::Point(0, label_size.height),
+                      text_origin + cv::Point(label_size.width, 0),
+                      labelColors[cls].second, -1);
+        cv::putText(mask, label_text,
+                    text_origin + cv::Point(0, label_size.height),
+                    cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 255, 255), 1,
+                    cv::LINE_AA);
 
         // Draw rectangle
-        cv::rectangle(image, cv::Point(box.left, box.top), cv::Point(box.right, box.bottom), labelColors[cls].second, 1, cv::LINE_AA);
-        cv::rectangle(mask, cv::Point(box.left, box.top), cv::Point(box.right, box.bottom), labelColors[cls].second, -1);
+        cv::rectangle(image, cv::Point(box.left, box.top),
+                      cv::Point(box.right, box.bottom), labelColors[cls].second,
+                      1, cv::LINE_AA);
+        cv::rectangle(mask, cv::Point(box.left, box.top),
+                      cv::Point(box.right, box.bottom), labelColors[cls].second,
+                      -1);
     }
 
     // Add weighted mask to image
     cv::addWeighted(image, 0.8, mask, 0.2, 0, image);
 }
 
-
-inline std::vector<std::pair<std::string, cv::Scalar>> generateLabelsWithColors(const std::string& labelsFile) {
+inline std::vector<std::pair<std::string, cv::Scalar>> generateLabelsWithColors(
+    const std::string& labelsFile) {
     std::vector<std::pair<std::string, cv::Scalar>> labelColorPairs;
 
     auto generateRandomRgb = []() -> cv::Scalar {
-        std::random_device rd;
-        std::mt19937 gen(rd());
+        std::random_device                 rd;
+        std::mt19937                       gen(rd());
         std::uniform_int_distribution<int> dis(0, 255);
         return cv::Scalar(dis(gen), dis(gen), dis(gen));
     };
