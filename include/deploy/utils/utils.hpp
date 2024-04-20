@@ -3,6 +3,7 @@
 #include <cuda_runtime_api.h>
 
 #include <chrono>
+#include <opencv2/opencv.hpp>
 #include <string>
 #include <vector>
 
@@ -18,6 +19,17 @@ namespace deploy {
  * @throw std::runtime_error If there is an error opening or reading the file.
  */
 std::vector<char> LoadFile(const std::string& filePath);
+
+/**
+ * @brief Generates pairs of labels and corresponding colors.
+ *
+ * This function reads labels from a file and generates pairs of labels
+ * along with randomly generated colors in the form of OpenCV Scalars.
+ *
+ * @param label_file The path to the file containing the labels.
+ * @return A vector of pairs, where each pair consists of a label (string) and a color (cv::Scalar).
+ */
+DEPLOY_DECL std::vector<std::pair<std::string, cv::Scalar>> GenerateLabelColorParis(const std::string& label_file);
 
 /**
  * @brief Base class for timers.

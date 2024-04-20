@@ -3,16 +3,18 @@
 namespace deploy {
 
 void Visualize(cv::Mat& image, const DetectionResult& result,
-               const std::vector<std::string>& labels) {
+               const std::vector<std::pair<std::string, cv::Scalar>>& label_color_pairs) {
     cv::Mat mask = cv::Mat::zeros(image.size(), CV_8UC3);
     for (size_t i = 0; i < result.num; i++) {
-        Box   box   = result.boxes[i];
-        int   cls   = result.classes[i];
-        float score = result.scores[i];
+        Box         box   = result.boxes[i];
+        int         cls   = result.classes[i];
+        float       score = result.scores[i];
+        std::string label = label_color_pairs[cls].first;
+        cv::Scalar  color = label_color_pairs[cls].second;
 
         std::stringstream ss;
         ss << std::fixed << std::setprecision(2) << score;
-        std::string label_text = labels[cls] + " " + ss.str();
+        std::string label_text = label + " " + ss.str();
 
         // Draw rectangle with corners
         int pad =
@@ -22,7 +24,7 @@ void Visualize(cv::Mat& image, const DetectionResult& result,
             cv::Point(box.right, box.bottom), cv::Point(box.left, box.bottom)};
         for (size_t j = 0; j < corners.size(); j++) {
             cv::line(image, corners[j], corners[(j + 1) % corners.size()],
-                     cv::Scalar(0, 255, 0), 2, cv::LINE_AA);
+                     color, 2, cv::LINE_AA);
         }
 
         // Draw label text background
@@ -31,10 +33,10 @@ void Visualize(cv::Mat& image, const DetectionResult& result,
         cv::Point text_origin(box.left, box.top - label_size.height);
         cv::rectangle(image, text_origin + cv::Point(0, label_size.height),
                       text_origin + cv::Point(label_size.width, 0),
-                      cv::Scalar(0, 255, 0), -1);
+                      color, -1);
         cv::rectangle(mask, text_origin + cv::Point(0, label_size.height),
                       text_origin + cv::Point(label_size.width, 0),
-                      cv::Scalar(0, 255, 0), -1);
+                      color, -1);
 
         // Draw label text
         cv::putText(image, label_text,
@@ -48,10 +50,10 @@ void Visualize(cv::Mat& image, const DetectionResult& result,
 
         // Draw rectangle
         cv::rectangle(image, cv::Point(box.left, box.top),
-                      cv::Point(box.right, box.bottom), cv::Scalar(0, 255, 0),
+                      cv::Point(box.right, box.bottom), color,
                       1, cv::LINE_AA);
         cv::rectangle(mask, cv::Point(box.left, box.top),
-                      cv::Point(box.right, box.bottom), cv::Scalar(0, 255, 0),
+                      cv::Point(box.right, box.bottom), color,
                       -1);
     }
 

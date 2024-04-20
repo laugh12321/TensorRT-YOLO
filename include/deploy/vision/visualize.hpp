@@ -16,9 +16,9 @@ namespace deploy {
  *
  * @param image The input image.
  * @param result The detection result containing information about detected objects.
- * @param labels A vector of strings representing class labels.
+ * @param label_color_pairs A vector of pairs, where each pair consists of a label (string) and a color (cv::Scalar).
  */
-void DEPLOY_DECL Visualize(cv::Mat& image, const DetectionResult& result,
-                           const std::vector<std::string>& labels);
+DEPLOY_DECL void Visualize(cv::Mat& image, const DetectionResult& result,
+                           const std::vector<std::pair<std::string, cv::Scalar>>& label_color_pairs);
 
 }  // namespace deploy
