@@ -49,6 +49,6 @@ target("deploy")
     -- 添加TensorRT链接目录和链接库
     if has_config("tensorrt") then
         add_includedirs(path.join("$(tensorrt)", "include"))
-        add_linkdirs(path.join("$(tensorrt)", is_host("windows") and "lib" or "targets/x86_64-linux-gnu/lib"))
+        add_linkdirs(path.join("$(tensorrt)", "lib"))
         add_links("nvinfer", "nvinfer_plugin", "nvparsers", "nvonnxparser")
     end
