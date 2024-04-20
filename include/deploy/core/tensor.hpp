@@ -38,11 +38,6 @@ private:
     void ReallocDevice(int64_t bytes);
 
 public:
-    Tensor(const Tensor&)            = default; /**< Copy constructor */
-    Tensor(Tensor&&)                 = delete;  /**< Move constructor */
-    Tensor& operator=(const Tensor&) = default; /**< Copy assignment operator */
-    Tensor& operator=(Tensor&&)      = delete;  /**< Move assignment operator */
-
     /**
      * @brief Constructor.
      *
