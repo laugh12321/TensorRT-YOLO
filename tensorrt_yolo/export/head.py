@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*-coding:utf-8 -*-
 # ==============================================================================
 # Copyright (c) 2024 laugh12321 Authors. All Rights Reserved.
 #
@@ -26,10 +25,8 @@ import math
 from typing import Tuple
 
 import torch
-import torch.nn as nn
-from torch import Tensor, Value
-
-from ultralytics.nn.modules import Conv, DFL
+from torch import Tensor, Value, nn
+from ultralytics.nn.modules import DFL, Conv
 from ultralytics.utils.checks import check_version
 from ultralytics.utils.tal import dist2bbox, make_anchors
 from ultralytics.utils.torch_utils import make_divisible
@@ -51,7 +48,7 @@ class Efficient_TRT_NMS(torch.autograd.Function):
         box_coding: int = 1,
         background_class: int = -1,
         score_activation: int = 0,
-        plugin_version: str = '1'
+        plugin_version: str = '1',
     ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         batch_size, num_boxes, num_classes = scores.shape
         num_detections = torch.randint(0, max_output_boxes, (batch_size, 1), dtype=torch.int32)
@@ -72,7 +69,7 @@ class Efficient_TRT_NMS(torch.autograd.Function):
         box_coding: int = 1,
         background_class: int = -1,
         score_activation: int = 0,
-        plugin_version: str = '1'
+        plugin_version: str = '1',
     ) -> Tuple[Value, Value, Value, Value]:
         out = g.op(
             'TRT::EfficientNMS_TRT',
@@ -89,7 +86,6 @@ class Efficient_TRT_NMS(torch.autograd.Function):
         )
         num_detections, detection_boxes, detection_scores, detection_classes = out
         return num_detections, detection_boxes, detection_scores, detection_classes
-
 
 
 """
@@ -121,7 +117,7 @@ class Detectv5(nn.Module):
         self.inplace = inplace  # use inplace ops (e.g. slice assignment)
 
     def forward(self, x):
-        boxes, scores = [], [] # inference output
+        boxes, scores = [], []  # inference output
         for i in range(self.nl):
             x[i] = self.m[i](x[i])  # conv
             bs, _, ny, nx = x[i].shape  # x(bs,255,20,20) to x(bs,3,20,20,85)
@@ -140,7 +136,7 @@ class Detectv5(nn.Module):
             scores.append(score.view(bs, self.na * nx * ny, self.nc))
 
         return Efficient_TRT_NMS.apply(
-            torch.cat(boxes, 1), 
+            torch.cat(boxes, 1),
             torch.cat(scores, 1),
             self.iou_thres,
             self.conf_thres,
@@ -156,7 +152,6 @@ class Detectv5(nn.Module):
         grid = torch.stack((xv, yv), 2).expand(shape) - 0.5  # add grid offset, i.e. y = 2.0 * x - 0.5
         anchor_grid = (self.anchors[i] * self.stride[i]).view((1, self.na, 1, 1, 2)).expand(shape)
         return grid, anchor_grid
-
 
 
 """
@@ -187,9 +182,7 @@ class Detectv8(nn.Module):
         self.no = nc + self.reg_max * 4  # number of outputs per anchor
         self.stride = torch.zeros(self.nl)  # strides computed during build
         c2, c3 = max((16, ch[0] // 4, self.reg_max * 4)), max(ch[0], min(self.nc, 100))  # channels
-        self.cv2 = nn.ModuleList(
-            nn.Sequential(Conv(x, c2, 3), Conv(c2, c2, 3), nn.Conv2d(c2, 4 * self.reg_max, 1)) for x in ch
-        )
+        self.cv2 = nn.ModuleList(nn.Sequential(Conv(x, c2, 3), Conv(c2, c2, 3), nn.Conv2d(c2, 4 * self.reg_max, 1)) for x in ch)
         self.cv3 = nn.ModuleList(nn.Sequential(Conv(x, c3, 3), Conv(c3, c3, 3), nn.Conv2d(c3, self.nc, 1)) for x in ch)
         self.dfl = DFL(self.reg_max) if self.reg_max > 1 else nn.Identity()
 
@@ -212,7 +205,7 @@ class Detectv8(nn.Module):
 
         if self.export:
             return Efficient_TRT_NMS.apply(
-                torch.transpose(dbox, 1, 2), 
+                torch.transpose(dbox, 1, 2),
                 torch.transpose(cls.sigmoid(), 1, 2),
                 self.iou_thres,
                 self.conf_thres,
@@ -263,10 +256,8 @@ class Detectv9(nn.Module):
         self.stride = torch.zeros(self.nl)  # strides computed during build
 
         c2, c3 = max((ch[0] // 4, self.reg_max * 4, 16)), max((ch[0], min((self.nc * 2, 128))))  # channels
-        self.cv2 = nn.ModuleList(
-            nn.Sequential(Conv(x, c2, 3), Conv(c2, c2, 3), nn.Conv2d(c2, 4 * self.reg_max, 1)) for x in ch)
-        self.cv3 = nn.ModuleList(
-            nn.Sequential(Conv(x, c3, 3), Conv(c3, c3, 3), nn.Conv2d(c3, self.nc, 1)) for x in ch)
+        self.cv2 = nn.ModuleList(nn.Sequential(Conv(x, c2, 3), Conv(c2, c2, 3), nn.Conv2d(c2, 4 * self.reg_max, 1)) for x in ch)
+        self.cv3 = nn.ModuleList(nn.Sequential(Conv(x, c3, 3), Conv(c3, c3, 3), nn.Conv2d(c3, self.nc, 1)) for x in ch)
         self.dfl = DFL(self.reg_max) if self.reg_max > 1 else nn.Identity()
 
     def forward(self, x):
@@ -283,7 +274,7 @@ class Detectv9(nn.Module):
         dbox = dist2bbox(self.dfl(box), self.anchors.unsqueeze(0), xywh=True, dim=1) * self.strides
 
         return Efficient_TRT_NMS.apply(
-            dbox.transpose(1, 2), 
+            dbox.transpose(1, 2),
             cls.sigmoid().transpose(1, 2),
             self.iou_thres,
             self.conf_thres,
@@ -297,7 +288,7 @@ class Detectv9(nn.Module):
         # ncf = math.log(0.6 / (m.nc - 0.999999)) if cf is None else torch.log(cf / cf.sum())  # nominal class frequency
         for a, b, s in zip(m.cv2, m.cv3, m.stride):  # from
             a[-1].bias.data[:] = 1.0  # box
-            b[-1].bias.data[:m.nc] = math.log(5 / m.nc / (640 / s) ** 2)  # cls (5 objects and 80 classes per 640 image)
+            b[-1].bias.data[: m.nc] = math.log(5 / m.nc / (640 / s) ** 2)  # cls (5 objects and 80 classes per 640 image)
 
 
 class DDetect(nn.Module):
@@ -322,9 +313,9 @@ class DDetect(nn.Module):
 
         c2, c3 = make_divisible(max((ch[0] // 4, self.reg_max * 4, 16)), 4), max((ch[0], min((self.nc * 2, 128))))  # channels
         self.cv2 = nn.ModuleList(
-            nn.Sequential(Conv(x, c2, 3), Conv(c2, c2, 3, g=4), nn.Conv2d(c2, 4 * self.reg_max, 1, groups=4)) for x in ch)
-        self.cv3 = nn.ModuleList(
-            nn.Sequential(Conv(x, c3, 3), Conv(c3, c3, 3), nn.Conv2d(c3, self.nc, 1)) for x in ch)
+            nn.Sequential(Conv(x, c2, 3), Conv(c2, c2, 3, g=4), nn.Conv2d(c2, 4 * self.reg_max, 1, groups=4)) for x in ch
+        )
+        self.cv3 = nn.ModuleList(nn.Sequential(Conv(x, c3, 3), Conv(c3, c3, 3), nn.Conv2d(c3, self.nc, 1)) for x in ch)
         self.dfl = DFL(self.reg_max) if self.reg_max > 1 else nn.Identity()
 
     def forward(self, x):
@@ -341,7 +332,7 @@ class DDetect(nn.Module):
         dbox = dist2bbox(self.dfl(box), self.anchors.unsqueeze(0), xywh=True, dim=1) * self.strides
 
         return Efficient_TRT_NMS.apply(
-            dbox.transpose(1, 2), 
+            dbox.transpose(1, 2),
             cls.sigmoid().transpose(1, 2),
             self.iou_thres,
             self.conf_thres,
@@ -355,7 +346,7 @@ class DDetect(nn.Module):
         # ncf = math.log(0.6 / (m.nc - 0.999999)) if cf is None else torch.log(cf / cf.sum())  # nominal class frequency
         for a, b, s in zip(m.cv2, m.cv3, m.stride):  # from
             a[-1].bias.data[:] = 1.0  # box
-            b[-1].bias.data[:m.nc] = math.log(5 / m.nc / (640 / s) ** 2)  # cls (5 objects and 80 classes per 640 image)
+            b[-1].bias.data[: m.nc] = math.log(5 / m.nc / (640 / s) ** 2)  # cls (5 objects and 80 classes per 640 image)
 
 
 class DualDetect(nn.Module):
@@ -380,14 +371,10 @@ class DualDetect(nn.Module):
 
         c2, c3 = max((ch[0] // 4, self.reg_max * 4, 16)), max((ch[0], min((self.nc * 2, 128))))  # channels
         c4, c5 = max((ch[self.nl] // 4, self.reg_max * 4, 16)), max((ch[self.nl], min((self.nc * 2, 128))))  # channels
-        self.cv2 = nn.ModuleList(
-            nn.Sequential(Conv(x, c2, 3), Conv(c2, c2, 3), nn.Conv2d(c2, 4 * self.reg_max, 1)) for x in ch[:self.nl])
-        self.cv3 = nn.ModuleList(
-            nn.Sequential(Conv(x, c3, 3), Conv(c3, c3, 3), nn.Conv2d(c3, self.nc, 1)) for x in ch[:self.nl])
-        self.cv4 = nn.ModuleList(
-            nn.Sequential(Conv(x, c4, 3), Conv(c4, c4, 3), nn.Conv2d(c4, 4 * self.reg_max, 1)) for x in ch[self.nl:])
-        self.cv5 = nn.ModuleList(
-            nn.Sequential(Conv(x, c5, 3), Conv(c5, c5, 3), nn.Conv2d(c5, self.nc, 1)) for x in ch[self.nl:])
+        self.cv2 = nn.ModuleList(nn.Sequential(Conv(x, c2, 3), Conv(c2, c2, 3), nn.Conv2d(c2, 4 * self.reg_max, 1)) for x in ch[: self.nl])
+        self.cv3 = nn.ModuleList(nn.Sequential(Conv(x, c3, 3), Conv(c3, c3, 3), nn.Conv2d(c3, self.nc, 1)) for x in ch[: self.nl])
+        self.cv4 = nn.ModuleList(nn.Sequential(Conv(x, c4, 3), Conv(c4, c4, 3), nn.Conv2d(c4, 4 * self.reg_max, 1)) for x in ch[self.nl :])
+        self.cv5 = nn.ModuleList(nn.Sequential(Conv(x, c5, 3), Conv(c5, c5, 3), nn.Conv2d(c5, self.nc, 1)) for x in ch[self.nl :])
         self.dfl = DFL(self.reg_max)
         self.dfl2 = DFL(self.reg_max)
 
@@ -397,7 +384,7 @@ class DualDetect(nn.Module):
         d2 = []
         for i in range(self.nl):
             d1.append(torch.cat((self.cv2[i](x[i]), self.cv3[i](x[i])), 1))
-            d2.append(torch.cat((self.cv4[i](x[self.nl+i]), self.cv5[i](x[self.nl+i])), 1))
+            d2.append(torch.cat((self.cv4[i](x[self.nl + i]), self.cv5[i](x[self.nl + i])), 1))
         if self.training:
             return [d1, d2]
         elif self.dynamic or self.shape != shape:
@@ -412,7 +399,7 @@ class DualDetect(nn.Module):
         dbox = torch.cat((dbox1, dbox2), dim=2)
         cls = torch.cat((cls1.sigmoid(), cls2.sigmoid()), dim=2)
         return Efficient_TRT_NMS.apply(
-            dbox.transpose(1, 2), 
+            dbox.transpose(1, 2),
             cls.transpose(1, 2),
             self.iou_thres,
             self.conf_thres,
@@ -426,10 +413,10 @@ class DualDetect(nn.Module):
         # ncf = math.log(0.6 / (m.nc - 0.999999)) if cf is None else torch.log(cf / cf.sum())  # nominal class frequency
         for a, b, s in zip(m.cv2, m.cv3, m.stride):  # from
             a[-1].bias.data[:] = 1.0  # box
-            b[-1].bias.data[:m.nc] = math.log(5 / m.nc / (640 / s) ** 2)  # cls (5 objects and 80 classes per 640 image)
+            b[-1].bias.data[: m.nc] = math.log(5 / m.nc / (640 / s) ** 2)  # cls (5 objects and 80 classes per 640 image)
         for a, b, s in zip(m.cv4, m.cv5, m.stride):  # from
             a[-1].bias.data[:] = 1.0  # box
-            b[-1].bias.data[:m.nc] = math.log(5 / m.nc / (640 / s) ** 2)  # cls (5 objects and 80 classes per 640 image)
+            b[-1].bias.data[: m.nc] = math.log(5 / m.nc / (640 / s) ** 2)  # cls (5 objects and 80 classes per 640 image)
 
 
 class DualDDetect(nn.Module):
@@ -455,13 +442,13 @@ class DualDDetect(nn.Module):
         c2, c3 = make_divisible(max((ch[0] // 4, self.reg_max * 4, 16)), 4), max((ch[0], min((self.nc * 2, 128))))  # channels
         c4, c5 = make_divisible(max((ch[self.nl] // 4, self.reg_max * 4, 16)), 4), max((ch[self.nl], min((self.nc * 2, 128))))  # channels
         self.cv2 = nn.ModuleList(
-            nn.Sequential(Conv(x, c2, 3), Conv(c2, c2, 3, g=4), nn.Conv2d(c2, 4 * self.reg_max, 1, groups=4)) for x in ch[:self.nl])
-        self.cv3 = nn.ModuleList(
-            nn.Sequential(Conv(x, c3, 3), Conv(c3, c3, 3), nn.Conv2d(c3, self.nc, 1)) for x in ch[:self.nl])
+            nn.Sequential(Conv(x, c2, 3), Conv(c2, c2, 3, g=4), nn.Conv2d(c2, 4 * self.reg_max, 1, groups=4)) for x in ch[: self.nl]
+        )
+        self.cv3 = nn.ModuleList(nn.Sequential(Conv(x, c3, 3), Conv(c3, c3, 3), nn.Conv2d(c3, self.nc, 1)) for x in ch[: self.nl])
         self.cv4 = nn.ModuleList(
-            nn.Sequential(Conv(x, c4, 3), Conv(c4, c4, 3, g=4), nn.Conv2d(c4, 4 * self.reg_max, 1, groups=4)) for x in ch[self.nl:])
-        self.cv5 = nn.ModuleList(
-            nn.Sequential(Conv(x, c5, 3), Conv(c5, c5, 3), nn.Conv2d(c5, self.nc, 1)) for x in ch[self.nl:])
+            nn.Sequential(Conv(x, c4, 3), Conv(c4, c4, 3, g=4), nn.Conv2d(c4, 4 * self.reg_max, 1, groups=4)) for x in ch[self.nl :]
+        )
+        self.cv5 = nn.ModuleList(nn.Sequential(Conv(x, c5, 3), Conv(c5, c5, 3), nn.Conv2d(c5, self.nc, 1)) for x in ch[self.nl :])
         self.dfl = DFL(self.reg_max)
         self.dfl2 = DFL(self.reg_max)
 
@@ -471,7 +458,7 @@ class DualDDetect(nn.Module):
         d2 = []
         for i in range(self.nl):
             d1.append(torch.cat((self.cv2[i](x[i]), self.cv3[i](x[i])), 1))
-            d2.append(torch.cat((self.cv4[i](x[self.nl+i]), self.cv5[i](x[self.nl+i])), 1))
+            d2.append(torch.cat((self.cv4[i](x[self.nl + i]), self.cv5[i](x[self.nl + i])), 1))
         if self.training:
             return [d1, d2]
         elif self.dynamic or self.shape != shape:
@@ -486,7 +473,7 @@ class DualDDetect(nn.Module):
         dbox = torch.cat((dbox1, dbox2), dim=2)
         cls = torch.cat((cls1.sigmoid(), cls2.sigmoid()), dim=2)
         return Efficient_TRT_NMS.apply(
-            dbox.transpose(1, 2), 
+            dbox.transpose(1, 2),
             cls.transpose(1, 2),
             self.iou_thres,
             self.conf_thres,
@@ -500,7 +487,7 @@ class DualDDetect(nn.Module):
         # ncf = math.log(0.6 / (m.nc - 0.999999)) if cf is None else torch.log(cf / cf.sum())  # nominal class frequency
         for a, b, s in zip(m.cv2, m.cv3, m.stride):  # from
             a[-1].bias.data[:] = 1.0  # box
-            b[-1].bias.data[:m.nc] = math.log(5 / m.nc / (640 / s) ** 2)  # cls (5 objects and 80 classes per 640 image)
+            b[-1].bias.data[: m.nc] = math.log(5 / m.nc / (640 / s) ** 2)  # cls (5 objects and 80 classes per 640 image)
         for a, b, s in zip(m.cv4, m.cv5, m.stride):  # from
             a[-1].bias.data[:] = 1.0  # box
-            b[-1].bias.data[:m.nc] = math.log(5 / m.nc / (640 / s) ** 2)  # cls (5 objects and 80 classes per 640 image)
+            b[-1].bias.data[: m.nc] = math.log(5 / m.nc / (640 / s) ** 2)  # cls (5 objects and 80 classes per 640 image)

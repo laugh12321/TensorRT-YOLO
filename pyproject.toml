@@ -66,26 +66,110 @@ ignore-vcs = true
 [tool.hatch.build.targets.wheel]
 packages = ["tensorrt_yolo"]
 
-[tool.isort]
-line_length = 120
-multi_line_output = 0
-
-[tool.yapf]
-based_on_style = "pep8"
-spaces_before_comment = 2
-column_limit = 120
-coalesce_brackets = true
-spaces_around_power_operator = true
-space_between_ending_comma_and_closing_bracket = true
-split_before_closing_bracket = false
-split_before_first_argument = false
-
 [tool.ruff]
-line-length = 120
+line-length = 140
 
-[tool.docformatter]
-wrap-summaries = 120
-wrap-descriptions = 120
-in-place = true
-pre-summary-newline = true
-close-quotes-on-newline = true
+[tool.ruff.format]
+# Prevent change to double quotes by some users use ruff format
+quote-style = "preserve"
+
+[tool.ruff.lint]
+select = [
+    # Pycodestyle
+    "E",
+    "W",
+
+    # Pyflakes
+    "F",
+
+    # Isort
+    "I",
+
+    # Comprehensions
+    "C4",
+
+    # Debugger
+    "T100",
+
+    # Pyupgrade
+    "UP",
+
+    # NumPy-specific rules
+    "NPY001",
+    "NPY003",
+    "NPY201",
+
+    # Bugbear
+    "B002",
+    "B003",
+    "B004",
+    "B009",
+    "B010",
+    "B011",
+    "B012",
+    "B013",
+    "B014",
+    "B015",
+    "B016",
+    "B017",
+    "B018",
+    "B019",
+    "B020",
+    "B021",
+    "B022",
+    "B025",
+    "B029",
+    "B032",
+
+    # Pylint
+    "PLE",
+    "PLC0414",
+    "PLC3002",
+    "PLR0206",
+    "PLR0402",
+    "PLR1701",
+    "PLR1711",
+    "PLR1722",
+    "PLW3301",
+
+    # Pygrep-hooks
+    "PGH004",
+
+    # Ruff-specific rules
+    "RUF100",
+]
+unfixable = [
+    "NPY001"
+]
+ignore = [
+    # Whitespace before ‘,’, ‘;’, or ‘:’, it is not compatible with black
+    "E203",
+    # Module level import not at top of file
+    "E402",
+    # Line too long (82 > 79 characters)
+    "E501",
+    # Do not compare types, use `isinstance()`
+    "E721",
+    # Do not use bare except, specify exception instead
+    "E722",
+    # Do not assign a lambda expression, use a def
+    "E731",
+    # Do not use variables named ‘l’, ‘O’, or ‘I’
+    "E741",
+    # `name` may be undefined, or defined from star imports: `module`
+    "F405",
+    # Local variable name is assigned to but never used
+    "F841",
+    # It not met the "Explicit is better than implicit" rule
+    "UP015",
+    # It will cause the performance regression on python3.10
+    "UP038",
+]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+known-first-party = ["pydantic"]
+
+[tool.ruff.pyupgrade]
+# Preserve types, even if a file imports `from __future__ import annotations`.
+keep-runtime-typing = true

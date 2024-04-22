@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*-coding:utf-8 -*-
 # ==============================================================================
 # Copyright (c) 2024 laugh12321 Authors. All Rights Reserved.
 #
@@ -27,7 +26,7 @@ import ctypes
 import numpy as np
 from cuda import cudart
 
-__all__  = ['cuda_assert', 'HostDeviceMem']
+__all__ = ['cuda_assert', 'HostDeviceMem']
 
 
 def cuda_assert(cuda_ret):
@@ -43,6 +42,7 @@ def cuda_assert(cuda_ret):
 
 class HostDeviceMem:
     """Pair of host and device memory, where the host memory is wrapped in a numpy array"""
+
     def __init__(self, size: int, dtype: np.dtype):
         nbytes = size * dtype.itemsize
         host_mem = cuda_assert(cudart.cudaMallocHost(nbytes))
@@ -59,10 +59,8 @@ class HostDeviceMem:
     @host.setter
     def host(self, arr: np.ndarray):
         if arr.size > self.host.size:
-            raise ValueError(
-                f"Tried to fit an array of size {arr.size} into host memory of size {self.host.size}"
-            )
-        np.copyto(self.host[:arr.size], arr.flat, casting='safe')
+            raise ValueError(f"Tried to fit an array of size {arr.size} into host memory of size {self.host.size}")
+        np.copyto(self.host[: arr.size], arr.flat, casting='safe')
 
     @property
     def device(self) -> int:

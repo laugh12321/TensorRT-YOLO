@@ -7,11 +7,11 @@ from typing import Optional
 import onnx
 import torch
 from loguru import logger
-
-from .ppyoloe import PPYOLOEGraphSurgeon
-from .head import Detectv5, Detectv8, Detectv9, DDetect, DualDetect, DualDDetect
 from ultralytics import YOLO
 from ultralytics.utils.checks import check_imgsz
+
+from .head import DDetect, Detectv5, Detectv8, Detectv9, DualDDetect, DualDetect
+from .ppyoloe import PPYOLOEGraphSurgeon
 
 __all__ = ['torch_export', 'paddle_export']
 
@@ -19,15 +19,13 @@ __all__ = ['torch_export', 'paddle_export']
 warnings.filterwarnings("ignore")
 
 # For scripts
-logger.configure(
-    handlers=[dict(sink=sys.stdout, colorize=True, format="<level>[{level.name[0]}]</level> <level>{message}</level>")]
-)
+logger.configure(handlers=[{'sink': sys.stdout, 'colorize': True, 'format': "<level>[{level.name[0]}]</level> <level>{message}</level>"}])
 
 DETECT_HEADS = {
     "Detect": {"yolov5": Detectv5, "yolov8": Detectv8, "yolov9": Detectv9},
     "DDetect": {"yolov9": DDetect},
     "DualDetect": {"yolov9": DualDetect},
-    "DualDDetect": {"yolov9": DualDDetect}
+    "DualDDetect": {"yolov9": DualDDetect},
 }
 
 OUTPUT_NAMES = ['num_detections', 'detection_boxes', 'detection_scores', 'detection_classes']
@@ -46,9 +44,9 @@ def load_model(version: str, weights: str, repo_dir: Optional[str] = None) -> to
     Load YOLO model based on version and weights.
 
     Args:
-        version (str): YOLO version.
-        weights (str): Path to the model weights.
-        repo_dir (Optional[str], optional): Directory of the YOLO repository. Defaults to None.
+        version (str): YOLO version, e.g., yolov5, yolov8, yolov9.
+        weights (str): Path to YOLO weights for PyTorch.
+        repo_dir (Optional[str], optional): Directory containing the local repository (if using torch.hub.load). Defaults to None.
 
     Returns:
         torch.nn.Module: Loaded YOLO model.
@@ -67,17 +65,19 @@ def load_model(version: str, weights: str, repo_dir: Optional[str] = None) -> to
         return None
 
 
-def update_model(model: torch.nn.Module, version: str, dynamic: bool, max_boxes: int, iou_thres: float, conf_thres: float) -> torch.nn.Module:
+def update_model(
+    model: torch.nn.Module, version: str, dynamic: bool, max_boxes: int, iou_thres: float, conf_thres: float
+) -> torch.nn.Module:
     """
     Update YOLO model with dynamic settings.
 
     Args:
         model (torch.nn.Module): YOLO model to be updated.
-        version (str): YOLO version.
+        version (str): YOLO version, e.g., yolov5, yolov8, yolov9.
         dynamic (bool): Whether to use dynamic settings.
-        max_boxes (int): Maximum number of boxes.
-        iou_thres (float): IoU threshold.
-        conf_thres (float): Confidence threshold.
+        max_boxes (int): Maximum number of detections to output per image.
+        iou_thres (float): NMS IoU threshold for post-processing.
+        conf_thres (float): Confidence threshold for object detection.
 
     Returns:
         torch.nn.Module: Updated YOLO model.
@@ -100,7 +100,7 @@ def update_model(model: torch.nn.Module, version: str, dynamic: bool, max_boxes:
             detect_head.max_det = max_boxes
             detect_head.iou_thres = iou_thres
             detect_head.conf_thres = conf_thres
-            setattr(m, '__class__', detect_head)
+            m.__class__ = detect_head
 
     if not supported:
         logger.error(f"YOLO version '{version}' detect head not supported!")
@@ -109,24 +109,34 @@ def update_model(model: torch.nn.Module, version: str, dynamic: bool, max_boxes:
     return model
 
 
-def torch_export(weights: str, output: str, version: str, imgsz: Optional[int] = 640, batch: Optional[int] = 1, max_boxes: Optional[int] = 100,
-                 iou_thres: Optional[float] = 0.45, conf_thres: Optional[float] = 0.25, opset_version: Optional[int] = 11, simplify: Optional[bool] = True,
-                 repo_dir: Optional[str] = None) -> None:
+def torch_export(
+    weights: str,
+    output: str,
+    version: str,
+    imgsz: Optional[int] = 640,
+    batch: Optional[int] = 1,
+    max_boxes: Optional[int] = 100,
+    iou_thres: Optional[float] = 0.45,
+    conf_thres: Optional[float] = 0.25,
+    opset_version: Optional[int] = 11,
+    simplify: Optional[bool] = True,
+    repo_dir: Optional[str] = None,
+) -> None:
     """
     Export YOLO model to ONNX format using Torch.
 
     Args:
-        weights (str): Path to the model weights.
-        output (str): Output directory for the ONNX file.
-        version (str): YOLO version.
-        imgsz (int, optional): Input image size. Defaults to 640.
-        batch (int, optional): Batch size. Defaults to 1.
-        max_boxes (int, optional): Maximum number of boxes. Defaults to 100.
-        iou_thres (float, optional): IoU threshold. Defaults to 0.45.
-        conf_thres (float, optional): Confidence threshold. Defaults to 0.25.
-        opset_version (int, optional): ONNX opset version. Defaults to 11.
-        simplify (bool, optional): Whether to simplify the ONNX model. Defaults to True.
-        repo_dir (Optional[str], optional): Directory of the YOLO repository. Defaults to None.
+        weights (str): Path to YOLO weights for PyTorch.
+        output (str): Directory path to save the exported model.
+        version (str): YOLO version, e.g., yolov5, yolov8, yolov9.
+        imgsz (Optional[int], optional): Inference image size. Defaults to 640.
+        batch (Optional[int], optional): Total batch size for the model. Use -1 for dynamic batch size. Defaults to 1.
+        max_boxes (Optional[int], optional): Maximum number of detections to output per image. Defaults to 100.
+        iou_thres (Optional[float], optional): NMS IoU threshold for post-processing. Defaults to 0.45.
+        conf_thres (Optional[float], optional): Confidence threshold for object detection. Defaults to 0.25.
+        opset_version (Optional[int], optional): ONNX opset version. Defaults to 11.
+        simplify (Optional[bool], optional): Whether to simplify the exported ONNX. Defaults to True.
+        repo_dir (Optional[str], optional): Directory containing the local repository (if using torch.hub.load). Defaults to None.
     """
     model = load_model(version, weights, repo_dir)
     if model is None:
@@ -160,7 +170,7 @@ def torch_export(weights: str, output: str, version: str, imgsz: Optional[int] =
         opset_version=opset_version,
         input_names=['images'],
         output_names=OUTPUT_NAMES,
-        dynamic_axes=DYNAMIC if dynamic else None
+        dynamic_axes=DYNAMIC if dynamic else None,
     )
 
     model_onnx = onnx.load(f)
@@ -170,7 +180,7 @@ def torch_export(weights: str, output: str, version: str, imgsz: Optional[int] =
         'num_detections': ["batch" if dynamic else batch, 1],
         'detection_boxes': ["batch" if dynamic else batch, max_boxes, 4],
         'detection_scores': ["batch" if dynamic else batch, max_boxes],
-        'detection_classes': ["batch" if dynamic else batch, max_boxes]
+        'detection_classes': ["batch" if dynamic else batch, max_boxes],
     }
     for node in model_onnx.graph.output:
         for idx, dim in enumerate(node.type.tensor_type.shape.dim):
@@ -179,6 +189,7 @@ def torch_export(weights: str, output: str, version: str, imgsz: Optional[int] =
     if simplify:
         try:
             import onnxsim
+
             logger.info(f"simplifying with onnxsim {onnxsim.__version__}...")
             model_onnx, check = onnxsim.simplify(model_onnx)
             assert check, "Simplified ONNX model could not be validated"
@@ -190,23 +201,32 @@ def torch_export(weights: str, output: str, version: str, imgsz: Optional[int] =
     logger.info(f'Export complete, Results saved to {output}, Visualize at https://netron.app')
 
 
-def paddle_export(model_dir: str, model_filename: str, params_filename: str, output: str, batch: Optional[int] = 1,
-                  max_boxes: Optional[int] = 100,
-                  iou_thres: Optional[float] = 0.45, conf_thres: Optional[float] = 0.25, opset_version: Optional[int] = 11, simplify: Optional[bool] = True) -> None:
+def paddle_export(
+    model_dir: str,
+    model_filename: str,
+    params_filename: str,
+    output: str,
+    batch: Optional[int] = 1,
+    max_boxes: Optional[int] = 100,
+    iou_thres: Optional[float] = 0.45,
+    conf_thres: Optional[float] = 0.25,
+    opset_version: Optional[int] = 11,
+    simplify: Optional[bool] = True,
+) -> None:
     """
     Export YOLO model to ONNX format using PaddleDetection.
 
     Args:
-        model_dir (str): Path of directory saved PaddleDetection PP-YOLOE model.
-        model_filename (str): The PP-YOLOE model file name.
-        params_filename (str): The PP-YOLOE parameters file name.
-        output (str): Output directory for the ONNX file.
-        batch (int, optional): Batch size. Defaults to 1.
-        max_boxes (int, optional): Maximum number of boxes. Defaults to 100.
-        iou_thres (float, optional): IoU threshold. Defaults to 0.45.
-        conf_thres (float, optional): Confidence threshold. Defaults to 0.25.
-        opset_version (int, optional): ONNX opset version. Defaults to 11.
-        simplify (bool, optional): Whether to simplify the ONNX model. Defaults to True.
+        model_dir (str): Path to the directory containing the PaddleDetection PP-YOLOE model.
+        model_filename (str): The filename of the PP-YOLOE model.
+        params_filename (str): The filename of the PP-YOLOE parameters.
+        output (str): Directory path to save the exported model.
+        batch (Optional[int], optional): Total batch size for the model. Use -1 for dynamic batch size. Defaults to 1.
+        max_boxes (Optional[int], optional): Maximum number of detections to output per image. Defaults to 100.
+        iou_thres (Optional[float], optional): NMS IoU threshold for post-processing. Defaults to 0.45.
+        conf_thres (Optional[float], optional): Confidence threshold for object detection. Defaults to 0.25.
+        opset_version (Optional[int], optional): ONNX opset version. Defaults to 11.
+        simplify (Optional[bool], optional): Whether to simplify the exported ONNX. Defaults to True.
     """
 
     output = Path(output)
@@ -221,15 +241,11 @@ def paddle_export(model_dir: str, model_filename: str, params_filename: str, out
         opset=opset_version,
         batch_size=1 if batch <= 0 else batch,
         dynamic=batch <= 0,
-        simplify=simplify
+        simplify=simplify,
     )
 
     # Register the `EfficientNMS_TRT` into the graph.
-    ppyoloe_gs.register_nms(
-        score_thresh=conf_thres,
-        nms_thresh=iou_thres,
-        detections_per_img=max_boxes
-    )
+    ppyoloe_gs.register_nms(score_thresh=conf_thres, nms_thresh=iou_thres, detections_per_img=max_boxes)
 
     # Save the exported ONNX models.
     ppyoloe_gs.save(f)

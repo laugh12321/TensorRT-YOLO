@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*-coding:utf-8 -*-
 # ==============================================================================
 # Copyright (c) 2024 laugh12321 Authors. All Rights Reserved.
 #
@@ -23,9 +22,9 @@
 # Desc    :   Image Batcher.
 # ==============================================================================
 import random
-from pathlib import Path
-from typing import List, Union, Tuple, Iterator
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from typing import Iterator, List, Tuple, Union
 
 import cv2
 import numpy as np
@@ -48,15 +47,16 @@ class ImageBatcher:
         exact_batches (bool, optional): Whether to ensure exact batches. Defaults to False.
         shuffle_files (bool, optional): Whether to shuffle the image files. Defaults to False.
     """
+
     def __init__(
-        self, 
-        input_path: str, 
-        batch_size: int, 
+        self,
+        input_path: str,
+        batch_size: int,
         imgsz: List[int],
         dtype: np.dtype,
         dynamic: bool,
         exact_batches: bool = False,
-        shuffle_files: bool = False
+        shuffle_files: bool = False,
     ) -> None:
         """
         Initialize the ImageBatcher instance.
@@ -84,7 +84,7 @@ class ImageBatcher:
 
         # Subdivide the list of images into batches
         self.num_batches = 1 + int((self.num_images - 1) / self.batch_size)
-        self.batches = [self.images[i * self.batch_size: (i + 1) * self.batch_size] for i in range(self.num_batches)]
+        self.batches = [self.images[i * self.batch_size : (i + 1) * self.batch_size] for i in range(self.num_batches)]
 
     def __iter__(self) -> Iterator[Tuple[np.ndarray, List[Union[str, Path]], List[Tuple[int, int]]]]:
         """
@@ -116,12 +116,12 @@ class ImageBatcher:
 
         Raises:
             ValueError: If there are not enough images to create batches.
-        """        
+        """
         if exact_batches:
             self.num_images = self.batch_size * (self.num_images // self.batch_size)
             if self.num_images < 1:
                 raise ValueError("Not enough images to create batches")
-            self.images = self.images[:self.num_images]
+            self.images = self.images[: self.num_images]
 
     def _find_images(self, input_path: Path, shuffle_files: bool) -> None:
         """
@@ -133,7 +133,7 @@ class ImageBatcher:
 
         Returns:
             List[Path]: List of image file paths.
-        """      
+        """
         if not input_path.exists():
             raise ValueError(f"Directory not found: {input_path}")
 
@@ -165,10 +165,10 @@ class ImageBatcher:
 
         # Resize and pad the image
         image, shape = letterbox(image, (self.height, self.width))
-        
+
         # Convert color format and normalize pixel values
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB).astype(self.dtype) / 255.0
-        
+
         # Transpose the image to CHW format
         image = np.transpose(image, (2, 0, 1))
 

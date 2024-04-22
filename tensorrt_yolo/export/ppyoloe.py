@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*-coding:utf-8 -*-
 # ==============================================================================
 # Copyright (c) 2024 laugh12321 Authors. All Rights Reserved.
 #
@@ -26,6 +25,7 @@
 This code is based on the following repository:
     - https://github.com/zhiqwang/yolort/blob/main/yolort/relay/trt_graphsurgeon.py
 """
+
 from collections import OrderedDict
 from pathlib import Path
 
@@ -68,8 +68,7 @@ class PPYOLOEGraphSurgeon:
         try:
             from paddle2onnx.command import c_paddle_to_onnx
         except Exception as e:
-            logger.exception('paddle2onnx not found, plaese install paddle2onnx.'
-                        'for example: `pip install paddle2onnx`.')
+            logger.exception('paddle2onnx not found, plaese install paddle2onnx.' 'for example: `pip install paddle2onnx`.')
         model_dir = Path(model_dir)
 
         # Validate model directory
@@ -83,15 +82,14 @@ class PPYOLOEGraphSurgeon:
             opset_version=opset,
             export_fp16_model=False,
             auto_upgrade_opset=True,
-            enable_onnx_checker=True
+            enable_onnx_checker=True,
         )
 
         if not dynamic:
             try:
                 import paddle2onnx.paddle2onnx_cpp2py_export as c_p2o
             except Exception as e:
-                logger.exception('paddle2onnx not found, plaese install paddle2onnx.'
-                            'for example: `pip install paddle2onnx`.')
+                logger.exception('paddle2onnx not found, plaese install paddle2onnx.' 'for example: `pip install paddle2onnx`.')
 
             # Use YOLOTRTInference to modify an existed ONNX graph.
             self.graph = gs.import_onnx(onnx.load(onnx_path))
@@ -161,13 +159,18 @@ class PPYOLOEGraphSurgeon:
                 break
 
     def _process(self) -> None:
-
         # Find Mul node
         mul_node = next((node.i(0) for node in self.graph.nodes if node.op == 'Div' and node.i(0).op == 'Mul'), None)
 
         # Find Concat node
-        concat_node = next((node for node in self.graph.nodes if node.op == 'Concat' and len(node.inputs) == 3
-                            and all(node.i(idx).op == 'Reshape' for idx in range(3))), None)
+        concat_node = next(
+            (
+                node
+                for node in self.graph.nodes
+                if node.op == 'Concat' and len(node.inputs) == 3 and all(node.i(idx).op == 'Reshape' for idx in range(3))
+            ),
+            None,
+        )
 
         # Ensure Mul and Concat nodes are found
         assert mul_node is not None, "Mul node not found."
@@ -176,7 +179,9 @@ class PPYOLOEGraphSurgeon:
         # Extract relevant information from nodes
         anchors = int(mul_node.inputs[1].shape[0])
         classes = int(concat_node.i(0).inputs[1].values[1])
-        sum_anchors = int(concat_node.i(0).inputs[1].values[2] + concat_node.i(1).inputs[1].values[2] + concat_node.i(2).inputs[1].values[2])
+        sum_anchors = int(
+            concat_node.i(0).inputs[1].values[2] + concat_node.i(1).inputs[1].values[2] + concat_node.i(2).inputs[1].values[2]
+        )
 
         # Check equality condition
         assert anchors == sum_anchors, f"{mul_node.inputs[1].name}.shape[0] must equal the sum of values[2] from the three Concat nodes."
@@ -184,10 +189,7 @@ class PPYOLOEGraphSurgeon:
         # Create a new variable for 'scores' and transpose it
         scores = gs.Variable(name='scores', shape=[self.batch_size, anchors, classes], dtype=np.float32)
         self.graph.layer(
-            op='Transpose', name='last.Transpose',
-            inputs=[concat_node.outputs[0]],
-            outputs=[scores],
-            attrs=OrderedDict(perm=[0, 2, 1])
+            op='Transpose', name='last.Transpose', inputs=[concat_node.outputs[0]], outputs=[scores], attrs=OrderedDict(perm=[0, 2, 1])
         )
         self.graph.inputs[0].name = 'images'
         self.graph.inputs = [self.graph.inputs[0]]
@@ -206,6 +208,7 @@ class PPYOLOEGraphSurgeon:
         if self.simplify:
             try:
                 import onnxsim
+
                 logger.info(f"simplifying with onnxsim {onnxsim.__version__}...")
                 model_onnx, check = onnxsim.simplify(model_onnx)
                 assert check, "Simplified ONNX model could not be validated"
@@ -277,10 +280,10 @@ class PPYOLOEGraphSurgeon:
         # Create the NMS Plugin node with the selected inputs. The outputs of the node will also
         # become the final outputs of the graph.
         self.graph.layer(
-            op="EfficientNMS_TRT", 
-            name="EfficientNMS_TRT", 
-            inputs=self.graph.outputs, 
-            outputs=op_outputs, 
+            op="EfficientNMS_TRT",
+            name="EfficientNMS_TRT",
+            inputs=self.graph.outputs,
+            outputs=op_outputs,
             attrs=attrs,
         )
 

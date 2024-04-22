@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*-coding:utf-8 -*-
 # ==============================================================================
 # Copyright (c) 2024 laugh12321 Authors. All Rights Reserved.
 #
@@ -22,8 +21,8 @@
 # Date    :   2024/01/21 14:08:33
 # Desc    :   Defines data classes.
 # ==============================================================================
-from typing import List, Tuple, Union
 from dataclasses import dataclass
+from typing import List, Tuple, Union
 
 import numpy as np
 
@@ -46,6 +45,7 @@ class TensorInfo:
     Note:
         HostDeviceMem is a placeholder for the type of memory allocation object.
     """
+
     name: str
     input: bool
     shape: Tuple[int]
@@ -63,6 +63,7 @@ class DetectInfo:
         scores (Union[List, np.ndarray]): The confidence scores of the detections.
         classes (Union[List, np.ndarray]): The class indices of the detections.
     """
+
     num: int
     boxes: Union[List, np.ndarray]
     scores: Union[List, np.ndarray]

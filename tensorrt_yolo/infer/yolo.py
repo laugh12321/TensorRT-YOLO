@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*-coding:utf-8 -*-
 # ==============================================================================
 # Copyright (c) 2024 laugh12321 Authors. All Rights Reserved.
 #
@@ -23,19 +22,19 @@
 # Desc    :   CUDA-Python Inference.
 # ==============================================================================
 from time import perf_counter_ns
-from typing import List, Dict, Tuple, Optional
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import tensorrt as trt
 from cuda import cudart
 from loguru import logger
-from polygraphy.backend.trt import EngineFromBytes
 from polygraphy.backend.common import BytesFromPath
-from polygraphy.util import is_shape_dynamic, invoke_if_callable
+from polygraphy.backend.trt import EngineFromBytes
+from polygraphy.util import invoke_if_callable, is_shape_dynamic
 
-from .common import cuda_assert, HostDeviceMem
-from .structs import DetectInfo, TensorInfo
+from .common import HostDeviceMem, cuda_assert
 from .general import scale_boxes
+from .structs import DetectInfo, TensorInfo
 
 __all__ = ['TRTYOLO']
 
@@ -45,6 +44,10 @@ __all__ = ['TRTYOLO']
 def allocate_buffers(engine: trt.ICudaEngine):
     tensors = []
     stream = cuda_assert(cudart.cudaStreamCreate())
+    dynamic = False  # Initialize dynamic flag
+    batch = 1  # Initialize batch size
+    input_dtype = None
+
     for binding in engine:
         # get_tensor_profile_shape returns (min_shape, optimal_shape, max_shape)
         # Pick out the max shape to allocate enough memory for the binding.
@@ -52,16 +55,19 @@ def allocate_buffers(engine: trt.ICudaEngine):
         shape = engine.get_tensor_shape(binding)
         if dynamic := is_shape_dynamic(shape):
             if input:
+                # Get the maximum profile shape
                 shape = engine.get_tensor_profile_shape(binding, 0)[-1]
+                batch = shape[0]  # Set batch size
             else:
-                shape[0] = batch
+                # Assuming batch size has already been set
+                shape = shape[1:]
 
         size = trt.volume(shape)
         dtype = np.dtype(trt.nptype(engine.get_tensor_dtype(binding)))
 
         if input:
             input_dtype = dtype
-            batch, _, *imgsz = shape
+            _, *imgsz = shape
 
         # Allocate host and device buffers
         bindingMemory = HostDeviceMem(size, dtype)
@@ -75,7 +81,7 @@ def allocate_buffers(engine: trt.ICudaEngine):
                 memory=bindingMemory,
             )
         )
-        
+
     return tensors, dynamic, stream, batch, imgsz, input_dtype
 
 
@@ -86,6 +92,7 @@ class TRTYOLO:
     Args:
         engine_path (str): Path to the TensorRT engine file.
     """
+
     def __init__(self, engine_path: str) -> None:
         """
         Initialize the TRTYOLO instance.
@@ -111,7 +118,11 @@ class TRTYOLO:
         """
         # Transfer input data to the GPU.
         kind = cudart.cudaMemcpyKind.cudaMemcpyHostToDevice
-        [cuda_assert(cudart.cudaMemcpyAsync(tensor.memory.device, tensor.memory.host, tensor.memory.nbytes, kind, self._stream)) for tensor in self._tensors if tensor.input]
+        [
+            cuda_assert(cudart.cudaMemcpyAsync(tensor.memory.device, tensor.memory.host, tensor.memory.nbytes, kind, self._stream))
+            for tensor in self._tensors
+            if tensor.input
+        ]
 
         # Run inference.
         with self._engine.create_execution_context() as context:
@@ -123,7 +134,11 @@ class TRTYOLO:
 
         # Transfer predictions back from the GPU.
         kind = cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost
-        [cuda_assert(cudart.cudaMemcpyAsync(tensor.memory.host, tensor.memory.device, tensor.memory.nbytes, kind, self._stream)) for tensor in self._tensors if not tensor.input]
+        [
+            cuda_assert(cudart.cudaMemcpyAsync(tensor.memory.host, tensor.memory.device, tensor.memory.nbytes, kind, self._stream))
+            for tensor in self._tensors
+            if not tensor.input
+        ]
 
         # Synchronize the stream
         cuda_assert(cudart.cudaStreamSynchronize(self._stream))
@@ -218,7 +233,7 @@ class TRTYOLO:
 
         Returns:
             List[DetectInfo]: List of processed detection information for each batch item.
-        """      
+        """
         for tensor in self._tensors:
             if tensor.input:
                 tensor.memory.host = batch
@@ -231,7 +246,9 @@ class TRTYOLO:
         self._infer()
 
         # Get only the host outputs.
-        outputs = {tensor.name: tensor.memory.host[:np.prod(tensor.shape)].reshape(tensor.shape) for tensor in self._tensors if not tensor.input}
+        outputs = {
+            tensor.name: tensor.memory.host[: np.prod(tensor.shape)].reshape(tensor.shape) for tensor in self._tensors if not tensor.input
+        }
 
         # Process the outputs
         return [self._postprocess(outputs, shape, idx) for idx, shape in enumerate(batch_shape)]

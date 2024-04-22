@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*-coding:utf-8 -*-
 # ==============================================================================
 # Copyright (c) 2024 laugh12321 Authors. All Rights Reserved.
 #
@@ -23,7 +22,7 @@
 # Desc    :   General utils.
 # ==============================================================================
 import random
-from typing import Tuple, List, Union
+from typing import List, Tuple, Union
 
 import cv2
 import numpy as np
@@ -43,6 +42,7 @@ def generate_labels_with_colors(labels_file: str) -> List[Tuple[str, Tuple[int, 
     Returns:
         List[Tuple[str, Tuple[int, int, int]]]: List of label-color tuples.
     """
+
     def generate_random_rgb() -> Tuple[int, int, int]:
         """
         Generate a random RGB color tuple.
@@ -56,7 +56,9 @@ def generate_labels_with_colors(labels_file: str) -> List[Tuple[str, Tuple[int, 
         return [(label.strip(), generate_random_rgb()) for label in f]
 
 
-def letterbox(image: np.ndarray, new_shape: Union[Tuple[int, int], int], color: Tuple[int, int, int] = (114, 114, 114)) -> Tuple[np.ndarray, Tuple[int, int]]:
+def letterbox(
+    image: np.ndarray, new_shape: Union[Tuple[int, int], int], color: Tuple[int, int, int] = (114, 114, 114)
+) -> Tuple[np.ndarray, Tuple[int, int]]:
     """
     Resizes and pads the input image to the specified new shape.
 
@@ -69,7 +71,7 @@ def letterbox(image: np.ndarray, new_shape: Union[Tuple[int, int], int], color: 
         Tuple[np.ndarray, Tuple[int, int]]: Resized image, image origal shape.
     """
     shape = image.shape[:2]  # Current shape [height, width]
-    
+
     # If new_shape is an integer, convert it to a tuple
     if isinstance(new_shape, int):
         new_shape = (new_shape, new_shape)
@@ -87,7 +89,7 @@ def letterbox(image: np.ndarray, new_shape: Union[Tuple[int, int], int], color: 
 
     top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
     left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
-    
+
     # Add border to the image for padding
     image = cv2.copyMakeBorder(image, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
 
@@ -143,14 +145,14 @@ def visualize_detections(image_path: str, output_path: str, det_info: DetectInfo
         # Draw rectangle with corners
         pad = min(int((box[2] - box[0]) / 6), int((box[3] - box[1]) / 6))
         points = [
-            ((box[0], box[1]), (box[0] + pad, box[1])), 
-            ((box[0], box[1]), (box[0], box[1] + pad)), 
-            ((box[2], box[1]), (box[2] - pad, box[1])), 
-            ((box[2], box[1]), (box[2], box[1] + pad)), 
-            ((box[0], box[3]), (box[0] + pad, box[3])), 
-            ((box[0], box[3]), (box[0], box[3] - pad)), 
-            ((box[2], box[3]), (box[2] - pad, box[3])), 
-            ((box[2], box[3]), (box[2], box[3] - pad))
+            ((box[0], box[1]), (box[0] + pad, box[1])),
+            ((box[0], box[1]), (box[0], box[1] + pad)),
+            ((box[2], box[1]), (box[2] - pad, box[1])),
+            ((box[2], box[1]), (box[2], box[1] + pad)),
+            ((box[0], box[3]), (box[0] + pad, box[3])),
+            ((box[0], box[3]), (box[0], box[3] - pad)),
+            ((box[2], box[3]), (box[2] - pad, box[3])),
+            ((box[2], box[3]), (box[2], box[3] - pad)),
         ]
         for corner in points:
             cv2.line(image, *corner, color, 2, cv2.LINE_AA)
