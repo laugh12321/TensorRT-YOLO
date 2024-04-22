@@ -30,7 +30,7 @@ from concurrent.futures import ThreadPoolExecutor
 import cv2
 import numpy as np
 
-from python.utils import letterbox
+from .general import letterbox
 
 __all__ = ['ImageBatcher']
 

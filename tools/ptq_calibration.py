@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   ptq_calibration.py
-# Version :   1.0
+# Version :   2.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/03/24 17:48:00
@@ -37,7 +37,7 @@ import numpy as np
 from typing import Iterator, Dict, Any
 from easydict import EasyDict as edict
 
-from python.infer import ImageBatcher
+from tensorrt_yolo import ImageBatcher
 
 
 with open(ROOT / "calibration.yaml", "r") as file:

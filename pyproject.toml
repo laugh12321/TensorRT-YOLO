@@ -1,0 +1,91 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# Project settings -----------------------------------------------------------------------------------------------------
+[project]
+name = "tensorrt_yolo"
+version = "3.0.0"
+description = "TensorRT-YOLO: Support YOLOv5, YOLOv8, YOLOv9, PP-YOLOE using TensorRT acceleration with EfficientNMS!"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+keywords = ["machine-learning", "deep-learning", "computer-vision", "ML", "DL", "AI", "YOLO", "YOLOv5", "YOLOv8", "YOLOv9", "PP-YOLOE", "TensorRT", "CUDA", "detection", "ONNX", "EfficientNMS"]
+authors = [
+    { name="laugh12321", email="laugh12321@vip.qq.com" }
+]
+maintainers = [
+    { name = "laugh12321" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+]
+
+# Required dependencies ------------------------------------------------------------------------------------------------
+dependencies = [
+    "cuda-python", # infer
+    "loguru",
+    "numpy==1.23.5; platform_machine == 'aarch64'", # fix error: `np.bool` was a deprecated alias for the builtin `bool` when using TensorRT models on NVIDIA Jetson
+    "onnx>=1.12.0", # export
+    # "onnx-graphsurgeon", # export
+    "onnxruntime", # export
+    "onnxsim", # export
+    "polygraphy", # infer
+    "rich_click", # cli
+    # "tensorrt", # infer
+    "ultralytics", # export
+]
+
+[project.urls]
+"Bug Reports" = "https://github.com/laugh12321/TensorRT-YOLO/issues"
+"Funding" = "https://github.com/laugh12321"
+"Source" = "https://github.com/laugh12321/TensorRT-YOLO"
+
+[project.scripts]
+trtyolo = "tensorrt_yolo:trtyolo"
+
+# Tools settings -------------------------------------------------------------------------------------------------------
+[tool.hatch.build.targets.sdist]
+ignore-vcs = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["tensorrt_yolo"]
+
+[tool.isort]
+line_length = 120
+multi_line_output = 0
+
+[tool.yapf]
+based_on_style = "pep8"
+spaces_before_comment = 2
+column_limit = 120
+coalesce_brackets = true
+spaces_around_power_operator = true
+space_between_ending_comma_and_closing_bracket = true
+split_before_closing_bracket = false
+split_before_first_argument = false
+
+[tool.ruff]
+line-length = 120
+
+[tool.docformatter]
+wrap-summaries = 120
+wrap-descriptions = 120
+in-place = true
+pre-summary-newline = true
+close-quotes-on-newline = true

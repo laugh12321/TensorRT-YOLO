@@ -28,12 +28,14 @@ from typing import List, Dict, Tuple, Optional
 import numpy as np
 import tensorrt as trt
 from cuda import cudart
+from loguru import logger
 from polygraphy.backend.trt import EngineFromBytes
 from polygraphy.backend.common import BytesFromPath
 from polygraphy.util import is_shape_dynamic, invoke_if_callable
 
-from python.infer.common import cuda_assert, HostDeviceMem
-from python.utils import DetectInfo, TensorInfo, scale_boxes
+from .common import cuda_assert, HostDeviceMem
+from .structs import DetectInfo, TensorInfo
+from .general import scale_boxes
 
 __all__ = ['TRTYOLO']
 
@@ -204,7 +206,7 @@ class TRTYOLO:
             self._infer()
         end_time_ns = perf_counter_ns()
         elapsed_time_ms = (end_time_ns - start_time_ns) / 1e6
-        print(f"warmup {iters} iters cost {elapsed_time_ms:.2f} ms.")
+        logger.info(f"warmup {iters} iters cost {elapsed_time_ms:.2f} ms.")
 
     def infer(self, batch: np.ndarray, batch_shape: List[Tuple[int, int]]) -> List[DetectInfo]:
         """

@@ -15,8 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-# File    :   graphsurgeon.py
-# Version :   3.0
+# File    :   ppyoloe.py
+# Version :   4.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/01/28 14:37:43
@@ -26,17 +26,13 @@
 This code is based on the following repository:
     - https://github.com/zhiqwang/yolort/blob/main/yolort/relay/trt_graphsurgeon.py
 """
-import logging
-from pathlib import Path
 from collections import OrderedDict
+from pathlib import Path
 
-import onnx_graphsurgeon as gs
 import numpy as np
 import onnx
-
-logging.basicConfig(level=logging.INFO)
-logging.getLogger("PPYOLOEGraphSurgeon").setLevel(logging.INFO)
-logger = logging.getLogger("PPYOLOEGraphSurgeon")
+import onnx_graphsurgeon as gs
+from loguru import logger
 
 __all__ = ["PPYOLOEGraphSurgeon"]
 
@@ -69,8 +65,11 @@ class PPYOLOEGraphSurgeon:
         simplify: bool = False,
     ) -> None:
         # Ensure the required modules are imported within the function scope
-        from paddle2onnx.command import c_paddle_to_onnx
-
+        try:
+            from paddle2onnx.command import c_paddle_to_onnx
+        except Exception as e:
+            logger.exception('paddle2onnx not found, plaese install paddle2onnx.'
+                        'for example: `pip install paddle2onnx`.')
         model_dir = Path(model_dir)
 
         # Validate model directory
@@ -88,7 +87,11 @@ class PPYOLOEGraphSurgeon:
         )
 
         if not dynamic:
-            import paddle2onnx.paddle2onnx_cpp2py_export as c_p2o
+            try:
+                import paddle2onnx.paddle2onnx_cpp2py_export as c_p2o
+            except Exception as e:
+                logger.exception('paddle2onnx not found, plaese install paddle2onnx.'
+                            'for example: `pip install paddle2onnx`.')
 
             # Use YOLOTRTInference to modify an existed ONNX graph.
             self.graph = gs.import_onnx(onnx.load(onnx_path))
@@ -142,7 +145,7 @@ class PPYOLOEGraphSurgeon:
                 model = onnx.shape_inference.infer_shapes(model)
                 self.graph = gs.import_onnx(model)
             except Exception as e:
-                logger.info(f"Shape inference could not be performed at this time:\n{e}")
+                logger.warning(f"Shape inference could not be performed at this time:\n{e}")
             try:
                 self.graph.fold_constants(fold_shapes=True)
             except TypeError as e:
@@ -199,15 +202,16 @@ class PPYOLOEGraphSurgeon:
                 out the updated ONNX model.
         """
         self.graph.cleanup().toposort()
-        model = gs.export_onnx(self.graph)
+        model_onnx = gs.export_onnx(self.graph)
         if self.simplify:
             try:
-                from onnxsim import simplify
-                model, check = simplify(model)
-                assert check, "assert check failed, save origin onnx"
+                import onnxsim
+                logger.info(f"simplifying with onnxsim {onnxsim.__version__}...")
+                model_onnx, check = onnxsim.simplify(model_onnx)
+                assert check, "Simplified ONNX model could not be validated"
             except Exception as e:
-                logger.info(f"Simplifier failure: {e}")
-        onnx.save(model, output_path)
+                logger.warning(f"Simplifier failure: {e}")
+        onnx.save(model_onnx, output_path)
 
     def register_nms(
         self,

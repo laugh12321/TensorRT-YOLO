@@ -27,7 +27,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from python.infer.common import HostDeviceMem
+from .common import HostDeviceMem
 
 __all__ = ['TensorInfo', 'DetectInfo']
 
