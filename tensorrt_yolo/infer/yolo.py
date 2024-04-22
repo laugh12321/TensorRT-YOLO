@@ -67,7 +67,7 @@ def allocate_buffers(engine: trt.ICudaEngine):
 
         if input:
             input_dtype = dtype
-            _, *imgsz = shape
+            batch, _, *imgsz = shape
 
         # Allocate host and device buffers
         bindingMemory = HostDeviceMem(size, dtype)
