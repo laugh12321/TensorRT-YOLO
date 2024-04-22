@@ -31,86 +31,30 @@ TensorRT-YOLO is an inference acceleration project that supports YOLOv5, YOLOv8,
 - Integrated EfficientNMS TensorRT plugin for accelerated post-processing
 - Utilizes CUDA kernel functions for accelerated pre-processing
 - Supports inference in both C++ and Python
+- CLI Quick Export and Inference
 
 ## <div align="center">🛠️ Requirements</div>
 
-- Recommended CUDA version >= 11.7
+- Recommended CUDA version >= 11.6
 - Recommended TensorRT version >= 8.6
 
 ## <div align="center">📦 Usage Guide</div>
 
-<details open>
-<summary>Installation</summary>
+- [Quick Compile and Install](docs/en/build_and_install.md)
 
-Clone the repo and install the dependencies from [**Python>=3.8.0**](https://www.python.org/) using [requirements.txt](https://github.com/laugh12321/TensorRT-YOLO/blob/master/requirements.txt). Ensure [**PyTorch>=1.8**](https://pytorch.org/get-started/locally/) (for YOLOv5, YOLOv8 and YOLOv9 export) and [**PaddlePaddle>=2.5**](https://www.paddlepaddle.org.cn/install/quick/) (for PP-YOLOE and PP-YOLOE+ export) are installed.
+- [Export Models using CLI](docs/en/model_export.md)
 
-```bash
-git clone https://github.com/laugh12321/TensorRT-YOLO  # clone
-cd TensorRT-YOLO
-pip install -r requirements.txt  # install
-pip install ultralytics          # Optional, export YOLOv5, YOLOv8 and YOLOv9
-pip install paddle2onnx          # Optional, export PP-YOLOE and PP-YOLOE+
-```
-</details>
+- [PTQ INT8 Quantization](tools/README.en.md)
 
-<details>
-<summary>Model Export</summary>
+- [Model Inference Examples](demo/detect/README.en.md)
 
-Use the following commands to export ONNX models and add the [EfficientNMS](https://github.com/NVIDIA/TensorRT/tree/main/plugin/efficientNMSPlugin) plugin for post-processing.
+## <div align="center">📺 BiliBili</div>
 
-**Note:** Exporting ONNX models for PP-YOLOE and PP-YOLOE+ only modifies the `batch` dimension, and the `height` and `width` dimensions cannot be changed. These dimensions are set in [PaddleDetection](https://github.com/PaddlePaddle/PaddleDetection) and default at `640`.
+- [啪的一下，很快啊！TensorRT YOLOv5s 在FP16模式下，批量大小4，仅需13毫秒！](https://www.bilibili.com/video/BV1dy421q7Am)
 
-**YOLOv5, v8, v9**
+- [【TensorRT-YOLO】YOLOv9 TensorRT 推理➕EfficientNMS](https://www.bilibili.com/video/BV1uF4m1V7xF)
 
-```bash
-# Static
-python python/export/{yolo version}/export.py -w your_model_path.pt -o output -b 8 --img 640 -s
-# Dynamic
-python python/export/{yolo version}/export.py -w your_model_path.pt -o output -s --dynamic
-```
-
-**PP-YOLOE and PP-YOLOE+**
-
-```bash
-# Static
-python python/export/ppyoloe/export.py --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output -b 8 -s
-# Dynamic
-python python/export/ppyoloe/export.py --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output -s --dynamic
-```
-
-Exported ONNX models are then exported to TensorRT models using the `trtexec` tool.
-
-
-```bash
-# Static
-trtexec --onnx=model.onnx --saveEngine=model.engine --fp16
-# Dynamic
-trtexec --onnx=model.onnx --saveEngine=model.engine --minShapes=images:1x3x640x640 --optShapes=images:4x3x640x640 --maxShapes=images:8x3x640x640 --fp16
-```
-
-</details>
-
-<details>
-<summary>Inference using detect.py</summary>
-
-`detect.py` currently supports inference on a single image or batch inference on an entire directory. You can specify the inference data using the `--inputs` parameter. The results of the inference can be saved to a specified path using the `--output` parameter, with the default being `None` indicating no saving. For detailed command descriptions, please run `python detect.py -h`.
-
-```bash
-python detect.py -e model.engine -o output -i img.jpg                         # image
-                                               path/                           # directory
-```
-</details>
-
-<details>
-<summary>Inference using detect.cpp</summary>
-
-The commands for `detect.cpp` are consistent with those for `detect.py`. Here we use `xmake` for compilation.
-
-```bash
-detect -e model.engine -o output -i img.jpg                         # image
-                                     path/                           # directory
-```
-</details>
+- [【TensorRT-YOLO】YOLOv8 推理最速传说 1ms](https://www.bilibili.com/video/BV13f421o7KL)
 
 ## <div align="center">📄 License</div>
 
