@@ -68,7 +68,7 @@ def export(
     if model_dir and model_filename and params_filename:
         # Export for paddle
         logger.info("Exporting for paddle...")
-        from .export import paddle_export
+        # from .export import paddle_export
 
         paddle_export(
             model_dir=model_dir,
@@ -85,7 +85,6 @@ def export(
     elif weights and version:
         # Export for torch
         logger.info("Exporting for torch...")
-        from .export import torch_export
 
         torch_export(
             weights=weights,
@@ -119,8 +118,6 @@ def infer(engine, source, output, labels):
     from concurrent.futures import ThreadPoolExecutor
 
     from tqdm import tqdm
-
-    from .infer import TRTYOLO, ImageBatcher, generate_labels_with_colors, visualize_detections
 
     labels = generate_labels_with_colors(labels)
     detection = TRTYOLO(engine)
