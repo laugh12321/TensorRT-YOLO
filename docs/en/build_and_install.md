@@ -17,7 +17,7 @@ git clone https://github.com/laugh12321/TensorRT-YOLO  # Clone the code reposito
 cd TensorRT-YOLO
 pip install --upgrade build
 python -m build
-pip install dist/tensorrt_yolo/tensorrt_yolo-3.0.0-py3-none-any.whl
+pip install dist/tensorrt_yolo/tensorrt_yolo-3.*-py3-none-any.whl
 ```
 
 In these steps, you can clone the code repository first, perform local builds, and then install the generated Wheel package using `pip`. This ensures that you install the latest version with the newest features and improvements.
