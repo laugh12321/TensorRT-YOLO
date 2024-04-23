@@ -57,15 +57,15 @@ Before performing inference using C++, ensure that you have compiled Deploy acco
 Next, use xmake to compile `detect.cpp` into an executable:
 
 ```bash
-xmake f -P /path/to/your/TensorRT-YOLO/demo/detect -F /path/to/your/TensorRT-YOLO/demo/detect/xmake.lua --tensorrt="/path/to/your/TensorRT" --deploy=/path/to/your/TensorRT-YOLO
+xmake f -P . --tensorrt="/path/to/your/TensorRT" --deploy=/path/to/your/TensorRT-YOLO
 
 xmake -P . -r
 ```
 
-After executing the above commands, an executable named `detect` will be generated in the root directory. Finally, run the following command for inference:
+After executing the above commands, an executable file named `detect` will be generated in the `build` directory at the root. Finally, run the following command for inference:
 
 ```bash
-detect -e models/yolov8s.engine -i images -o output -l labels.txt
+xmake run -P . detect -e models/yolov8s.engine -i images -o output -l labels.txt
 ```
 
 These are the examples of performing model inference.

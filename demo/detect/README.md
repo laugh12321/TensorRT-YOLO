@@ -57,15 +57,15 @@ python detect.py -e models/yolov8s.engine -i images -o output -l labels.txt
 接着，使用 xmake 将 `detect.cpp` 编译为可执行文件：
 
 ```bash
-xmake f -P /path/to/your/TensorRT-YOLO/demo/detect -F /path/to/your/TensorRT-YOLO/demo/detect/xmake.lua --tensorrt="/path/to/your/TensorRT" --deploy=/path/to/your/TensorRT-YOLO
+xmake f -P . --tensorrt="/path/to/your/TensorRT" --deploy=/path/to/your/TensorRT-YOLO
 
 xmake -P . -r
 ```
 
-执行上述命令后，将在根目录生成名为 `detect` 的可执行文件。最后，运行以下命令进行推理：
+执行上述命令后，将在根目录的 `build` 目录下生成名为 `detect` 的可执行文件。最后，运行以下命令进行推理：
 
 ```bash
-detect -e models/yolov8s.engine -i images -o output -l labels.txt
+xmake run -P . detect -e models/yolov8s.engine -i images -o output -l labels.txt
 ```
 
 以上是进行模型推理的方法示例。

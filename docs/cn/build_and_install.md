@@ -39,6 +39,7 @@ git clone https://github.com/laugh12321/TensorRT-YOLO
 cd TensorRT-YOLO
 xmake f -k shared --tensorrt="C:/Program Files/NVIDIA GPU Computing Toolkit/TensorRT/v8.6.1.6"
 # xmake f -k static --tensorrt="C:/Program Files/NVIDIA GPU Computing Toolkit/TensorRT/v8.6.1.6"
+xmake -P . -r
 ```
 
 在这个过程中，您可以使用 xmake 工具根据您的部署需求选择动态库或者静态库的编译方式，并且可以指定 TensorRT 的安装路径以确保编译过程中正确链接 TensorRT 库。Xmake 会自动识别 CUDA 的安装路径，如果您有多个版本的 CUDA，可以使用 `--cuda` 进行指定。编译后的文件将位于 `lib` 文件夹下。
