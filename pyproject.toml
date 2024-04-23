@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 # Project settings -----------------------------------------------------------------------------------------------------
 [project]
 name = "tensorrt_yolo"
-version = "3.0.0"
+version = "3.0.1"
 description = "TensorRT-YOLO: Support YOLOv5, YOLOv8, YOLOv9, PP-YOLOE using TensorRT acceleration with EfficientNMS!"
 readme = "README.md"
 requires-python = ">=3.8"
