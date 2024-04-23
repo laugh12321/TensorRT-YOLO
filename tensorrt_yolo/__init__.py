@@ -66,10 +66,6 @@ def export(
     This command allows exporting models for both PaddlePaddle and PyTorch frameworks to be used with TensorRT-YOLO.
     """
     if model_dir and model_filename and params_filename:
-        # Export for paddle
-        logger.info("Exporting for paddle...")
-        # from .export import paddle_export
-
         paddle_export(
             model_dir=model_dir,
             model_filename=model_filename,
@@ -83,9 +79,6 @@ def export(
             simplify=simplify,
         )
     elif weights and version:
-        # Export for torch
-        logger.info("Exporting for torch...")
-
         torch_export(
             weights=weights,
             output=output,
@@ -105,33 +98,32 @@ def export(
 
 @trtyolo.command(help="Perform inference with TensorRT-YOLO.")
 @click.option('-e', '--engine', help='Engine file for inference.', type=str, required=True)
-@click.option('-s', '--source', help='Source directory or file for inference.', type=str, required=True)
+@click.option('-i', '--input', help='Input directory or file for inference.', type=str, required=True)
 @click.option('-o', '--output', help='Output directory for inference results.', type=str, required=True)
 @click.option('-l', '--labels', help='Labels file for inference.', type=str, required=True)
-def infer(engine, source, output, labels):
+def infer(engine, input, output, labels):
     """Perform inference with TensorRT-YOLO.
 
     This command performs inference using TensorRT-YOLO with the specified engine file and input source.
     """
-    logger.info("Performing inference...")
     import time
     from concurrent.futures import ThreadPoolExecutor
 
-    from tqdm import tqdm
+    from rich.progress import track
 
     labels = generate_labels_with_colors(labels)
-    detection = TRTYOLO(engine)
-    detection.warmup()
+    model = TRTYOLO(engine)
+    model.warmup()
 
     total_time = 0.0
     total_infers = 0
     total_images = 0
-    batcher = ImageBatcher(
-        input_path=source, batch_size=detection.batch_size, imgsz=detection.imgsz, dtype=detection.dtype, dynamic=detection.dynamic
-    )
-    for batch, images, batch_shape in tqdm(batcher, total=len(batcher.batches), desc="Processing batches", unit="batch"):
+    logger.info(f"Infering data in {input}")
+    batcher = ImageBatcher(input_path=input, batch_size=model.batch_size, imgsz=model.imgsz, dtype=model.dtype, dynamic=model.dynamic)
+
+    for batch, images, batch_shape in track(batcher, description="[cyan]Processing batches", total=len(batcher.batches)):
         start_time_ns = time.perf_counter_ns()
-        detections = detection.infer(batch, batch_shape)
+        detections = model.infer(batch, batch_shape)
         end_time_ns = time.perf_counter_ns()
         elapsed_time_ms = (end_time_ns - start_time_ns) / 1e6
         total_time += elapsed_time_ms

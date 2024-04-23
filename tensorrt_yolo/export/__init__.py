@@ -138,6 +138,7 @@ def torch_export(
         simplify (Optional[bool], optional): Whether to simplify the exported ONNX. Defaults to True.
         repo_dir (Optional[str], optional): Directory containing the local repository (if using torch.hub.load). Defaults to None.
     """
+    logger.info("Staring export with torch.")
     model = load_model(version, weights, repo_dir)
     if model is None:
         return
@@ -198,7 +199,7 @@ def torch_export(
 
     onnx.save(model_onnx, f)
 
-    logger.info(f'Export complete, Results saved to {output}, Visualize at https://netron.app')
+    logger.success(f'Export complete, Results saved to {output}, Visualize at https://netron.app')
 
 
 def paddle_export(
@@ -228,7 +229,7 @@ def paddle_export(
         opset_version (Optional[int], optional): ONNX opset version. Defaults to 11.
         simplify (Optional[bool], optional): Whether to simplify the exported ONNX. Defaults to True.
     """
-
+    logger.info("Staring export with paddle.")
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
     f = str(Path(output, Path(model_filename).stem).with_suffix(".onnx"))
@@ -250,4 +251,4 @@ def paddle_export(
     # Save the exported ONNX models.
     ppyoloe_gs.save(f)
 
-    logger.info(f'Export complete, Results saved to {output}, Visualize at https://netron.app')
+    logger.success(f'Export complete, Results saved to {output}, Visualize at https://netron.app')
