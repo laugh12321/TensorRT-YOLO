@@ -34,8 +34,6 @@ target("detect")
         add_packages("zlib")
     end
 
-    set_runargs("-e model/yolov8s.engine", "-i input", "-o output", "-l labels.txt")
-
     -- 添加文件
     add_files("detect.cpp")
 
