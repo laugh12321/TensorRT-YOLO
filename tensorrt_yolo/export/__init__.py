@@ -28,14 +28,14 @@ DETECT_HEADS = {
     "DualDDetect": {"yolov9": DualDDetect},
 }
 
-OUTPUT_NAMES = ['num_detections', 'detection_boxes', 'detection_scores', 'detection_classes']
+OUTPUT_NAMES = ['num_dets', 'det_boxes', 'det_scores', 'det_classes']
 
 DYNAMIC = {
     "images": {0: "batch", 2: "height", 3: "width"},
-    "num_detections": {0: "batch"},
-    "detection_boxes": {0: "batch"},
-    "detection_scores": {0: "batch"},
-    "detection_classes": {0: "batch"},
+    "num_dets": {0: "batch"},
+    "det_boxes": {0: "batch"},
+    "det_scores": {0: "batch"},
+    "det_classes": {0: "batch"},
 }
 
 
@@ -178,10 +178,10 @@ def torch_export(
     onnx.checker.check_model(model_onnx)
 
     shapes = {
-        'num_detections': ["batch" if dynamic else batch, 1],
-        'detection_boxes': ["batch" if dynamic else batch, max_boxes, 4],
-        'detection_scores': ["batch" if dynamic else batch, max_boxes],
-        'detection_classes': ["batch" if dynamic else batch, max_boxes],
+        'num_dets': ["batch" if dynamic else batch, 1],
+        'det_boxes': ["batch" if dynamic else batch, max_boxes, 4],
+        'det_scores': ["batch" if dynamic else batch, max_boxes],
+        'det_classes': ["batch" if dynamic else batch, max_boxes],
     }
     for node in model_onnx.graph.output:
         for idx, dim in enumerate(node.type.tensor_type.shape.dim):

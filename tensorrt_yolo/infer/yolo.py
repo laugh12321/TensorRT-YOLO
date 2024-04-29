@@ -155,10 +155,10 @@ class TRTYOLO:
         Returns:
             DetectInfo: Processed detection information.
         """
-        num_detections = int(outputs['num_detections'][idx])
-        detection_boxes = outputs['detection_boxes'][idx, :num_detections]
-        detection_scores = outputs['detection_scores'][idx, :num_detections]
-        detection_classes = outputs['detection_classes'][idx, :num_detections]
+        num_detections = int(outputs['num_dets'][idx])
+        detection_boxes = outputs['det_boxes'][idx, :num_detections]
+        detection_scores = outputs['det_scores'][idx, :num_detections]
+        detection_classes = outputs['det_classes'][idx, :num_detections]
 
         detection_boxes = scale_boxes(detection_boxes, self._imgsz, output_shape)
 
