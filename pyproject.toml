@@ -5,12 +5,12 @@ build-backend = "hatchling.build"
 # Project settings -----------------------------------------------------------------------------------------------------
 [project]
 name = "tensorrt_yolo"
-version = "3.0.1"
-description = "TensorRT-YOLO: Support YOLOv5, YOLOv8, YOLOv9, PP-YOLOE using TensorRT acceleration with EfficientNMS!"
+version = "3.0.2"
+description = "TensorRT-YOLO: Support YOLOv5, YOLOv6, YOLOv7, YOLOv8, YOLOv9, PP-YOLOE using TensorRT acceleration with EfficientNMS!"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {file = "LICENSE"}
-keywords = ["machine-learning", "deep-learning", "computer-vision", "ML", "DL", "AI", "YOLO", "YOLOv5", "YOLOv8", "YOLOv9", "PP-YOLOE", "TensorRT", "CUDA", "detection", "ONNX", "EfficientNMS"]
+keywords = ["machine-learning", "deep-learning", "computer-vision", "ML", "DL", "AI", "YOLO", "YOLOv5", "YOLOv6", "YOLOv7", "YOLOv8", "YOLOv9", "PP-YOLOE", "TensorRT", "CUDA", "detection", "ONNX", "EfficientNMS"]
 authors = [
     { name="laugh12321", email="laugh12321@vip.qq.com" }
 ]

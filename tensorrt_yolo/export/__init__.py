@@ -10,7 +10,7 @@ from loguru import logger
 from ultralytics import YOLO
 from ultralytics.utils.checks import check_imgsz
 
-from .head import DDetect, Detectv5, Detectv8, Detectv9, DualDDetect, DualDetect
+from .head import Detectv5, Detectv8
 from .ppyoloe import PPYOLOEGraphSurgeon
 
 __all__ = ['torch_export', 'paddle_export']
@@ -22,10 +22,7 @@ warnings.filterwarnings("ignore")
 logger.configure(handlers=[{'sink': sys.stdout, 'colorize': True, 'format': "<level>[{level.name[0]}]</level> <level>{message}</level>"}])
 
 DETECT_HEADS = {
-    "Detect": {"yolov5": Detectv5, "yolov8": Detectv8, "yolov9": Detectv9},
-    "DDetect": {"yolov9": DDetect},
-    "DualDetect": {"yolov9": DualDetect},
-    "DualDDetect": {"yolov9": DualDDetect},
+    "Detect": {"yolov5": Detectv5, "yolov8": Detectv8},
 }
 
 OUTPUT_NAMES = ['num_dets', 'det_boxes', 'det_scores', 'det_classes']
@@ -44,7 +41,7 @@ def load_model(version: str, weights: str, repo_dir: Optional[str] = None) -> to
     Load YOLO model based on version and weights.
 
     Args:
-        version (str): YOLO version, e.g., yolov5, yolov8, yolov9.
+        version (str): YOLO version, e.g., yolov5, yolov8.
         weights (str): Path to YOLO weights for PyTorch.
         repo_dir (Optional[str], optional): Directory containing the local repository (if using torch.hub.load). Defaults to None.
 
@@ -57,9 +54,6 @@ def load_model(version: str, weights: str, repo_dir: Optional[str] = None) -> to
         return torch.hub.load(repo_dir, 'custom', path=weights, source=source, verbose=False)
     elif version == 'yolov8':
         return YOLO(model=weights, verbose=False).model
-    elif version == 'yolov9':
-        repo_dir = 'WongKinYiu/yolov9' if repo_dir is None else repo_dir
-        return torch.hub.load(repo_dir, 'custom', path=weights, source=source, verbose=False)
     else:
         logger.error(f"YOLO version '{version}' not supported!")
         return None
@@ -73,7 +67,7 @@ def update_model(
 
     Args:
         model (torch.nn.Module): YOLO model to be updated.
-        version (str): YOLO version, e.g., yolov5, yolov8, yolov9.
+        version (str): YOLO version, e.g., yolov5, yolov8.
         dynamic (bool): Whether to use dynamic settings.
         max_boxes (int): Maximum number of detections to output per image.
         iou_thres (float): NMS IoU threshold for post-processing.
@@ -92,9 +86,6 @@ def update_model(
                 break
 
             supported = True
-
-            if version == 'yolov9':
-                detect_head.export = True
             detect_head.export = True
             detect_head.dynamic = dynamic
             detect_head.max_det = max_boxes
@@ -128,7 +119,7 @@ def torch_export(
     Args:
         weights (str): Path to YOLO weights for PyTorch.
         output (str): Directory path to save the exported model.
-        version (str): YOLO version, e.g., yolov5, yolov8, yolov9.
+        version (str): YOLO version, e.g., yolov5, yolov8.
         imgsz (Optional[int], optional): Inference image size. Defaults to 640.
         batch (Optional[int], optional): Total batch size for the model. Use -1 for dynamic batch size. Defaults to 1.
         max_boxes (Optional[int], optional): Maximum number of detections to output per image. Defaults to 100.
