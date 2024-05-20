@@ -103,7 +103,6 @@ def update_model(
             detect_head = HEADS[class_name].get(version)
             if detect_head:
                 supported = True
-                detect_head.export = True
                 detect_head.dynamic = dynamic
                 detect_head.max_det = max_boxes
                 detect_head.iou_thres = iou_thres
