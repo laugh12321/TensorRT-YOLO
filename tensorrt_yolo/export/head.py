@@ -30,7 +30,7 @@ from ultralytics.nn.modules import DFL, Conv
 from ultralytics.utils.checks import check_version
 from ultralytics.utils.tal import dist2bbox, make_anchors
 
-__all__ = ["Detectv5", "Detectv8"]
+__all__ = ["YOLODetect", "UltralyticsDetect"]
 
 
 class Efficient_TRT_NMS(torch.autograd.Function):
@@ -89,12 +89,12 @@ class Efficient_TRT_NMS(torch.autograd.Function):
 
 """
 ===============================================================================
-                                YOLOv5
+            YOLOv3 and YOLOv5 Detect head for detection models
 ===============================================================================
 """
 
 
-class Detectv5(nn.Module):
+class YOLODetect(nn.Module):
     # YOLOv5 Detect head for detection models
     stride = None  # strides computed during build
     dynamic = False  # force grid reconstruction
@@ -155,12 +155,12 @@ class Detectv5(nn.Module):
 
 """
 ===============================================================================
-                                YOLOv8
+            Ultralytics Detect head for detection models
 ===============================================================================
 """
 
 
-class Detectv8(nn.Module):
+class UltralyticsDetect(nn.Module):
     """YOLOv8 Detect head for detection models."""
 
     dynamic = False  # force grid reconstruction

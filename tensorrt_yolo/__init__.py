@@ -30,14 +30,12 @@ def trtyolo():
     pass
 
 
-@trtyolo.command(
-    help="Export models for TensorRT-YOLO. Supports YOLOv5, YOLOv8, PP-YOLOE, and PP-YOLOE+. For YOLOv6, YOLOv7, and YOLOv9 please use the official repository for exporting."
-)
+@trtyolo.command(help="Export models for TensorRT-YOLO. Supports YOLOv3, YOLOv5, YOLOv6, YOLOv7, YOLOv8, YOLOv9, PP-YOLOE, and PP-YOLOE+.")
 @click.option('--model_dir', help='Path to the directory containing the PaddleDetection PP-YOLOE model.', type=str)
 @click.option('--model_filename', help='The filename of the PP-YOLOE model.', type=str)
 @click.option('--params_filename', help='The filename of the PP-YOLOE parameters.', type=str)
 @click.option('-w', '--weights', help='Path to YOLO weights for PyTorch.', type=str)
-@click.option('-v', '--version', help='Torch YOLO version, e.g., yolov5, yolov8.', type=str)
+@click.option('-v', '--version', help='Torch YOLO version, e.g., yolov3, yolov5, yolov6, yolov7, yolov8, yolov9, ultralytics.', type=str)
 @click.option('--imgsz', default=640, help='Inference image size. Defaults to 640.', type=int)
 @click.option('--repo_dir', default=None, help='Directory containing the local repository (if using torch.hub.load).', type=str)
 @click.option('-o', '--output', help='Directory path to save the exported model.', type=str, required=True)
@@ -81,22 +79,19 @@ def export(
             simplify=simplify,
         )
     elif weights and version:
-        if version in ["yolov6", "yolov7", "yolov9"]:
-            logger.warning(f"please use {version} official repository for exporting.")
-        else:
-            torch_export(
-                weights=weights,
-                output=output,
-                version=version,
-                imgsz=imgsz,
-                batch=batch,
-                max_boxes=max_boxes,
-                iou_thres=iou_thres,
-                conf_thres=conf_thres,
-                opset_version=opset_version,
-                simplify=simplify,
-                repo_dir=repo_dir,
-            )
+        torch_export(
+            weights=weights,
+            output=output,
+            version=version,
+            imgsz=imgsz,
+            batch=batch,
+            max_boxes=max_boxes,
+            iou_thres=iou_thres,
+            conf_thres=conf_thres,
+            opset_version=opset_version,
+            simplify=simplify,
+            repo_dir=repo_dir,
+        )
     else:
         logger.error("Please provide correct export parameters.")
 
