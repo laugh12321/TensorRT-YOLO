@@ -5,12 +5,12 @@ build-backend = "hatchling.build"
 # Project settings -----------------------------------------------------------------------------------------------------
 [project]
 name = "tensorrt_yolo"
-version = "3.0.2"
-description = "TensorRT-YOLO: Support YOLOv5, YOLOv6, YOLOv7, YOLOv8, YOLOv9, PP-YOLOE using TensorRT acceleration with EfficientNMS!"
+version = "3.0.3"
+description = "TensorRT-YOLO: Support YOLOv3, YOLOv5, YOLOv6, YOLOv7, YOLOv8, YOLOv9 and PP-YOLOE using TensorRT acceleration with EfficientNMS!"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {file = "LICENSE"}
-keywords = ["machine-learning", "deep-learning", "computer-vision", "ML", "DL", "AI", "YOLO", "YOLOv5", "YOLOv6", "YOLOv7", "YOLOv8", "YOLOv9", "PP-YOLOE", "TensorRT", "CUDA", "detection", "ONNX", "EfficientNMS"]
+keywords = ["machine-learning", "deep-learning", "computer-vision", "ML", "DL", "AI", "YOLO", "YOLOv3", "YOLOv5", "YOLOv6", "YOLOv7", "YOLOv8", "YOLOv9", "PP-YOLOE", "TensorRT", "CUDA", "detection", "ONNX", "EfficientNMS"]
 authors = [
     { name="laugh12321", email="laugh12321@vip.qq.com" }
 ]
@@ -28,6 +28,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Software Development",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
@@ -38,17 +39,14 @@ classifiers = [
 
 # Required dependencies ------------------------------------------------------------------------------------------------
 dependencies = [
-    "cuda-python", # infer
+    "ultralytics",
+    "rich_click",
     "loguru",
-    "numpy==1.23.5; platform_machine == 'aarch64'", # fix error: `np.bool` was a deprecated alias for the builtin `bool` when using TensorRT models on NVIDIA Jetson
-    "onnx>=1.12.0", # export
-    # "onnx-graphsurgeon", # export
-    "onnxruntime", # export
-    "onnxsim", # export
-    "polygraphy", # infer
-    "rich_click", # cli
-    # "tensorrt", # infer
-    "ultralytics", # export
+    "cuda-python",
+    "polygraphy",
+    "onnx>=1.12.0",
+    "onnxruntime",
+    "onnxsim", 
 ]
 
 [project.urls]
@@ -62,8 +60,7 @@ trtyolo = "tensorrt_yolo:trtyolo"
 # Tools settings -------------------------------------------------------------------------------------------------------
 [tool.hatch.build.targets.sdist]
 ignore-vcs = true
-
-[tool.hatch.build.targets.wheel]
+only-packages = true
 packages = ["tensorrt_yolo"]
 
 [tool.ruff]
