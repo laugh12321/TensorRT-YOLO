@@ -7,7 +7,6 @@ set_allowedplats("windows", "linux")
 -- 添加编译规则
 add_rules("plugin.compile_commands.autoupdate", {outputdir = ".vscode"})
 add_rules("mode.debug", "mode.release")
-add_requires("opencv")
 
 -- 定义选项
 option("tensorrt")
@@ -22,7 +21,6 @@ option("tensorrt")
 -- 定义目标
 target("deploy")
     set_languages("cxx17")
-    add_packages("opencv")
     set_targetdir("$(projectdir)/lib")
 
     -- 添加库目录

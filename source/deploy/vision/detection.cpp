@@ -1,8 +1,10 @@
+#include <algorithm>
 #include <stdexcept>
 
 #include "deploy/core/types.hpp"
 #include "deploy/utils/utils.hpp"
 #include "deploy/vision/detection.hpp"
+
 
 namespace deploy {
 

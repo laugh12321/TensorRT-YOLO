@@ -3,7 +3,6 @@
 #include <cuda_runtime_api.h>
 
 #include <chrono>
-#include <opencv2/opencv.hpp>
 #include <string>
 #include <vector>
 
