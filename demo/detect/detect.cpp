@@ -124,15 +124,16 @@ void processBatchImages(const std::vector<std::string>& imageFiles, const std::s
 
         if (images.empty()) continue;
 
+        std::vector<deploy::Image> imgBatch;
+        for (const auto& image : images) {
+            imgBatch.emplace_back(image.data, image.cols, image.rows);
+        }
+
         if (i > 5) {
             cpuTimer.start();
             gpuTimer.start();
         }
 
-        std::vector<deploy::Image> imgBatch;
-        for (const auto& image : images) {
-            imgBatch.emplace_back(image.data, image.cols, image.rows);
-        }
         auto results = model->predict(imgBatch);
 
         if (i > 5) {
