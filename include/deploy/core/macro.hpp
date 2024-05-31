@@ -19,15 +19,19 @@
 namespace deploy {
 
 /**
- * @brief Checks for CUDA errors and prints error information if an error
- * occurs.
+ * @brief Checks for CUDA errors and prints error information if an error occurs.
+ *
+ * This function checks the CUDA error code returned by CUDA API calls. If the code
+ * indicates an error, it prints out information about the error, including the file
+ * and line number where the error occurred, the error code itself, and a textual
+ * description of the error.
  *
  * @param code The CUDA error code to check.
  * @param file The file where the error occurred.
  * @param line The line number where the error occurred.
- * @return bool True if no CUDA error occurred, false otherwise.
+ * @return bool Returns true if no CUDA error occurred, false otherwise.
  */
-inline bool CheckCudaError(cudaError_t code, const char* file, int line) {
+inline bool cudaError(cudaError_t code, const char* file, int line) {
     if (code != cudaSuccess) {
         std::cerr << "CUDA Error:\n";
         std::cerr << "    File:       " << file << "\n";
@@ -39,6 +43,15 @@ inline bool CheckCudaError(cudaError_t code, const char* file, int line) {
     return true;
 }
 
-}  // namespace deploy
+/**
+ * @brief Macro for simplified CUDA error checking.
+ *
+ * This macro wraps the `cudaError` function, allowing easy and concise checking
+ * of CUDA API calls. It evaluates the given CUDA API call `code`, and if it returns
+ * an error, the `cudaError` function is called to print error information.
+ *
+ * @param code The CUDA API call to be executed and checked for errors.
+ */
+#define CUDA(code) cudaError((code), __FILE__, __LINE__)
 
-#define CUDA_CHECK_ERROR(code) deploy::CheckCudaError((code), __FILE__, __LINE__)
+}  // namespace deploy

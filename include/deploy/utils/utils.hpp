@@ -18,18 +18,7 @@ namespace deploy {
  * @return std::vector<char> A vector containing the contents of the file.
  * @throw std::runtime_error If there is an error opening or reading the file.
  */
-std::vector<char> LoadFile(const std::string& filePath);
-
-/**
- * @brief Generates pairs of labels and corresponding colors.
- *
- * This function reads labels from a file and generates pairs of labels
- * along with randomly generated colors in the form of OpenCV Scalars.
- *
- * @param label_file The path to the file containing the labels.
- * @return A vector of pairs, where each pair consists of a label (string) and a color (cv::Scalar).
- */
-DEPLOY_DECL std::vector<std::pair<std::string, cv::Scalar>> GenerateLabelColorParis(const std::string& label_file);
+std::vector<char> loadFile(const std::string& filePath);
 
 /**
  * @brief Base class for timers.
@@ -46,13 +35,13 @@ public:
     /**
      * @brief Starts the timer.
      */
-    virtual void Start() {
+    virtual void start() {
     }
 
     /**
      * @brief Stops the timer.
      */
-    virtual void Stop() {
+    virtual void stop() {
     }
 
     /**
@@ -60,8 +49,8 @@ public:
      *
      * @return float Elapsed time in microseconds.
      */
-    [[nodiscard]] float Microseconds() const noexcept {
-        return GetMilliseconds() * MICROSECONDS_PER_MILLISECOND;
+    [[nodiscard]] float microseconds() const noexcept {
+        return getMilliseconds() * microsecondsPerMillisecond;
     }
 
     /**
@@ -69,8 +58,8 @@ public:
      *
      * @return float Elapsed time in milliseconds.
      */
-    [[nodiscard]] float Milliseconds() const noexcept {
-        return GetMilliseconds();
+    [[nodiscard]] float milliseconds() const noexcept {
+        return getMilliseconds();
     }
 
     /**
@@ -78,15 +67,15 @@ public:
      *
      * @return float Elapsed time in seconds.
      */
-    [[nodiscard]] float Seconds() const noexcept {
-        return GetMilliseconds() / MILLISECONDS_PER_SECOND;
+    [[nodiscard]] float seconds() const noexcept {
+        return getMilliseconds() / millisecondsPerSecond;
     }
 
     /**
      * @brief Resets the timer.
      */
-    void Reset() noexcept {
-        SetMilliseconds(0.0F);
+    void reset() noexcept {
+        setMilliseconds(0.0F);
     }
 
 protected:
@@ -95,8 +84,8 @@ protected:
      *
      * @return float Elapsed time in milliseconds.
      */
-    [[nodiscard]] float GetMilliseconds() const noexcept {
-        return m_milliseconds;
+    [[nodiscard]] float getMilliseconds() const noexcept {
+        return mMilliseconds;
     }
 
     /**
@@ -104,14 +93,14 @@ protected:
      *
      * @param value Elapsed time in milliseconds.
      */
-    void SetMilliseconds(float value) noexcept {
-        m_milliseconds = value;
+    void setMilliseconds(float value) noexcept {
+        mMilliseconds = value;
     }
 
 private:
-    static constexpr float MICROSECONDS_PER_MILLISECOND = 1000.0F; /**< Conversion factor for microseconds to milliseconds */
-    static constexpr float MILLISECONDS_PER_SECOND      = 1000.0F; /**< Conversion factor for milliseconds to seconds */
-    float                  m_milliseconds{0.0F};                   /**< Elapsed time in milliseconds */
+    static constexpr float microsecondsPerMillisecond = 1000.0F; /**< Conversion factor for microseconds to milliseconds */
+    static constexpr float millisecondsPerSecond      = 1000.0F; /**< Conversion factor for milliseconds to seconds */
+    float                  mMilliseconds{0.0F};                  /**< Elapsed time in milliseconds */
 };
 
 /**
@@ -139,17 +128,17 @@ public:
     /**
      * @brief Starts the GPU timer.
      */
-    void Start() override;
+    void start() override;
 
     /**
      * @brief Stops the GPU timer.
      */
-    void Stop() override;
+    void stop() override;
 
 private:
-    cudaEvent_t  m_start{}; /**< CUDA event for start */
-    cudaEvent_t  m_stop{};  /**< CUDA event for stop */
-    cudaStream_t m_stream;  /**< CUDA stream */
+    cudaEvent_t  mStart{}; /**< CUDA event for start */
+    cudaEvent_t  mStop{};  /**< CUDA event for stop */
+    cudaStream_t mStream;  /**< CUDA stream */
 };
 
 /**
@@ -162,22 +151,22 @@ public:
     /**
      * @brief Starts the CPU timer.
      */
-    void Start() override {
-        m_start = Clock::now();
+    void start() override {
+        mStart = Clock::now();
     }
 
     /**
      * @brief Stops the CPU timer and calculates the elapsed time.
      */
-    void Stop() override {
-        m_stop                                            = Clock::now();
-        std::chrono::duration<float, std::milli> duration = m_stop - m_start;
-        SetMilliseconds(GetMilliseconds() + duration.count());
+    void stop() override {
+        mStop                                             = Clock::now();
+        std::chrono::duration<float, std::milli> duration = mStop - mStart;
+        setMilliseconds(getMilliseconds() + duration.count());
     }
 
 private:
-    typename Clock::time_point m_start; /**< Start time */
-    typename Clock::time_point m_stop;  /**< Stop time */
+    typename Clock::time_point mStart; /**< Start time */
+    typename Clock::time_point mStop;  /**< Stop time */
 };
 
 }  // namespace deploy

@@ -1,98 +1,84 @@
 #pragma once
 
 #include <memory>
-#include <opencv2/opencv.hpp>
 #include <string>
 #include <vector>
 
 #include "deploy/core/core.hpp"
 #include "deploy/core/macro.hpp"
 #include "deploy/core/tensor.hpp"
+#include "deploy/vision/cudaWarp.hpp"
 #include "deploy/vision/result.hpp"
-#include "deploy/vision/warp_affine.hpp"
 
 namespace deploy {
 
+/**
+ * @brief DeployDet class for performing object detection using YOLO series models.
+ *
+ * This class provides functionality for object detection using YOLO series models.
+ * It supports both single image inference and batch inference.
+ * CUDA acceleration can be optionally enabled for inference by setting the 'cudaMem'
+ * flag to true during construction.
+ */
 class DEPLOY_DECL DeployDet {
 public:
-    DeployDet(const DeployDet&)            = default;
-    DeployDet(DeployDet&&)                 = delete;
-    DeployDet& operator=(const DeployDet&) = default;
-    DeployDet& operator=(DeployDet&&)      = delete;
-    /**
-     * @brief Constructs a DeployDet object from a file.
-     *
-     * @param file Path to the serialized model file.
-     * @throw std::runtime_error if file is empty or fails to construct engine
-     * context.
-     */
-    explicit DeployDet(const std::string& file);
+    // Constructor to initialize DeployDet with a model file and optional CUDA memory flag.
+    explicit DeployDet(const std::string& file, bool cudaMem = false, int device = 0);
 
-    /**
-     * @brief Destructor.
-     */
+    // Destructor to clean up resources.
     ~DeployDet();
 
-    /**
-     * @brief Predicts the result for a single input image.
-     *
-     * @param image Input image.
-     * @return Result Prediction result.
-     */
-    DetectionResult Predict(const cv::Mat& image);
+    // Perform object detection on a single image.
+    DetectionResult predict(const Image& image);
 
-    /**
-     * @brief Predicts the results for multiple input images.
-     *
-     * @param images Vector of input images.
-     * @return std::vector<Result> Vector of prediction results.
-     */
-    std::vector<DetectionResult> Predict(const std::vector<cv::Mat>& images);
+    // Perform object detection on a batch of images.
+    std::vector<DetectionResult> predict(const std::vector<Image>& images);
 
-    int batch_size{};
+    // Batch size for inference.
+    int batch{};
 
 private:
-    int                            width_{}, height_{};
-    std::vector<TensorInfo>        tensors_info_{};
-    std::shared_ptr<EngineContext> engine_ctx_{};
-    std::vector<Tensor>            input_tensors_{};
-    std::vector<cudaStream_t>      input_streams_{};
-    std::vector<AffineTransform>   input_transforms_{};
-    cudaStream_t                   infer_stream_{};
+    // Flag indicating whether CUDA memory is used.
+    bool cudaMem{false};
 
-    void Setup();
+    // Flag indicating dynamic allocation.
+    bool dynamic{false};
 
-    /**
-     * @brief Allocates resources required for inference.
-     */
-    void Allocate();
+    // Width and height of input images.
+    int width{0}, height{0};
 
-    /**
-     * @brief Releases allocated resources.
-     */
-    void Release();
+    // Engine context for inference.
+    std::shared_ptr<EngineContext> engineCtx{};
 
-    /**
-     * @brief Executes inference on input tensors.
-     */
-    bool Infer();
+    // Transformation matrices for preprocessing.
+    std::vector<TransformMatrix> transforms{};
 
-    /**
-     * @brief Preprocesses the input image.
-     *
-     * @param idx Index of the input image.
-     * @param image Input image.
-     * @param stream CUDA stream for asynchronous processing.
-     */
-    void PreProcess(int idx, const cv::Mat& image, cudaStream_t stream);
+    // Information about input and output tensors.
+    std::vector<TensorInfo> tensorInfos{};
 
-    /**
-     * @brief Postprocesses the inference result.
-     *
-     * @param idx Index of the inference result.
-     * @return Result Processed prediction result.
-     */
-    DetectionResult PostProcess(int idx);
+    // Input tensors containing preprocessed images.
+    std::vector<Tensor> imageTensors{};
+
+    // CUDA streams for parallel execution.
+    std::vector<cudaStream_t> inputStreams{};
+
+    // CUDA stream for inference.
+    cudaStream_t inferStream{nullptr};
+
+    // Setup input and output tensors.
+    void setupTensors();
+
+    // Allocate memory for input and output tensors.
+    void allocate();
+
+    // Release allocated resources.
+    void release();
+
+    // Preprocess image before inference.
+    void preProcess(int idx, const Image& image, cudaStream_t stream);
+
+    // Post-process inference results.
+    DetectionResult postProcess(int idx);
 };
 
 }  // namespace deploy

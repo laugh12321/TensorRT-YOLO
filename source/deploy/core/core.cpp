@@ -1,12 +1,11 @@
-#include "deploy/core/core.hpp"
-
 #include <iostream>
+
+#include "deploy/core/core.hpp"
 
 namespace deploy {
 
-void TRTLogger::log(nvinfer1::ILogger::Severity severity,
-                    const char*                 msg) noexcept {
-    if (severity > severity_) return;
+void TrtLogger::log(nvinfer1::ILogger::Severity severity, const char* msg) noexcept {
+    if (severity > mSeverity) return;
     switch (severity) {
         case nvinfer1::ILogger::Severity::kINTERNAL_ERROR:
             std::cerr << "INTERNAL_ERROR: ";
@@ -27,35 +26,35 @@ void TRTLogger::log(nvinfer1::ILogger::Severity severity,
     std::cerr << msg << '\n';
 }
 
-void EngineContext::Destroy() {
-    context.reset();
-    engine.reset();
-    runtime.reset();
+void EngineContext::destroy() {
+    mContext.reset();
+    mEngine.reset();
+    mRuntime.reset();
 }
 
-bool EngineContext::Construct(const void* data, size_t size) {
-    Destroy();
+bool EngineContext::construct(const void* data, size_t size) {
+    destroy();
 
     if (data == nullptr || size == 0) return false;
 
-    runtime = std::shared_ptr<nvinfer1::IRuntime>(
-        nvinfer1::createInferRuntime(logger_), [](nvinfer1::IRuntime* ptr) {
+    mRuntime = std::shared_ptr<nvinfer1::IRuntime>(
+        nvinfer1::createInferRuntime(mLogger), [](nvinfer1::IRuntime* ptr) {
             if (ptr != nullptr) ptr->destroy();
         });
-    if (runtime == nullptr) return false;
+    if (mRuntime == nullptr) return false;
 
-    engine = std::shared_ptr<nvinfer1::ICudaEngine>(
-        runtime->deserializeCudaEngine(data, size, nullptr),
+    mEngine = std::shared_ptr<nvinfer1::ICudaEngine>(
+        mRuntime->deserializeCudaEngine(data, size, nullptr),
         [](nvinfer1::ICudaEngine* ptr) {
             if (ptr != nullptr) ptr->destroy();
         });
-    if (engine == nullptr) return false;
+    if (mEngine == nullptr) return false;
 
-    context = std::shared_ptr<nvinfer1::IExecutionContext>(
-        engine->createExecutionContext(), [](nvinfer1::IExecutionContext* ptr) {
+    mContext = std::shared_ptr<nvinfer1::IExecutionContext>(
+        mEngine->createExecutionContext(), [](nvinfer1::IExecutionContext* ptr) {
             if (ptr != nullptr) ptr->destroy();
         });
-    return context != nullptr;
+    return mContext != nullptr;
 }
 
 }  // namespace deploy

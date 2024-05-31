@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+#include <stdexcept>
 #include <vector>
 
 #include "deploy/core/macro.hpp"
@@ -33,12 +35,40 @@ struct DEPLOY_DECL DetectionResult {
      */
     DetectionResult& operator=(const DetectionResult& other) {
         if (this != &other) {
-            num     = other.num;
-            boxes   = other.boxes;
-            classes = other.classes;
-            scores  = other.scores;
+            num     = other.num;     /**< Assign number of detected objects */
+            boxes   = other.boxes;   /**< Assign detected bounding boxes */
+            classes = other.classes; /**< Assign detected classes */
+            scores  = other.scores;  /**< Assign detection scores */
         }
         return *this;
+    }
+};
+
+/**
+ * @brief Represents an image.
+ */
+struct DEPLOY_DECL Image {
+    void* rgbPtr = nullptr; /**< Pointer to image data (BGR format) */
+    int   width  = 0;       /**< Width of the image */
+    int   height = 0;       /**< Height of the image */
+
+    // Default constructor
+    // constexpr Image() : rgbPtr(nullptr), width(0), height(0) {}
+    Image() = default;
+
+    /**
+     * @brief Parameterized constructor with boundary checks.
+     *
+     * @param rgbPtr Pointer to image data.
+     * @param width Width of the image.
+     * @param height Height of the image.
+     * @throws std::invalid_argument If width or height is negative.
+     */
+    Image(void* rgbPtr, int width, int height)
+        : rgbPtr(rgbPtr), width(width), height(height) {
+        if (width < 0 || height < 0) {
+            throw std::invalid_argument("Width and height must be non-negative");
+        }
     }
 };
 

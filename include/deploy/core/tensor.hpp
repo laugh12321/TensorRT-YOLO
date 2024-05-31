@@ -15,37 +15,29 @@ namespace deploy {
  */
 class Tensor {
 private:
-    void*   host_ptr_        = nullptr; /**< Pointer to host memory */
-    void*   device_ptr_      = nullptr; /**< Pointer to device memory */
-    size_t  dtype_bytes_     = 0;       /**< Size of the data type in bytes */
-    int64_t host_bytes_      = 0;       /**< Size of host memory in bytes */
-    int64_t device_bytes_    = 0;       /**< Size of device memory in bytes */
-    int64_t host_capacity_   = 0;       /**< Capacity of host memory in bytes */
-    int64_t device_capacity_ = 0;       /**< Capacity of device memory in bytes */
+    void*   hostPtr     = nullptr; /**< Pointer to host memory */
+    void*   devicePtr   = nullptr; /**< Pointer to device memory */
+    int64_t hostBytes   = 0;       /**< Size of host memory in bytes */
+    int64_t deviceBytes = 0;       /**< Size of device memory in bytes */
+    int64_t hostCap     = 0;       /**< Capacity of host memory in bytes */
+    int64_t deviceCap   = 0;       /**< Capacity of device memory in bytes */
 
     /**
      * @brief Reallocates host memory to the specified size.
      *
      * @param bytes Size of host memory to allocate in bytes.
      */
-    void ReallocHost(int64_t bytes);
+    void reallocHost(int64_t bytes);
 
     /**
      * @brief Reallocates device memory to the specified size.
      *
      * @param bytes Size of device memory to allocate in bytes.
      */
-    void ReallocDevice(int64_t bytes);
+    void reallocDevice(int64_t bytes);
 
 public:
-    /**
-     * @brief Constructor.
-     *
-     * @param dtype_bytes Size of the data type in bytes.
-     */
-    explicit Tensor(size_t dtype_bytes)
-        : dtype_bytes_(dtype_bytes) {
-    }
+    explicit Tensor() {}
 
     ~Tensor(); /**< Destructor */
 
@@ -54,52 +46,34 @@ public:
      *
      * @return void* Pointer to host memory.
      */
-    void* Host() {
-        return host_ptr_;
+    void* host() {
+        return hostPtr;
     }
 
     /**
-     * @brief Allocates or resizes host memory to the specified size.
+     * @brief Allocates host memory to the specified size.
      *
-     * @param size Size of host memory to allocate or resize.
-     * @return void* Pointer to host memory.
+     * @param bytes Size of host memory to allocate in bytes.
+     * @return void* Pointer to allocated host memory.
      */
-    void* Host(int64_t size);
+    void* host(int64_t bytes);
 
     /**
      * @brief Accessor for the pointer to device memory.
      *
      * @return void* Pointer to device memory.
      */
-    void* Device() {
-        return device_ptr_;
+    void* device() {
+        return devicePtr;
     }
 
     /**
-     * @brief Allocates or resizes device memory to the specified size.
+     * @brief Allocates device memory to the specified size.
      *
-     * @param size Size of device memory to allocate or resize.
-     * @return void* Pointer to device memory.
+     * @param bytes Size of device memory to allocate in bytes.
+     * @return void* Pointer to allocated device memory.
      */
-    void* Device(int64_t size);
-
-    /**
-     * @brief Returns the size of the tensor on the host side.
-     *
-     * @return int64_t Size of the tensor on the host side.
-     */
-    [[nodiscard]] int64_t HostSize() const {
-        return host_bytes_ / dtype_bytes_;
-    }
-
-    /**
-     * @brief Returns the size of the tensor on the device side.
-     *
-     * @return int64_t Size of the tensor on the device side.
-     */
-    [[nodiscard]] int64_t DeviceSize() const {
-        return device_bytes_ / dtype_bytes_;
-    }
+    void* device(int64_t bytes);
 };
 
 /**
@@ -107,53 +81,38 @@ public:
  */
 struct TensorInfo {
 private:
-    int32_t index_;            /**< Index of the tensor */
+    size_t typeSz{};             /**< Size of the tensor's data type in bytes. */
 
 public:
-    std::string    name;       /**< Name of the tensor */
-    nvinfer1::Dims dims;       /**< Dimensions of the tensor */
-    bool           is_dynamic; /**< Whether the tensor is dynamic */
-    bool           is_input;   /**< Whether the tensor is an input */
-    size_t         type_size;  /**< Type size of the tensor */
-    int64_t        vol;        /**< Volume of the tensor */
-    Tensor         tensor;     /**< Tensor object */
+    std::string    name{};       /**< Name of the tensor. */
+    nvinfer1::Dims dims{};       /**< Dimensions of the tensor. */
+    int64_t        bytes{};      /**< Total size of the tensor's data in bytes. */
+    Tensor         tensor{};     /**< Tensor object associated with this TensorInfo. */
+    bool           input{false}; /**< Indicates if the tensor is an input tensor. */
 
     /**
-     * @brief Constructor.
+     * @brief Constructs a TensorInfo object with the given parameters.
      *
-     * @param index Index of the tensor.
      * @param name Name of the tensor.
      * @param dims Dimensions of the tensor.
-     * @param is_dynamic Whether the tensor is dynamic.
-     * @param is_input Whether the tensor is an input.
-     * @param data_type Data type of the tensor.
+     * @param input Indicates if the tensor is an input tensor.
+     * @param typeSz Size of the tensor's data type in bytes.
+     * @param bytes Total size of the tensor's data in bytes.
      */
-    TensorInfo(int32_t index, const char* name, const nvinfer1::Dims& dims,
-               bool is_dynamic, bool is_input, nvinfer1::DataType data_type)
-        : index_(index),
-          name(name),
+    TensorInfo(const char* name, const nvinfer1::Dims& dims, bool input, size_t typeSz, int64_t bytes)
+        : name(name),
           dims(dims),
-          is_dynamic(is_dynamic),
-          is_input(is_input),
-          type_size(GetDataTypeSize(data_type)),
-          tensor(Tensor(GetDataTypeSize(data_type))),
-          vol(CalculateVolume(dims)) {
+          input(input),
+          typeSz(typeSz),
+          tensor(Tensor()),
+          bytes(bytes) {
     }
 
     /**
-     * @brief Accessor for the index of the tensor.
-     *
-     * @return int32_t Index of the tensor.
+     * @brief Updates the total size of the tensor's data based on its dimensions and data type size.
      */
-    [[nodiscard]] int32_t index() const {
-        return index_;
-    }
-
-    /**
-     * @brief Updates the volume of the tensor.
-     */
-    void UpdateVolume() {
-        vol = CalculateVolume(dims);
+    void update() {
+        bytes = calculateVolume(dims) * typeSz;
     }
 };
 

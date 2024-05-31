@@ -8,43 +8,51 @@
 namespace deploy {
 
 /**
- * @brief Custom logger for TensorRT messages.
+ * @brief Custom logger for handling TensorRT messages.
  */
-class TRTLogger : public nvinfer1::ILogger {
+class TrtLogger : public nvinfer1::ILogger {
 private:
-    nvinfer1::ILogger::Severity severity_;
+    nvinfer1::ILogger::Severity mSeverity; /**< Severity level for logging. */
 
 public:
-    explicit TRTLogger(nvinfer1::ILogger::Severity severity = nvinfer1::ILogger::Severity::kINFO)
-        : severity_(severity) {
-    }
+    /**
+     * @brief Constructs a TrtLogger object with the specified severity level.
+     *
+     * @param severity Severity level for logging (default is INFO).
+     */
+    explicit TrtLogger(nvinfer1::ILogger::Severity severity = nvinfer1::ILogger::Severity::kINFO) : mSeverity(severity) {}
 
-    void log(nvinfer1::ILogger::Severity severity,
-             const char*                 msg) noexcept override;
+    /**
+     * @brief Logs a message with the specified severity level.
+     *
+     * @param severity Severity level of the message.
+     * @param msg Message to be logged.
+     */
+    void log(nvinfer1::ILogger::Severity severity, const char* msg) noexcept override;
 };
 
 /**
- * @brief Manages TensorRT engine and execution context.
+ * @brief Manages the TensorRT engine and execution context.
  */
 class EngineContext {
 private:
-    TRTLogger logger_{nvinfer1::ILogger::Severity::kERROR};
+    TrtLogger mLogger{nvinfer1::ILogger::Severity::kERROR}; /**< Logger for handling TensorRT messages. */
 
     /**
      * @brief Destroys the engine, execution context, and runtime.
      */
-    void Destroy();
+    void destroy();
 
 public:
-    std::shared_ptr<nvinfer1::IExecutionContext> context = nullptr;
-    std::shared_ptr<nvinfer1::ICudaEngine>       engine  = nullptr;
-    std::shared_ptr<nvinfer1::IRuntime>          runtime = nullptr;
+    std::shared_ptr<nvinfer1::IExecutionContext> mContext = nullptr; /**< Execution context for TensorRT engine. */
+    std::shared_ptr<nvinfer1::ICudaEngine>       mEngine  = nullptr; /**< TensorRT engine. */
+    std::shared_ptr<nvinfer1::IRuntime>          mRuntime = nullptr; /**< TensorRT runtime. */
 
     /**
-     * @brief Constructs the EngineContext object.
+     * @brief Constructs an EngineContext object.
      */
     EngineContext() {
-        initLibNvInferPlugins(&logger_, "");
+        initLibNvInferPlugins(&mLogger, ""); /**< Initializes TensorRT plugins with custom logger. */
     }
 
     EngineContext(const EngineContext&)            = default;
@@ -52,11 +60,10 @@ public:
     EngineContext& operator=(const EngineContext&) = default;
     EngineContext& operator=(EngineContext&&)      = delete;
     /**
-     * @brief Destroys the EngineContext object and releases associated
-     * resources.
+     * @brief Destroys the EngineContext object and releases associated resources.
      */
     ~EngineContext() {
-        Destroy();
+        destroy(); /**< Destroys the EngineContext object and releases associated resources. */
     }
 
     /**
@@ -66,7 +73,7 @@ public:
      * @param size Size of the serialized engine data.
      * @return bool True if construction succeeds, false otherwise.
      */
-    bool Construct(const void* data, size_t size);
+    bool construct(const void* data, size_t size);
 };
 
 }  // namespace deploy

@@ -1,45 +1,44 @@
 
-#include "deploy/core/tensor.hpp"
-
 #include "deploy/core/macro.hpp"
+#include "deploy/core/tensor.hpp"
 
 namespace deploy {
 
-void Tensor::ReallocHost(int64_t bytes) {
-    if (host_capacity_ < bytes) {
-        CUDA_CHECK_ERROR(cudaFreeHost(host_ptr_));
-        CUDA_CHECK_ERROR(cudaMallocHost(&host_ptr_, bytes));
-        host_capacity_ = bytes;
+void Tensor::reallocHost(int64_t bytes) {
+    if (hostCap < bytes) {
+        CUDA(cudaFreeHost(hostPtr));
+        CUDA(cudaMallocHost(&hostPtr, bytes));
+        hostCap = bytes;
     }
-    host_bytes_ = bytes;
+    hostBytes = bytes;
 }
 
-void Tensor::ReallocDevice(int64_t bytes) {
-    if (device_capacity_ < bytes) {
-        CUDA_CHECK_ERROR(cudaFree(device_ptr_));
-        CUDA_CHECK_ERROR(cudaMalloc(&device_ptr_, bytes));
-        device_capacity_ = bytes;
+void Tensor::reallocDevice(int64_t bytes) {
+    if (deviceCap < bytes) {
+        CUDA(cudaFree(devicePtr));
+        CUDA(cudaMalloc(&devicePtr, bytes));
+        deviceCap = bytes;
     }
-    device_bytes_ = bytes;
+    deviceBytes = bytes;
 }
 
 Tensor::~Tensor() {
-    if (host_ptr_ != nullptr) {
-        CUDA_CHECK_ERROR(cudaFreeHost(host_ptr_));
+    if (hostPtr != nullptr) {
+        CUDA(cudaFreeHost(hostPtr));
     }
-    if (device_ptr_ != nullptr) {
-        CUDA_CHECK_ERROR(cudaFree(device_ptr_));
+    if (devicePtr != nullptr) {
+        CUDA(cudaFree(devicePtr));
     }
 }
 
-void* Tensor::Host(int64_t size) {
-    ReallocHost(size * dtype_bytes_);
-    return host_ptr_;
+void* Tensor::host(int64_t size) {
+    reallocHost(size);
+    return hostPtr;
 }
 
-void* Tensor::Device(int64_t size) {
-    ReallocDevice(size * dtype_bytes_);
-    return device_ptr_;
+void* Tensor::device(int64_t size) {
+    reallocDevice(size);
+    return devicePtr;
 }
 
 }  // namespace deploy
