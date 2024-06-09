@@ -1,7 +1,6 @@
 #pragma once
 
 #include <NvInferPlugin.h>
-#include <NvInferRuntimeBase.h>
 
 #include <memory>
 

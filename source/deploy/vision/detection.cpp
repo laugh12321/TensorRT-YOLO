@@ -5,7 +5,6 @@
 #include "deploy/utils/utils.hpp"
 #include "deploy/vision/detection.hpp"
 
-
 namespace deploy {
 
 DeployDet::DeployDet(const std::string& file, bool cudaMem, int device) : cudaMem(cudaMem) {

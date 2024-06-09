@@ -85,5 +85,4 @@ void cudaWarpAffine(uint8_t* input, uint32_t inputWidth, uint32_t inputHeight,
     gpuPerspectiveWarp<<<gridDim, blockDim, 0, stream>>>(input, inputWidth, inputHeight, output, outputWidth, outputHeight, matrix[0], matrix[1], matrix[2]);
 }
 
-
 }  // namespace deploy

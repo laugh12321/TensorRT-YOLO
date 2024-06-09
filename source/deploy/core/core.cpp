@@ -39,20 +39,20 @@ bool EngineContext::construct(const void* data, size_t size) {
 
     mRuntime = std::shared_ptr<nvinfer1::IRuntime>(
         nvinfer1::createInferRuntime(mLogger), [](nvinfer1::IRuntime* ptr) {
-            if (ptr != nullptr) ptr->destroy();
+            if (ptr != nullptr) delete ptr;
         });
     if (mRuntime == nullptr) return false;
 
     mEngine = std::shared_ptr<nvinfer1::ICudaEngine>(
-        mRuntime->deserializeCudaEngine(data, size, nullptr),
+        mRuntime->deserializeCudaEngine(data, size),
         [](nvinfer1::ICudaEngine* ptr) {
-            if (ptr != nullptr) ptr->destroy();
+            if (ptr != nullptr) delete ptr;
         });
     if (mEngine == nullptr) return false;
 
     mContext = std::shared_ptr<nvinfer1::IExecutionContext>(
         mEngine->createExecutionContext(), [](nvinfer1::IExecutionContext* ptr) {
-            if (ptr != nullptr) ptr->destroy();
+            if (ptr != nullptr) delete ptr;
         });
     return mContext != nullptr;
 }

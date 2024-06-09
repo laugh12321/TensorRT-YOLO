@@ -1,6 +1,6 @@
 #pragma once
 
-#include <NvInferRuntimeBase.h>
+#include <NvInferRuntime.h>
 
 #include <cstddef>
 #include <cstdint>

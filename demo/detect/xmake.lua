@@ -43,6 +43,7 @@ target("detect")
     -- 添加 cuda
     add_rules("cuda")
     add_cugencodes("native")
+    add_cuflags("-allow-unsupported-compiler")
 
     -- 添加deploy链接目录和链接库
     if has_config("deploy") then
@@ -72,5 +73,5 @@ target("detect")
     if has_config("tensorrt") then
         add_includedirs(path.join("$(tensorrt)", "include"))
         add_linkdirs(path.join("$(tensorrt)", "lib"))
-        add_links("nvinfer", "nvinfer_plugin", "nvparsers", "nvonnxparser")
+        add_links("nvinfer", "nvinfer_plugin", "nvonnxparser")
     end
