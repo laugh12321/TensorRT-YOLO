@@ -81,4 +81,81 @@ private:
     DetectionResult postProcess(int idx);
 };
 
+class DEPLOY_DECL DeployCGDet {
+public:
+    // Constructor to initialize DeployCGDet with a model file and optional CUDA memory flag.
+    explicit DeployCGDet(const std::string& file, bool cudaMem = false, int device = 0);
+
+    // Destructor to clean up resources.
+    ~DeployCGDet();
+
+    // Perform object detection on a batch of images.
+    std::vector<DetectionResult> predict(const std::vector<Image>& images);
+
+    // Batch size for inference.
+    int batch{};
+
+private:
+    // Setup input and output tensors.
+    void setupTensors();
+
+    // Create CUDA graph for inference.
+    void createGraph();
+
+    // Retrieve graph nodes for the CUDA graph.
+    void getGraphNodes();
+
+    // Post-process inference results.
+    DetectionResult postProcess(int idx);
+
+    // Allocate memory for input and output tensors.
+    void allocate();
+
+    // Release allocated resources.
+    void release();
+
+    // Flag indicating whether CUDA memory is used.
+    bool cudaMem{false};
+
+    // Width and height of input images.
+    int width{0}, height{0}, inputSize{0};
+
+    // CUDA graph and its executable instance.
+    cudaGraph_t     inferGraph{};
+    cudaGraphExec_t inferGraphExec{};
+
+    // Nodes in the CUDA graph.
+    std::unique_ptr<cudaGraphNode_t[]> graphNodes{};
+
+    // Parameters for CUDA kernel nodes.
+    std::vector<cudaKernelNodeParams> kernelsParams{};
+
+    // Parameters for CUDA memory copy operations.
+    cudaMemcpy3DParms memcpyParams;
+
+    // CUDA events for synchronizing input operations.
+    std::vector<cudaEvent_t> inputEvents{};
+
+    // Engine context for inference.
+    std::shared_ptr<EngineContext> engineCtx{};
+
+    // Tensor for storing input images.
+    std::shared_ptr<Tensor> imageTensor{};
+
+    // Transformation matrices for preprocessing.
+    std::vector<TransformMatrix> transforms{};
+
+    // Information about input and output tensors.
+    std::vector<TensorInfo> tensorInfos{};
+
+    // CUDA streams for parallel execution.
+    std::vector<cudaStream_t> inputStreams{};
+
+    // Sizes of the input images.
+    std::vector<int> imageSize{0};
+
+    // CUDA stream for inference.
+    cudaStream_t inferStream{nullptr};
+};
+
 }  // namespace deploy
