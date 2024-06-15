@@ -62,10 +62,12 @@ xmake f -P . --tensorrt="/path/to/your/TensorRT" --deploy=/path/to/your/TensorRT
 xmake -P . -r
 ```
 
-执行上述命令后，将在根目录的 `build` 目录下生成名为 `detect` 的可执行文件。最后，运行以下命令进行推理：
+在执行上述命令后，将在根目录的 `build` 目录下生成名为 `detect` 的可执行文件。最后，您可以直接运行可执行文件或使用 `xmake run` 命令进行推理。使用 `--help` 查看详细指令选项：
+
+> 要加速推理过程，请使用 `--cudaGraph` 指令，但此功能仅支持静态模型，不支持动态模型。
 
 ```bash
-xmake run -P . detect -e models/yolov8s.engine -i images -o output -l labels.txt
+xmake run -P . detect -e models/yolov8s.engine -i images -o output -l labels.txt --cudaGraph
 ```
 
 以上是进行模型推理的方法示例。

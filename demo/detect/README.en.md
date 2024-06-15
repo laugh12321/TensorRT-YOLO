@@ -62,10 +62,12 @@ xmake f -P . --tensorrt="/path/to/your/TensorRT" --deploy=/path/to/your/TensorRT
 xmake -P . -r
 ```
 
-After executing the above commands, an executable file named `detect` will be generated in the `build` directory at the root. Finally, run the following command for inference:
+After executing the commands above, an executable named `detect` will be generated in the `build` directory at the root. Finally, you can run the executable directly or use `xmake run` for inference. Use `--help` to view detailed command options:
+
+> For accelerated inference, use the --cudaGraph option, which supports only static models and not dynamic models.
 
 ```bash
-xmake run -P . detect -e models/yolov8s.engine -i images -o output -l labels.txt
+xmake run -P . detect -e models/yolov8s.engine -i images -o output -l labels.txt --cudaGraph
 ```
 
 These are the examples of performing model inference.
