@@ -256,22 +256,22 @@ class PPYOLOEGraphSurgeon:
 
         op_outputs = [
             gs.Variable(
-                name="num_detections",
+                name="num_dets",
                 dtype=np.int32,
                 shape=["batch" if self.dynamic else self.batch_size, 1],
             ),
             gs.Variable(
-                name="detection_boxes",
+                name="det_boxes",
                 dtype=np.float32,
                 shape=["batch" if self.dynamic else self.batch_size, detections_per_img, 4],
             ),
             gs.Variable(
-                name="detection_scores",
+                name="det_scores",
                 dtype=np.float32,
                 shape=["batch" if self.dynamic else self.batch_size, detections_per_img],
             ),
             gs.Variable(
-                name="detection_classes",
+                name="det_classes",
                 dtype=np.int32,
                 shape=["batch" if self.dynamic else self.batch_size, detections_per_img],
             ),
