@@ -121,7 +121,6 @@ class PPYOLOEGraphSurgeon:
 
         # Fold constants via ONNX-GS
         self.graph.fold_constants()
-        self.save(onnx_path)
 
     def _infer(self) -> None:
         """
