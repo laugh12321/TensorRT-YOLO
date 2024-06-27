@@ -50,6 +50,8 @@ TensorRT-YOLO is an inference acceleration project that supports YOLOv3, YOLOv5,
 
 - [Model Inference Examples](demo/detect/README.en.md)
 
+- [Video Analysis Example](demo/VideoPipe/README.en.md)
+
 ## <div align="center">📺 BiliBili</div>
 
 - [啪的一下，很快啊！TensorRT YOLOv5s 在FP16模式下，批量大小4，仅需13毫秒！](https://www.bilibili.com/video/BV1dy421q7Am)
@@ -61,6 +63,8 @@ TensorRT-YOLO is an inference acceleration project that supports YOLOv3, YOLOv5,
 - [【TensorRT-YOLO】3.0 Docker 部署演示](https://www.bilibili.com/video/BV1Jr42137EP)
 
 - [【TensorRT-YOLO】CUDA Graphs 加速推理](https://www.bilibili.com/video/BV1RZ421M7JV)
+
+- [【TensorRT-YOLO】接入 VideoPipe 演示](https://www.bilibili.com/video/BV121421C755)
 
 ## <div align="center">📄 License</div>
 
