@@ -1,7 +1,6 @@
 -- 设置项目信息
 set_project("TensorRT-YOLO")
-set_version("3.0")
-set_xmakever("2.8.0")
+set_version("4.0")
 set_languages("cxx17")
 set_allowedplats("windows", "linux")
 
