@@ -1,22 +1,18 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools >= 61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
 # Project settings -----------------------------------------------------------------------------------------------------
 [project]
-name = "tensorrt_yolo"
-version = "3.0.3"
-description = "TensorRT-YOLO: Support YOLOv3, YOLOv5, YOLOv6, YOLOv7, YOLOv8, YOLOv9 and PP-YOLOE using TensorRT acceleration with EfficientNMS!"
+version = "4.0.0"
 readme = "README.md"
+name = "tensorrt_yolo"
 requires-python = ">=3.8"
 license = {file = "LICENSE"}
-keywords = ["machine-learning", "deep-learning", "computer-vision", "ML", "DL", "AI", "YOLO", "YOLOv3", "YOLOv5", "YOLOv6", "YOLOv7", "YOLOv8", "YOLOv9", "PP-YOLOE", "TensorRT", "CUDA", "detection", "ONNX", "EfficientNMS"]
-authors = [
-    { name="laugh12321", email="laugh12321@vip.qq.com" }
-]
-maintainers = [
-    { name = "laugh12321" },
-]
+maintainers = [{ name = "laugh12321" }]
+authors = [{ name = "laugh12321", email = "laugh12321@vip.qq.com" }]
+description = "TensorRT-YOLO: Support YOLOv3, YOLOv5, YOLOv6, YOLOv7, YOLOv8, YOLOv9, YOLOv10 and PP-YOLOE using TensorRT acceleration with EfficientNMS!"
+keywords = ["machine-learning", "deep-learning", "computer-vision", "ML", "DL", "AI", "YOLO", "YOLOv3", "YOLOv5", "YOLOv6", "YOLOv7", "YOLOv8", "YOLOv9", "YOLOv10", "PP-YOLOE", "TensorRT", "CUDA", "detection", "ONNX", "EfficientNMS"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -39,14 +35,13 @@ classifiers = [
 
 # Required dependencies ------------------------------------------------------------------------------------------------
 dependencies = [
-    "ultralytics",
-    "rich_click",
     "loguru",
-    "cuda-python",
-    "polygraphy",
     "onnx>=1.12.0",
+    "onnx_graphsurgeon",
     "onnxruntime",
-    "onnxsim", 
+    "onnxsim",
+    "rich_click",
+    "ultralytics",
 ]
 
 [project.urls]
@@ -55,13 +50,17 @@ dependencies = [
 "Source" = "https://github.com/laugh12321/TensorRT-YOLO"
 
 [project.scripts]
-trtyolo = "tensorrt_yolo:trtyolo"
+trtyolo = "tensorrt_yolo.cli:trtyolo"
 
 # Tools settings -------------------------------------------------------------------------------------------------------
-[tool.hatch.build.targets.sdist]
-ignore-vcs = true
-only-packages = true
-packages = ["tensorrt_yolo"]
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["tensorrt_yolo*"]
+
+[tool.setuptools.package-data]
+"tensorrt_yolo" = ["libs/*.pyd", "libs/*.so", "libs/*.dll", "libs/*.exp", "libs/*.lib"]
 
 [tool.ruff]
 line-length = 140
@@ -161,6 +160,7 @@ ignore = [
     "UP015",
     # It will cause the performance regression on python3.10
     "UP038",
+    "UP009",
 ]
 
 [tool.ruff.lint.isort]

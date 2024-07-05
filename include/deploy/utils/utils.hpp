@@ -141,10 +141,8 @@ private:
 };
 
 /**
- * @brief Class for CPU timer.
- * @tparam Clock Type of clock to use for timing (e.g., std::chrono::high_resolution_clock).
+ * @brief Class for CPU timer using high resolution clock.
  */
-template <typename Clock = std::chrono::high_resolution_clock>
 class DEPLOY_DECL CpuTimer : public TimerBase {
 public:
     /**
@@ -164,6 +162,7 @@ public:
     }
 
 private:
+    using Clock = std::chrono::high_resolution_clock;
     typename Clock::time_point mStart; /**< Start time */
     typename Clock::time_point mStop;  /**< Stop time */
 };

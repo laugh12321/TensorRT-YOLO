@@ -1,22 +1,14 @@
-import sys
-
-from loguru import logger
-
-from .batcher import ImageBatcher
-from .general import generate_labels_with_colors, letterbox, scale_boxes, visualize_detections
-from .structs import DetectInfo, TensorInfo
-from .yolo import TRTYOLO
-
-# For scripts
-logger.configure(handlers=[{"sink": sys.stdout, "colorize": True, "format": "<level>[{level.name[0]}]</level> <level>{message}</level>"}])
+from .detection import Box, DeployCGDet, DeployDet, DetectionResult
+from .timer import CpuTimer, GpuTimer
+from .visualize import generate_labels_with_colors, visualize_detections
 
 __all__ = [
-    'TRTYOLO',
-    'ImageBatcher',
-    'TensorInfo',
-    'DetectInfo',
-    'generate_labels_with_colors',
-    'letterbox',
-    'scale_boxes',
-    'visualize_detections',
+    "DeployDet",
+    "DeployCGDet",
+    "DetectionResult",
+    "Box",
+    "GpuTimer",
+    "CpuTimer",
+    "generate_labels_with_colors",
+    "visualize_detections",
 ]

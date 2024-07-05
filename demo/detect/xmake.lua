@@ -73,5 +73,9 @@ target("detect")
     if has_config("tensorrt") then
         add_includedirs(path.join("$(tensorrt)", "include"))
         add_linkdirs(path.join("$(tensorrt)", "lib"))
-        add_links("nvinfer", "nvinfer_plugin", "nvonnxparser")
+        if is_host("windows") and os.exists(path.join(get_config("tensorrt"), "lib", "nvinfer_10.dll")) then
+            add_links("nvinfer_10", "nvinfer_plugin_10", "nvonnxparser_10")
+        else
+            add_links("nvinfer", "nvinfer_plugin", "nvonnxparser")
+        end
     end

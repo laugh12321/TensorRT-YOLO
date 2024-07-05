@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*-coding:utf-8 -*-
 # ==============================================================================
 # Copyright (c) 2024 laugh12321 Authors. All Rights Reserved.
 #

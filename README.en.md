@@ -46,8 +46,6 @@ TensorRT-YOLO is an inference acceleration project that supports YOLOv3, YOLOv5,
 
 - [Export Models using CLI](docs/en/model_export.md)
 
-- [PTQ INT8 Quantization](tools/README.en.md)
-
 - [Model Inference Examples](demo/detect/README.en.md)
 
 - [Video Analysis Example](demo/VideoPipe/README.en.md)

@@ -46,8 +46,6 @@ TensorRT-YOLO 是一个支持 YOLOv3、YOLOv5、YOLOv6、YOLOv7、YOLOv8、YOLOv
 
 - [使用 CLI 模型导出](docs/cn/model_export.md)
 
-- [PTQ INT8 量化](tools/README.md)
-
 - [模型推理示例](demo/detect/README.md)
 
 - [视频分析示例](demo/VideoPipe/README.md)

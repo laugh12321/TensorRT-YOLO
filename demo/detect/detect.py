@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*-coding:utf-8 -*-
 # ==============================================================================
 # Copyright (c) 2024 laugh12321 Authors. All Rights Reserved.
 #
@@ -21,15 +22,37 @@
 # Date    :   2024/01/29 15:13:41
 # Desc    :   YOLO Series Inference Script.
 # ==============================================================================
-import time
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from typing import List
 
 import rich_click as click
 from loguru import logger
-from rich.progress import track
 
-from tensorrt_yolo.infer import TRTYOLO, ImageBatcher, generate_labels_with_colors, visualize_detections
+
+def get_images_in_batches(folder_path: str, batch: int, is_cuda_graph: bool) -> List[List[str]]:
+    """
+    Get a list of image files in the specified directory, grouped into batches.
+
+    Args:
+        folder_path (str): Path to the directory to search for image files.
+        batch (int): The number of images in each batch.
+        is_cuda_graph (bool): Flag indicating whether to discard extra images if using CUDA graph.
+
+    Returns:
+        List[List[str]]: List of image file paths grouped into batches.
+    """
+    image_extensions = {'.jpg', '.jpeg', '.png', '.bmp'}
+    image_files = [path for path in Path(folder_path).rglob('*') if path.suffix.lower() in image_extensions and path.is_file()]
+
+    if not is_cuda_graph:
+        # If not using CUDA graph, include all images, padding the last batch if necessary
+        batches = [image_files[i : i + batch] for i in range(0, len(image_files), batch)]
+    else:
+        # If using CUDA graph, exclude extra images that don't fit into a full batch
+        total_images = (len(image_files) // batch) * batch
+        batches = [image_files[i : i + batch] for i in range(0, total_images, batch)]
+
+    return batches
 
 
 @click.command("YOLO Series Inference Script.")
@@ -37,41 +60,52 @@ from tensorrt_yolo.infer import TRTYOLO, ImageBatcher, generate_labels_with_colo
 @click.option('-i', '--input', required=True, type=str, help="Path to the image or directory to process.")
 @click.option('-o', '--output', type=str, default=None, help='Directory where to save the visualization results.')
 @click.option("-l", "--labels", default="./labels.txt", help="File to use for reading the class labels from, default: ./labels.txt")
-def main(engine, input, output, labels):
+@click.option('--cudaGraph', is_flag=True, help='Optimize inference using CUDA Graphs, compatible with static models only.')
+def main(engine, input, output, labels, cudagraph):
     """
     YOLO Series Inference Script.
     """
-    labels = generate_labels_with_colors(labels)
-    model = TRTYOLO(engine)
-    model.warmup()
+    import cv2
+    from rich.progress import track
 
-    total_time = 0.0
-    total_infers = 0
-    total_images = 0
+    from tensorrt_yolo.infer import CpuTimer, DeployCGDet, DeployDet, GpuTimer, generate_labels_with_colors, visualize_detections
+
+    if output:
+        output_dir = Path(output)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        labels = generate_labels_with_colors(labels)
+
+    if cudagraph:
+        model = DeployCGDet(engine)
+    else:
+        model = DeployDet(engine)
+
+    cpu_timer = CpuTimer()
+    gpu_timer = GpuTimer()
+
     logger.info(f"Infering data in {input}")
-    batcher = ImageBatcher(input_path=input, batch_size=model.batch_size, imgsz=model.imgsz, dtype=model.dtype, dynamic=model.dynamic)
 
-    for batch, images, batch_shape in track(batcher, description="[cyan]Processing batches", total=len(batcher.batches)):
-        start_time_ns = time.perf_counter_ns()
-        detections = model.infer(batch, batch_shape)
-        end_time_ns = time.perf_counter_ns()
-        elapsed_time_ms = (end_time_ns - start_time_ns) / 1e6
-        total_time += elapsed_time_ms
-        total_images += len(images)
-        total_infers += 1
+    batchs = get_images_in_batches(input, model.batch, cudagraph)
+    for batch in track(batchs, description="[cyan]Processing batches", total=model.batch):
+        images = [cv2.imread(str(image_path)) for image_path in batch]
+
+        cpu_timer.start()
+        gpu_timer.start()
+
+        results = model.predict(images)
+
+        cpu_timer.stop()
+        gpu_timer.stop()
+
         if output:
-            output_dir = Path(output)
-            output_dir.mkdir(parents=True, exist_ok=True)
-            with ThreadPoolExecutor() as executor:
-                args_list = [(str(image), str(output_dir / image.name), detections[i], labels) for i, image in enumerate(images)]
-                executor.map(visualize_detections, *zip(*args_list))
+            for image_path, image, result in zip(batch, images, results):
+                vis_image = visualize_detections(image, result, labels)
+                cv2.imwrite(str(output_dir / image_path.name), vis_image)
 
-    average_latency = total_time / total_infers
-    average_throughput = total_images / (total_time / 1000)
     logger.success(
-        "Benchmark results include time for H2D and D2H memory copies\n"
-        f"    CPU Average Latency: {average_latency:.3f} ms\n"
-        f"    CPU Average Throughput: {average_throughput:.1f} ips\n"
+        "Benchmark results include time for H2D and D2H memory copies, preprocessing, and postprocessing.\n"
+        f"    CPU Average Latency: {cpu_timer.milliseconds() / len(batchs):.3f} ms\n"
+        f"    GPU Average Latency: {gpu_timer.milliseconds() / len(batchs):.3f} ms\n"
         "    Finished Inference."
     )
 

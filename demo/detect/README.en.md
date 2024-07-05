@@ -36,8 +36,10 @@ trtyolo infer --help
 
 Then, execute the following command for inference:
 
+> For accelerated inference, use the --cudaGraph option, which supports only static models and not dynamic models.
+
 ```bash
-trtyolo infer -e models/yolov8s.engine -i images -o output -l labels.txt
+trtyolo infer -e models/yolov8s.engine -i images -o output -l labels.txt --cudaGraph
 ```
 
 This command will generate visual inference results in the `output` folder.
@@ -46,8 +48,10 @@ This command will generate visual inference results in the `output` folder.
 
 You can also perform inference using the `tensorrt_yolo` library by writing scripts. `detect.py` is a pre-written script for inference.
 
+> For accelerated inference, use the --cudaGraph option, which supports only static models and not dynamic models.
+
 ```bash
-python detect.py -e models/yolov8s.engine -i images -o output -l labels.txt
+python detect.py -e models/yolov8s.engine -i images -o output -l labels.txt --cudaGraph
 ```
 
 ### Inference Using C++

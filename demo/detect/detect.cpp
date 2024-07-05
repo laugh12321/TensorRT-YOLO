@@ -117,10 +117,10 @@ int main(int argc, char** argv) {
             throw std::runtime_error("No image files found in the directory: " + inputPath);
         }
 
-        int                                                  count     = 0;
-        const size_t                                         batchSize = model->batch;
-        deploy::GpuTimer                                     gpuTimer;
-        deploy::CpuTimer<std::chrono::high_resolution_clock> cpuTimer;
+        int              count     = 0;
+        const size_t     batchSize = model->batch;
+        deploy::GpuTimer gpuTimer;
+        deploy::CpuTimer cpuTimer;
 
         for (size_t i = 0; i < imageFiles.size(); i += batchSize) {
             std::vector<cv::Mat>       images;
@@ -160,8 +160,8 @@ int main(int argc, char** argv) {
         }
 
         if (count > 0) {
-            std::cout << "Average infer CPU elapsed time: " << cpuTimer.microseconds() / 1000 / count << " ms" << std::endl;
-            std::cout << "Average infer GPU elapsed time: " << gpuTimer.microseconds() / 1000 / count << " ms" << std::endl;
+            std::cout << "Average infer CPU elapsed time: " << cpuTimer.milliseconds() / count << " ms" << std::endl;
+            std::cout << "Average infer GPU elapsed time: " << gpuTimer.milliseconds() / count << " ms" << std::endl;
         }
     }
 

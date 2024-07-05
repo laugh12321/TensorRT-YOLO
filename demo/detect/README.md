@@ -36,8 +36,10 @@ trtyolo infer --help
 
 然后，执行以下命令进行推理：
 
+> 要加速推理过程，请使用 `--cudaGraph` 指令，但此功能仅支持静态模型，不支持动态模型。
+
 ```bash
-trtyolo infer -e models/yolov8s.engine -i images -o output -l labels.txt
+trtyolo infer -e models/yolov8s.engine -i images -o output -l labels.txt --cudaGraph
 ```
 
 此命令将在 `output` 文件夹中生成可视化的推理结果。
@@ -46,8 +48,10 @@ trtyolo infer -e models/yolov8s.engine -i images -o output -l labels.txt
 
 也可以使用 `tensorrt_yolo` 库编写脚本进行推理，`detect.py` 是已经写好的脚本。
 
+> 要加速推理过程，请使用 `--cudaGraph` 指令，但此功能仅支持静态模型，不支持动态模型。
+
 ```bash
-python detect.py -e models/yolov8s.engine -i images -o output -l labels.txt
+python detect.py -e models/yolov8s.engine -i images -o output -l labels.txt --cudaGraph
 ```
 
 ### 使用 C++ 进行推理
