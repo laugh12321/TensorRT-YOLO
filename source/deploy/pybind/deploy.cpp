@@ -29,23 +29,24 @@ Image PyArray2Image(pybind11::array &pyarray) {
 void BindUtils(pybind11::module &m) {
     m.doc() = "Python bindings for CpuTimer and GpuTimer using Pybind11";
 
-    pybind11::class_<GpuTimer>(m, "GpuTimer")
+    pybind11::class_<TimerBase>(m, "TimerBase", "Base class for timers.")
         .def(pybind11::init<>())
-        .def("start", &GpuTimer::start, "Start the GPU timer")
-        .def("stop", &GpuTimer::stop, "Stop the GPU timer")
-        .def("microseconds", &GpuTimer::microseconds, "Get the elapsed time in microseconds")
-        .def("milliseconds", &GpuTimer::milliseconds, "Get the elapsed time in milliseconds")
-        .def("seconds", &GpuTimer::seconds, "Get the elapsed time in seconds")
-        .def("reset", &GpuTimer::reset, "Reset the GPU timer");
+        .def("start", &TimerBase::start, "Starts the timer.")
+        .def("stop", &TimerBase::stop, "Stops the timer.")
+        .def("microseconds", &TimerBase::microseconds, "Get the elapsed time in microseconds.")
+        .def("milliseconds", &TimerBase::milliseconds, "Get the elapsed time in milliseconds.")
+        .def("seconds", &TimerBase::seconds, "Get the elapsed time in seconds.")
+        .def("reset", &TimerBase::reset, "Resets the timer.");
 
-    pybind11::class_<CpuTimer>(m, "CpuTimer")
+    pybind11::class_<GpuTimer, TimerBase>(m, "GpuTimer", "Class for GPU timer.")
         .def(pybind11::init<>())
-        .def("start", &CpuTimer::start, "Start the CPU timer")
-        .def("stop", &CpuTimer::stop, "Stop the CPU timer")
-        .def("microseconds", &CpuTimer::microseconds, "Get the elapsed time in microseconds")
-        .def("milliseconds", &CpuTimer::milliseconds, "Get the elapsed time in milliseconds")
-        .def("seconds", &CpuTimer::seconds, "Get the elapsed time in seconds")
-        .def("reset", &CpuTimer::reset, "Reset the CPU timer");
+        .def("start", &GpuTimer::start, "Starts the GPU timer.")
+        .def("stop", &GpuTimer::stop, "Stops the GPU timer.");
+
+    pybind11::class_<CpuTimer, TimerBase>(m, "CpuTimer", "Class for CPU timer using high resolution clock.")
+        .def(pybind11::init<>())
+        .def("start", &CpuTimer::start, "Starts the CPU timer.")
+        .def("stop", &CpuTimer::stop, "Stops the CPU timer and calculates the elapsed time.");
 }
 
 // Bind result classes
