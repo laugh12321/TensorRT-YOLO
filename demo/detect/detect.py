@@ -87,7 +87,7 @@ def main(engine, input, output, labels, cudagraph):
 
     batchs = get_images_in_batches(input, model.batch, cudagraph)
     for batch in track(batchs, description="[cyan]Processing batches", total=len(batchs)):
-        images = [cv2.imread(str(image_path)) for image_path in batch]
+        images = [cv2.cvtColor(cv2.imread(str(image_path)), cv2.COLOR_BGR2RGB) for image_path in batch]
 
         cpu_timer.start()
         gpu_timer.start()
@@ -100,7 +100,7 @@ def main(engine, input, output, labels, cudagraph):
         if output:
             for image_path, image, result in zip(batch, images, results):
                 vis_image = visualize_detections(image, result, labels)
-                cv2.imwrite(str(output_dir / image_path.name), vis_image)
+                cv2.imwrite(str(output_dir / image_path.name), cv2.cvtColor(vis_image, cv2.COLOR_RGB2BGR))
 
     logger.success(
         "Benchmark results include time for H2D and D2H memory copies, preprocessing, and postprocessing.\n"

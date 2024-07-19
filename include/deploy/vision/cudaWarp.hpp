@@ -7,10 +7,10 @@
 namespace deploy {
 
 /**
- * @brief Struct representing a 3x3 transformation matrix for affine warp.
+ * @brief Struct representing a 2x3 transformation matrix for affine warp.
  */
 struct TransformMatrix {
-    float3 matrix[3];   // The 3x3 transformation matrix for affine warp.
+    float3 matrix[2];   // The 2x3 transformation matrix for affine warp.
     int    lastWidth;   // Width of the last processed source image.
     int    lastHeight;  // Height of the last processed source image.
 
@@ -49,6 +49,6 @@ struct TransformMatrix {
  */
 void cudaWarpAffine(
     uint8_t* input, uint32_t inputWidth, uint32_t inputHeight,
-    float* output, uint32_t outputWidth, uint32_t outputHeight, float3 matrix[3], cudaStream_t stream);
+    float* output, uint32_t outputWidth, uint32_t outputHeight, float3 matrix[2], cudaStream_t stream);
 
 }  // namespace deploy

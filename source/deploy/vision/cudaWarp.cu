@@ -8,46 +8,64 @@ inline __device__ __host__ int iDivUp(int a, int b) {
     return (a % b != 0) ? (a / b + 1) : (a / b);
 }
 
-__global__ void gpuPerspectiveWarp(uint8_t* input, int inputWidth, int inputHeight,
+__global__ void gpuBilinearWarpAffine(uint8_t* input, int inputWidth, int inputHeight,
                                    float* output, int outputWidth, int outputHeight,
-                                   float3 m0, float3 m1, float3 m2) {
+                                   float3 m0, float3 m1) {
     const int x = blockDim.x * blockIdx.x + threadIdx.x;
     const int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const int inputLineSize = inputWidth * 3;
+    const int outputArea = outputWidth * outputHeight;
 
     if (x >= outputWidth || y >= outputHeight)
         return;
 
-    const float3 vec = make_float3(x, y, 1.0f);
+    float inputX = m0.x * x + m0.y * y + m0.z;
+    float inputY = m1.x * x + m1.y * y + m1.z;
 
-    const float3 vecOut = make_float3(m0.x * vec.x + m0.y * vec.y + m0.z * vec.z,
-                                      m1.x * vec.x + m1.y * vec.y + m1.z * vec.z,
-                                      m2.x * vec.x + m2.y * vec.y + m2.z * vec.z);
-
-    const int u = __float2int_rd(vecOut.x / vecOut.z);
-    const int v = __float2int_rd(vecOut.y / vecOut.z);
-
-    const int index = y * outputWidth + x;
-    const int area = outputWidth * outputHeight;
-
+    // Initialize to constant value for out of range
     float c0 = 0.0f, c1 = 0.0f, c2 = 0.0f;
 
-    // Use texture memory for better caching if the input is read-only
-    if (u >= 0 && u < inputWidth && v >= 0 && v < inputHeight) {
-        const int idx = (v * inputWidth + u) * 3;
+    // Precompute interpolation coefficients and boundary checks
+    if (inputX > -1 && inputX < inputWidth && inputY > -1 && inputY < inputHeight) {
+        int lowX  = __float2int_rd(inputX);
+        int lowY  = __float2int_rd(inputY);
+        int highX = lowX + 1;
+        int highY = lowY + 1;
 
-        c0 = input[idx] / 255.0f;
-        c1 = input[idx + 1] / 255.0f;
-        c2 = input[idx + 2] / 255.0f;
+        // Clamp coordinates within image boundaries
+        lowX  = max(0, min(lowX, inputWidth - 1));
+        highX = max(0, min(highX, inputWidth - 1));
+        lowY  = max(0, min(lowY, inputHeight - 1));
+        highY = max(0, min(highY, inputHeight - 1));
+
+        // Calculate interpolation weights
+        float lx = inputX - lowX;
+        float ly = inputY - lowY;
+        float hx = 1.0f - lx;
+        float hy = 1.0f - ly;
+
+        // Calculate pixel pointers
+        uint8_t *v1 = input + lowY * inputLineSize + lowX * 3;
+        uint8_t *v2 = input + lowY * inputLineSize + highX * 3;
+        uint8_t *v3 = input + highY * inputLineSize + lowX * 3;
+        uint8_t *v4 = input + highY * inputLineSize + highX * 3;
+
+        // Perform bilinear interpolation for each channel
+        c0 = hy * (hx * v1[0] + lx * v2[0]) + ly * (hx * v3[0] + lx * v4[0]);
+        c1 = hy * (hx * v1[1] + lx * v2[1]) + ly * (hx * v3[1] + lx * v4[1]);
+        c2 = hy * (hx * v1[2] + lx * v2[2]) + ly * (hx * v3[2] + lx * v4[2]);
     }
 
-    output[index] = c0;
-    output[index + area] = c1;
-    output[index + 2 * area] = c2;
+    // Normalize values to range [0, 1]
+    c0 *= 0.00392156862f; // Equivalent to c0 /= 255.0f;
+    c1 *= 0.00392156862f;
+    c2 *= 0.00392156862f;
 
-    // without channel swap
-    // output[index * 3] = c0;
-    // output[index * 3 + 1] = c1;
-    // output[index * 3 + 2] = c2;
+    // Reorder RGB to RRRGGGBBB
+    int index = y * outputWidth + x;
+    output[index] = c0;
+    output[index + outputArea] = c1;
+    output[index + 2 * outputArea] = c2;
 }
 
 void TransformMatrix::update(int fromWidth, int fromHeight, int toWidth, int toHeight) {
@@ -68,7 +86,6 @@ void TransformMatrix::update(int fromWidth, int fromHeight, int toWidth, int toH
 
     matrix[0] = make_float3(A, 0.0, -A * (scaleFromWidth + halfToWidth + offset));
     matrix[1] = make_float3(0.0, A, -A * (scaleFromHeight + halfToHeight + offset));
-    matrix[2] = make_float3(0.0, 0.0, 1.0);
 }
 
 void TransformMatrix::transform(float x, float y, float* ox, float* oy) const {
@@ -78,11 +95,11 @@ void TransformMatrix::transform(float x, float y, float* ox, float* oy) const {
 
 void cudaWarpAffine(uint8_t* input, uint32_t inputWidth, uint32_t inputHeight,
                     float* output, uint32_t outputWidth, uint32_t outputHeight,
-                    float3 matrix[3], cudaStream_t stream) {
+                    float3 matrix[2], cudaStream_t stream) {
     // launch kernel
     const dim3 blockDim(8, 8);
     const dim3 gridDim(iDivUp(outputWidth, blockDim.x), iDivUp(outputHeight, blockDim.y));
-    gpuPerspectiveWarp<<<gridDim, blockDim, 0, stream>>>(input, inputWidth, inputHeight, output, outputWidth, outputHeight, matrix[0], matrix[1], matrix[2]);
+    gpuBilinearWarpAffine<<<gridDim, blockDim, 0, stream>>>(input, inputWidth, inputHeight, output, outputWidth, outputHeight, matrix[0], matrix[1]);
 }
 
 }  // namespace deploy

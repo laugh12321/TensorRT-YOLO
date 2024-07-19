@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
         deploy::Image image(cvimage.data, cvimage.cols, cvimage.rows);
         auto          result = model->predict(image);
         if (!outputPath.empty()) {
-            // cv::cvtColor(cvimage, cvimage, cv::COLOR_RGB2BGR);
+            cv::cvtColor(cvimage, cvimage, cv::COLOR_RGB2BGR);
             visualize(cvimage, result, labels);
             cv::imwrite(outputPath + "/" + fs::path(inputPath).filename().string(), cvimage);
         }
@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
 
             for (size_t j = i; j < i + batchSize && j < imageFiles.size(); ++j) {
                 cv::Mat image = cv::imread(imageFiles[j], cv::IMREAD_COLOR);
-                // cv::cvtColor(image, image, cv::COLOR_BGR2RGB); // It is better to use RGB images, but the impact of using BGR on the results is not significant.
+                cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
                 images.emplace_back(image);
                 imgBatch.emplace_back(image.data, image.cols, image.rows);
                 imgNameBatch.emplace_back(fs::path(imageFiles[j]).filename().string());
@@ -152,7 +152,7 @@ int main(int argc, char** argv) {
 
             if (!outputPath.empty()) {
                 for (size_t j = 0; j < images.size(); ++j) {
-                    // cv::cvtColor(images[j], images[j], cv::COLOR_RGB2BGR);
+                    cv::cvtColor(images[j], images[j], cv::COLOR_RGB2BGR);
                     visualize(images[j], results[j], labels);
                     cv::imwrite(outputPath + "/" + imgNameBatch[j], images[j]);
                 }

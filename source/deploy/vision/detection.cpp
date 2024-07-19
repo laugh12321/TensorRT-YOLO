@@ -455,7 +455,6 @@ std::vector<DetectionResult> DeployCGDet::predict(const std::vector<Image>& imag
             kernelsParams[i].kernelParams[2] = (void*)&images[i].height;
             kernelsParams[i].kernelParams[6] = (void*)&transforms[i].matrix[0];
             kernelsParams[i].kernelParams[7] = (void*)&transforms[i].matrix[1];
-            kernelsParams[i].kernelParams[8] = (void*)&transforms[i].matrix[2];
             CUDA(cudaGraphExecKernelNodeSetParams(inferGraphExec, graphNodes[i], &kernelsParams[i]));
         }
     } else {
@@ -488,7 +487,6 @@ std::vector<DetectionResult> DeployCGDet::predict(const std::vector<Image>& imag
             kernelsParams[i].kernelParams[2] = (void*)&images[i].height;
             kernelsParams[i].kernelParams[6] = (void*)&transforms[i].matrix[0];
             kernelsParams[i].kernelParams[7] = (void*)&transforms[i].matrix[1];
-            kernelsParams[i].kernelParams[8] = (void*)&transforms[i].matrix[2];
             CUDA(cudaGraphExecKernelNodeSetParams(inferGraphExec, graphNodes[i + 1], &kernelsParams[i]));
             devicePtr += imageSize[i];
         }
