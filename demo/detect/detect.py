@@ -86,7 +86,7 @@ def main(engine, input, output, labels, cudagraph):
     logger.info(f"Infering data in {input}")
 
     batchs = get_images_in_batches(input, model.batch, cudagraph)
-    for batch in track(batchs, description="[cyan]Processing batches", total=model.batch):
+    for batch in track(batchs, description="[cyan]Processing batches", total=len(batchs)):
         images = [cv2.imread(str(image_path)) for image_path in batch]
 
         cpu_timer.start()
