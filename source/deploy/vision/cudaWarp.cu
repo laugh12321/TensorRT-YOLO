@@ -9,12 +9,12 @@ inline __device__ __host__ int iDivUp(int a, int b) {
 }
 
 __global__ void gpuBilinearWarpAffine(uint8_t* input, int inputWidth, int inputHeight,
-                                   float* output, int outputWidth, int outputHeight,
-                                   float3 m0, float3 m1) {
-    const int x = blockDim.x * blockIdx.x + threadIdx.x;
-    const int y = blockDim.y * blockIdx.y + threadIdx.y;
+                                      float* output, int outputWidth, int outputHeight,
+                                      float3 m0, float3 m1) {
+    const int x             = blockDim.x * blockIdx.x + threadIdx.x;
+    const int y             = blockDim.y * blockIdx.y + threadIdx.y;
     const int inputLineSize = inputWidth * 3;
-    const int outputArea = outputWidth * outputHeight;
+    const int outputArea    = outputWidth * outputHeight;
 
     if (x >= outputWidth || y >= outputHeight)
         return;
@@ -45,10 +45,10 @@ __global__ void gpuBilinearWarpAffine(uint8_t* input, int inputWidth, int inputH
         float hy = 1.0f - ly;
 
         // Calculate pixel pointers
-        uint8_t *v1 = input + lowY * inputLineSize + lowX * 3;
-        uint8_t *v2 = input + lowY * inputLineSize + highX * 3;
-        uint8_t *v3 = input + highY * inputLineSize + lowX * 3;
-        uint8_t *v4 = input + highY * inputLineSize + highX * 3;
+        uint8_t* v1 = input + lowY * inputLineSize + lowX * 3;
+        uint8_t* v2 = input + lowY * inputLineSize + highX * 3;
+        uint8_t* v3 = input + highY * inputLineSize + lowX * 3;
+        uint8_t* v4 = input + highY * inputLineSize + highX * 3;
 
         // Perform bilinear interpolation for each channel
         c0 = hy * (hx * v1[0] + lx * v2[0]) + ly * (hx * v3[0] + lx * v4[0]);
@@ -57,32 +57,32 @@ __global__ void gpuBilinearWarpAffine(uint8_t* input, int inputWidth, int inputH
     }
 
     // Normalize values to range [0, 1]
-    c0 *= 0.00392156862f; // Equivalent to c0 /= 255.0f;
+    c0 *= 0.00392156862f;  // Equivalent to c0 /= 255.0f;
     c1 *= 0.00392156862f;
     c2 *= 0.00392156862f;
 
     // Reorder RGB to RRRGGGBBB
-    int index = y * outputWidth + x;
-    output[index] = c0;
-    output[index + outputArea] = c1;
+    int index                      = y * outputWidth + x;
+    output[index]                  = c0;
+    output[index + outputArea]     = c1;
     output[index + 2 * outputArea] = c2;
 }
 
 void TransformMatrix::update(int fromWidth, int fromHeight, int toWidth, int toHeight) {
     if (fromWidth == lastWidth && fromHeight == lastHeight) return;
-    lastWidth = fromWidth;
+    lastWidth  = fromWidth;
     lastHeight = fromHeight;
 
-    double scale = std::min(static_cast<double>(toWidth) / fromWidth, static_cast<double>(toHeight) / fromHeight);
+    double scale  = std::min(static_cast<double>(toWidth) / fromWidth, static_cast<double>(toHeight) / fromHeight);
     double offset = 0.5 * scale - 0.5;
 
-    double scaleFromWidth = -0.5 * scale * fromWidth;
+    double scaleFromWidth  = -0.5 * scale * fromWidth;
     double scaleFromHeight = -0.5 * scale * fromHeight;
-    double halfToWidth = 0.5 * toWidth;
-    double halfToHeight = 0.5 * toHeight;
+    double halfToWidth     = 0.5 * toWidth;
+    double halfToHeight    = 0.5 * toHeight;
 
     double invD = (scale != 0.0) ? 1.0 / (scale * scale) : 0.0;
-    double A = scale * invD;
+    double A    = scale * invD;
 
     matrix[0] = make_float3(A, 0.0, -A * (scaleFromWidth + halfToWidth + offset));
     matrix[1] = make_float3(0.0, A, -A * (scaleFromHeight + halfToHeight + offset));
