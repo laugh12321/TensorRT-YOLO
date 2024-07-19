@@ -36,7 +36,7 @@ If you need to build the tensorrt_yolo for a specific CUDA and TensorRT version 
 
 ```bash
 pip install --upgrade build
-python -m build
+python -m build --wheel
 pip install dist/tensorrt_yolo/tensorrt_yolo-4.*-py3-none-any.whl
 ```stall dist/tensorrt_yolo/tensorrt_yolo-3.*-py3-none-any.whl
 ```

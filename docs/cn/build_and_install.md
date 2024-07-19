@@ -36,7 +36,7 @@ pip install -U tensorrt_yolo
 
 ```bash
 pip install --upgrade build
-python -m build
+python -m build --wheel
 pip install dist/tensorrt_yolo/tensorrt_yolo-4.*-py3-none-any.whl
 ```
 
