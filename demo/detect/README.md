@@ -11,7 +11,7 @@
 然后，使用以下指令将模型导出为带有 [EfficientNMS](https://github.com/NVIDIA/TensorRT/tree/main/plugin/efficientNMSPlugin) 插件的 ONNX 格式：
 
 ```bash
-trtyolo export -w yolov8s.pt -v yolov8 -o models
+trtyolo export -w models/yolov8s.pt -v yolov8 -o models
 ```
 
 执行以上命令后，将在 `models` 文件夹下生成名为 `yolov8s.onnx` 的文件。然后，使用 `trtexec` 工具将 ONNX 文件转换为 TensorRT engine：
@@ -36,7 +36,7 @@ trtyolo infer --help
 
 然后，执行以下命令进行推理：
 
-> 要加速推理过程，请使用 `--cudaGraph` 指令，但此功能仅支持静态模型，不支持动态模型。
+> 要进一步加速推理过程，请使用 `--cudaGraph` 指令，但此功能仅支持静态模型，不支持动态模型。（4.0之前不支持）
 
 ```bash
 trtyolo infer -e models/yolov8s.engine -i images -o output -l labels.txt --cudaGraph
@@ -48,7 +48,7 @@ trtyolo infer -e models/yolov8s.engine -i images -o output -l labels.txt --cudaG
 
 也可以使用 `tensorrt_yolo` 库编写脚本进行推理，`detect.py` 是已经写好的脚本。
 
-> 要加速推理过程，请使用 `--cudaGraph` 指令，但此功能仅支持静态模型，不支持动态模型。
+> 要进一步加速推理过程，请使用 `--cudaGraph` 指令，但此功能仅支持静态模型，不支持动态模型。
 
 ```bash
 python detect.py -e models/yolov8s.engine -i images -o output -l labels.txt --cudaGraph
@@ -68,7 +68,7 @@ xmake -P . -r
 
 在执行上述命令后，将在根目录的 `build` 目录下生成名为 `detect` 的可执行文件。最后，您可以直接运行可执行文件或使用 `xmake run` 命令进行推理。使用 `--help` 查看详细指令选项：
 
-> 要加速推理过程，请使用 `--cudaGraph` 指令，但此功能仅支持静态模型，不支持动态模型。
+> 要进一步加速推理过程，请使用 `--cudaGraph` 指令，但此功能仅支持静态模型，不支持动态模型。
 
 ```bash
 xmake run -P . detect -e models/yolov8s.engine -i images -o output -l labels.txt --cudaGraph

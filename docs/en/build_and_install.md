@@ -1,8 +1,8 @@
 English | [中文](../cn/build_and_install.md)
 
-# Quick Compilation and Installation
+# Quick Build and Install
 
-## `Deploy` Compilation
+## `Deploy` Build
 
 ### Requirements
 
@@ -10,9 +10,14 @@ English | [中文](../cn/build_and_install.md)
 - Windows: MSVC
 - Xmake
 - CUDA
+- cuDNN
 - TensorRT
 
-To meet deployment requirements, you can use Xmake for `Deploy` compilation. This process supports both dynamic and static library compilation:
+> [【Windows Development Environment Configuration—NVIDIA】Installing CUDA, cuDNN, and TensorRT](https://www.cnblogs.com/laugh12321/p/17830096.html)
+>
+> [【Windows Development Environment Configuration—C++】VSCode+MSVC/MinGW/Clangd/LLDB+Xmake](https://www.cnblogs.com/laugh12321/p/17827624.html)
+
+To meet deployment needs, you can use Xmake for the `Deploy` build. This process supports compiling both dynamic and static libraries:
 
 ```bash
 git clone https://github.com/laugh12321/TensorRT-YOLO
@@ -24,23 +29,26 @@ xmake -P . -r
 
 ## Installing `tensorrt_yolo`
 
-To install the `tensorrt_yolo` module from PyPI, simply execute the following command:
-
-> Or download the pre-built Wheel package from the [Release](https://github.com/laugh12321/TensorRT-YOLO/releases) page for installation.
+To install a version of the `tensorrt_yolo` module prior to version 4.0 via PyPI, simply run:
 
 ```bash
 pip install -U tensorrt_yolo
 ```
 
-If you need to build the tensorrt_yolo for a specific CUDA and TensorRT version yourself, you need to perform the Deploy build first, and then build as follows:
+If you want to experience inference speeds as fast as C++, you need to build the latest version of `tensorrt_yolo` yourself or download the pre-built Wheel package from the [Release](https://github.com/laugh12321/TensorRT-YOLO/releases) page and install it.
 
+> Before building the `tensorrt_yolo` for the appropriate CUDA and TensorRT versions, you need to perform the `Deploy` build and then follow the steps below:
+>
+> Using `Python 3.10` as an example, if you need to compile for other Python versions, modify the `3.10` in the `xmake.lua` file under `add_requireconfs("pybind11.python", {version = "3.10", override = true})` to the corresponding version number.
 ```bash
+conda create -n py10 python=3.10
+conda activate py10
+# After performing the Deploy build under py10, execute the following steps
 pip install --upgrade build
 python -m build --wheel
-pip install dist/tensorrt_yolo/tensorrt_yolo-4.*-py3-none-any.whl
-```stall dist/tensorrt_yolo/tensorrt_yolo-3.*-py3-none-any.whl
+pip install dist/tensorrt_yolo-4.*-py3-none-any.whl
 ```
 
-In these steps, you can clone the code repository first, perform local builds, and then install the generated Wheel package using `pip`. This ensures that you install the latest version with the newest features and improvements.
+In these steps, you can clone the repository and build it locally, then use `pip` to install the generated Wheel package to ensure you are installing the latest version with the newest features and improvements.
 
-During this process, you can use the xmake tool to choose between dynamic and static library compilation based on your deployment needs. You can also specify the TensorRT installation path to ensure correct linking of TensorRT libraries during compilation. Xmake automatically detects the CUDA installation path, but if you have multiple CUDA versions, you can specify them using `--cuda`. The compiled files will be located in the `lib` folder.
+During this process, you can use the xmake tool to choose between dynamic or static library compilation based on your deployment needs, and specify the TensorRT installation path to ensure proper linkage during compilation. Xmake will automatically recognize the CUDA installation path, and if you have multiple versions of CUDA, you can specify which one to use with `--cuda`. The compiled files will be located in the `lib` folder.
