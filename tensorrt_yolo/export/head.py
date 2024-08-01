@@ -47,6 +47,7 @@ class Efficient_TRT_NMS(torch.autograd.Function):
         box_coding: int = 1,
         background_class: int = -1,
         score_activation: int = 0,
+        class_agnostic: int = 1,
         plugin_version: str = '1',
     ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         batch_size, num_boxes, num_classes = scores.shape
@@ -68,6 +69,7 @@ class Efficient_TRT_NMS(torch.autograd.Function):
         box_coding: int = 1,
         background_class: int = -1,
         score_activation: int = 0,
+        class_agnostic: int = 1,
         plugin_version: str = '1',
     ) -> Tuple[Value, Value, Value, Value]:
         return g.op(
@@ -81,6 +83,7 @@ class Efficient_TRT_NMS(torch.autograd.Function):
             max_output_boxes_i=max_output_boxes,
             background_class_i=background_class,
             score_activation_i=score_activation,
+            class_agnostic_i=class_agnostic,
             plugin_version_s=plugin_version,
         )
 
