@@ -102,8 +102,8 @@ int main(int argc, char** argv) {
     }
 
     if (fs::is_regular_file(inputPath)) {
-        cv::Mat       cvimage = cv::imread(inputPath, cv::IMREAD_COLOR);
-        // cv::cvtColor(cvimage, cvimage, cv::COLOR_BGR2RGB);  // It is better to use RGB images, but the impact of using BGR on the results is not significant.
+        cv::Mat cvimage = cv::imread(inputPath, cv::IMREAD_COLOR);
+        cv::cvtColor(cvimage, cvimage, cv::COLOR_BGR2RGB);
         deploy::Image image(cvimage.data, cvimage.cols, cvimage.rows);
         auto          result = model->predict(image);
         if (!outputPath.empty()) {
