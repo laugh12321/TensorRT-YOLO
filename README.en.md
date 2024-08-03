@@ -64,6 +64,18 @@ TensorRT-YOLO is an inference acceleration project that supports YOLOv3, YOLOv5,
 
 - [【TensorRT-YOLO】接入 VideoPipe 演示](https://www.bilibili.com/video/BV121421C755)
 
+## <div align="center">☕ Buy the Author a Coffee</div>
+
+Open source projects require effort. If this project has been helpful to you, consider buying the author a coffee. Your support is the greatest motivation for the developer to keep maintaining the project!
+
+> It's recommended to use Alipay, as WeChat doesn't provide the avatar. Please note "TensorRT-YOLO" in the transfer.
+
+<div align="center">
+    <p>
+        <img width="500px" src="assets/sponsor.png"></a>
+    </p>
+</div>
+
 ## <div align="center">📄 License</div>
 
 TensorRT-YOLO is licensed under the **GPL-3.0 License**, an [OSI-approved](https://opensource.org/licenses/) open-source license that is ideal for students and enthusiasts, fostering open collaboration and knowledge sharing. Please refer to the [LICENSE](https://github.com/laugh12321/TensorRT-YOLO/blob/master/LICENSE) file for more details.

@@ -64,6 +64,18 @@ TensorRT-YOLO 是一个支持 YOLOv3、YOLOv5、YOLOv6、YOLOv7、YOLOv8、YOLOv
 
 - [【TensorRT-YOLO】接入 VideoPipe 演示](https://www.bilibili.com/video/BV121421C755)
 
+## <div align="center">☕ 请作者喝杯咖啡</div>
+
+开源不易，如果本项目有帮助到你的话，可以考虑请作者喝杯咖啡，你的支持是开发者持续维护的最大动力~
+
+> 推荐使用支付宝，微信获取不到头像。转账请备注【TensorRT-YOLO】。
+
+<div align="center">
+    <p>
+        <img width="500px" src="assets/sponsor.png"></a>
+    </p>
+</div>
+
 ## <div align="center">📄 许可证</div>
 
 TensorRT-YOLO采用 **GPL-3.0许可证**，这个[OSI 批准](https://opensource.org/licenses/)的开源许可证非常适合学生和爱好者，可以推动开放的协作和知识分享。请查看[LICENSE](https://github.com/laugh12321/TensorRT-YOLO/blob/master/LICENSE) 文件以了解更多细节。
