@@ -6,7 +6,7 @@
 
 # 新插件
 
-- [TRT_EfficientNMSX](https://github.com/levipereira/TensorRT/tree/8acfb834465065065b266bc3a99803a9fb600551/plugin/efficientNMSPlugin): 通样是Efficient NMS，但返回目标框的索引。
+- [TRT_EfficientNMSX](https://github.com/levipereira/TensorRT/tree/release/8.6/plugin/efficientNMSPlugin): 通样是Efficient NMS，但返回目标框的索引。
 
 # 构建
 
@@ -86,13 +86,18 @@
 
     将 [TRT_EfficientNMSX](https://github.com/levipereira/TensorRT/tree/8acfb834465065065b266bc3a99803a9fb600551/plugin/efficientNMSPlugin) 中的以下文件下载：
 
+    - `EfficientNMSPlugin_PluginConfig.yaml`
     - `efficientNMSInference.cu`
     - `efficientNMSParameters.h`
     - `efficientNMSPlugin.cpp`
     - `efficientNMSPlugin.h`
     - `README.md`
 
-    然后，将它们替换下载的 TensorRT OSS 中 `plugin/efficientNMSPlugin` 目录下的对应文件。为了确保兼容性，可以考虑替换 `plugin/efficientNMSPlugin` 目录下的所有文件。
+    然后，将它们替换下载的 TensorRT OSS 中 `plugin/efficientNMSPlugin` 目录下的对应文件。
+
+3. #### 注册 EfficientNMSX 插件
+
+    将 `initializePlugin<nvinfer1::plugin::EfficientNMSXPluginCreator>(logger, libNamespace);` 插入到 `plugin/api/inferPlugin.cpp` 文件的 `initLibNvInferPlugins` 函数中。
 
 ## 设置构建环境
 

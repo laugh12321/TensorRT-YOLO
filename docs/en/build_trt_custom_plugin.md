@@ -6,7 +6,7 @@ We need to build TensorRT OSS because the TRT_EfficientNMSX plugin required by t
 
 # New Plugin
 
-- [TRT_EfficientNMSX](https://github.com/levipereira/TensorRT/tree/8acfb834465065065b266bc3a99803a9fb600551/plugin/efficientNMSPlugin): Similar to Efficient NMS, but returns the indices of the target boxes.
+- [TRT_EfficientNMSX](https://github.com/levipereira/TensorRT/tree/release/8.6/plugin/efficientNMSPlugin): Similar to Efficient NMS, but returns the indices of the target boxes.
 
 # Build
 
@@ -85,13 +85,18 @@ To build the TensorRT-OSS components, you will first need the following software
 
     Download the following files from [TRT_EfficientNMSX](https://github.com/levipereira/TensorRT/tree/8acfb834465065065b266bc3a99803a9fb600551/plugin/efficientNMSPlugin):
 
+    - `EfficientNMSPlugin_PluginConfig.yaml`
     - `efficientNMSInference.cu`
     - `efficientNMSParameters.h`
     - `efficientNMSPlugin.cpp`
     - `efficientNMSPlugin.h`
     - `README.md`
 
-    Then, replace the corresponding files in the `plugin/efficientNMSPlugin` directory of the downloaded TensorRT OSS. To ensure compatibility, consider replacing all files in the `plugin/efficientNMSPlugin` directory.
+    Then, replace the corresponding files in the `plugin/efficientNMSPlugin` directory of the downloaded TensorRT OSS. 
+
+3. #### Register EfficientNMSX Plugin
+
+    Insert `initializePlugin<nvinfer1::plugin::EfficientNMSXPluginCreator>(logger, libNamespace);` into the `initLibNvInferPlugins` function in the `plugin/api/inferPlugin.cpp` file.
 
 ## Setting Up The Build Environment
 
