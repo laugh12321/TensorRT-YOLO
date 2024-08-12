@@ -2,9 +2,11 @@ English | [简体中文](../cn/build_trt_custom_plugin.md)
 
 # Build TensorRT Custom plugin
 
-We need to build TensorRT OSS because the TRT_EfficientNMSX plugin required by the model is not included in the official TensorRT release.
+We need to build TensorRT OSS because the EfficientRotatedNMS plugin required by the OBB model is not included in the official TensorRT release.
 
 # New Plugin
+
+- [Efficient Rotated NMS Plugin](../../plugin/efficientRotatedNMSPlugin/README.md): This TensorRT plugin implements an efficient algorithm to perform Non Maximum Suppression for oriented bounding boxes object detection networks.
 
 - [TRT_EfficientNMSX](https://github.com/levipereira/TensorRT/tree/release/8.6/plugin/efficientNMSPlugin): Similar to Efficient NMS, but returns the indices of the target boxes.
 
@@ -81,22 +83,39 @@ To build the TensorRT-OSS components, you will first need the following software
     $env:TRT_LIBPATH="$pwd\TensorRT-8.6.1.6\lib"
     ```
 
-3. #### Replace Files in `plugin/efficientNMSPlugin`
+3. #### Copy the `plugin/efficientRotatedNMSPlugin` Folder
 
-    Download the following files from [TRT_EfficientNMSX](https://github.com/levipereira/TensorRT/tree/8acfb834465065065b266bc3a99803a9fb600551/plugin/efficientNMSPlugin):
+    Copy the `plugin/efficientRotatedNMSPlugin` folder into the `plugin` directory within the TensorRT OSS.
 
-    - `EfficientNMSPlugin_PluginConfig.yaml`
-    - `efficientNMSInference.cu`
-    - `efficientNMSParameters.h`
-    - `efficientNMSPlugin.cpp`
-    - `efficientNMSPlugin.h`
-    - `README.md`
+4. #### Register the EfficientRotatedNMS Plugin
 
-    Then, replace the corresponding files in the `plugin/efficientNMSPlugin` directory of the downloaded TensorRT OSS. 
+    In the `plugin/api/inferPlugin.cpp` file of TensorRT OSS, add the header file for the EfficientRotatedNMS plugin and initialize the plugin in the `initLibNvInferPlugins` function.
 
-3. #### Register EfficientNMSX Plugin
+    ```cpp
+    #include "efficientRotatedNMSPlugin/efficientRotatedNMSPlugin.h"
 
-    Insert `initializePlugin<nvinfer1::plugin::EfficientNMSXPluginCreator>(logger, libNamespace);` into the `initLibNvInferPlugins` function in the `plugin/api/inferPlugin.cpp` file.
+    // ...
+
+    extern "C"
+    {
+        bool initLibNvInferPlugins(void* logger, const char* libNamespace)
+        {
+            // ...
+            initializePlugin<nvinfer1::plugin::EfficientRotatedNMSPluginCreator>(logger, libNamespace);
+            // ...
+        }
+    }
+    ```
+
+5. #### Add to TensorRT OSS `plugin/CMakeLists.txt`
+
+    ```cmake
+    set(PLUGIN_LISTS
+        <!-- ... -->
+        efficientRotatedNMSPlugin
+        <!-- ... -->
+    )
+    ```
 
 ## Setting Up The Build Environment
 
