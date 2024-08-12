@@ -11,3 +11,26 @@ __pycache__/
 
 # output Cache
 output/
+
+# demo images
+demo/**/*.jpg
+demo/**/*.jpeg
+demo/**/*.png
+demo/**/*.gif
+demo/**/*.bmp
+demo/**/*.tiff
+demo/**/*.webp
+
+# demo models
+demo/**/*.pt
+demo/**/*.onnx
+demo/**/*.engine
+
+# python package
+dist/
+tensorrt_yolo.egg-info/
+tensorrt_yolo/c_lib_wrap.py
+
+# build libs
+lib/
+tensorrt_yolo/libs/

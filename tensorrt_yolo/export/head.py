@@ -16,24 +16,25 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   head.py
-# Version :   3.0
+# Version :   4.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/04/22 09:45:11
 # Desc    :   YOLO Series Detect Head.
 # ==============================================================================
+import math
 from typing import Tuple
 
 import torch
 from torch import Tensor, Value, nn
-from ultralytics.nn.modules import Detect
+from ultralytics.nn.modules import OBB, Detect
 from ultralytics.utils.checks import check_version
 from ultralytics.utils.tal import make_anchors
 
-__all__ = ["YOLODetect", "UltralyticsDetect"]
+__all__ = ["YOLODetect", "UltralyticsDetect", "UltralyticsOBB"]
 
 
-class Efficient_TRT_NMS(torch.autograd.Function):
+class EfficientNMS_TRT(torch.autograd.Function):
     """NMS block for YOLO-fused model for TensorRT."""
 
     @staticmethod
@@ -51,12 +52,12 @@ class Efficient_TRT_NMS(torch.autograd.Function):
         plugin_version: str = '1',
     ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         batch_size, num_boxes, num_classes = scores.shape
-        num_detections = torch.randint(0, max_output_boxes, (batch_size, 1), dtype=torch.int32)
-        detection_boxes = torch.randn(batch_size, max_output_boxes, 4, dtype=torch.float32)
-        detection_scores = torch.randn(batch_size, max_output_boxes, dtype=torch.float32)
-        detection_classes = torch.randint(0, num_classes, (batch_size, max_output_boxes), dtype=torch.int32)
+        num_dets = torch.randint(0, max_output_boxes, (batch_size, 1), dtype=torch.int32)
+        det_boxes = torch.randn(batch_size, max_output_boxes, 4, dtype=torch.float32)
+        det_scores = torch.randn(batch_size, max_output_boxes, dtype=torch.float32)
+        det_classes = torch.randint(0, num_classes, (batch_size, max_output_boxes), dtype=torch.int32)
 
-        return num_detections, detection_boxes, detection_scores, detection_classes
+        return num_dets, det_boxes, det_scores, det_classes
 
     @staticmethod
     def symbolic(
@@ -74,6 +75,61 @@ class Efficient_TRT_NMS(torch.autograd.Function):
     ) -> Tuple[Value, Value, Value, Value]:
         return g.op(
             'TRT::EfficientNMS_TRT',
+            boxes,
+            scores,
+            outputs=4,
+            box_coding_i=box_coding,
+            iou_threshold_f=iou_threshold,
+            score_threshold_f=score_threshold,
+            max_output_boxes_i=max_output_boxes,
+            background_class_i=background_class,
+            score_activation_i=score_activation,
+            class_agnostic_i=class_agnostic,
+            plugin_version_s=plugin_version,
+        )
+
+
+class EfficientRotatedNMS_TRT(torch.autograd.Function):
+    """RotatedNMS block for YOLO-fused model for TensorRT."""
+
+    @staticmethod
+    def forward(
+        ctx,
+        boxes,
+        scores,
+        iou_threshold: float = 0.65,
+        score_threshold: float = 0.25,
+        max_output_boxes: float = 100,
+        box_coding: int = 1,
+        background_class: int = -1,
+        score_activation: int = 0,
+        class_agnostic: int = 1,
+        plugin_version: str = '1',
+    ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+        batch_size, num_boxes, num_classes = scores.shape
+        num_dets = torch.randint(0, max_output_boxes, (batch_size, 1), dtype=torch.int32)
+        det_boxes = torch.randn(batch_size, max_output_boxes, 5, dtype=torch.float32)
+        det_scores = torch.randn(batch_size, max_output_boxes, dtype=torch.float32)
+        det_classes = torch.randint(0, num_classes, (batch_size, max_output_boxes), dtype=torch.int32)
+
+        return num_dets, det_boxes, det_scores, det_classes
+
+    @staticmethod
+    def symbolic(
+        g,
+        boxes,
+        scores,
+        iou_threshold: float = 0.65,
+        score_threshold: float = 0.25,
+        max_output_boxes: float = 100,
+        box_coding: int = 1,
+        background_class: int = -1,
+        score_activation: int = 0,
+        class_agnostic: int = 1,
+        plugin_version: str = '1',
+    ) -> Tuple[Value, Value, Value, Value]:
+        return g.op(
+            'TRT::EfficientRotatedNMS_TRT',
             boxes,
             scores,
             outputs=4,
@@ -135,11 +191,11 @@ class YOLODetect(nn.Module):
 
         z = torch.cat(z, 1)
 
-        # Separate boxes and scores for Efficient_TRT_NMS
+        # Separate boxes and scores for EfficientNMS_TRT
         boxes, conf = z[..., :4], z[..., 4:]
         scores = conf[..., 0:1] * conf[..., 1:]
 
-        return Efficient_TRT_NMS.apply(boxes, scores, self.iou_thres, self.conf_thres, self.max_det)
+        return EfficientNMS_TRT.apply(boxes, scores, self.iou_thres, self.conf_thres, self.max_det)
 
     def _make_grid(self, nx=20, ny=20, i=0, torch_1_10=check_version(torch.__version__, "1.10.0")):
         d = self.anchors[i].device
@@ -170,8 +226,6 @@ class UltralyticsDetect(Detect):
         """Concatenates and returns predicted bounding boxes and class probabilities."""
         for i in range(self.nl):
             x[i] = torch.cat((self.cv2[i](x[i]), self.cv3[i](x[i])), 1)
-        if self.training:  # Training path
-            return x
 
         # Inference path
         shape = x[0].shape  # BCHW
@@ -183,9 +237,49 @@ class UltralyticsDetect(Detect):
         box, cls = x_cat.split((self.reg_max * 4, self.nc), 1)
         dbox = self.decode_bboxes(self.dfl(box), self.anchors.unsqueeze(0)) * self.strides
 
-        # Using transpose for compatibility with Efficient_TRT_NMS
-        return Efficient_TRT_NMS.apply(
+        # Using transpose for compatibility with EfficientNMS_TRT
+        return EfficientNMS_TRT.apply(
             dbox.transpose(1, 2),
+            cls.sigmoid().transpose(1, 2),
+            self.iou_thres,
+            self.conf_thres,
+            self.max_det,
+        )
+
+
+class UltralyticsOBB(OBB):
+    """Ultralytics OBB detection head for detection with rotation models."""
+
+    max_det = 100
+    iou_thres = 0.45
+    conf_thres = 0.25
+
+    def forward(self, x):
+        """Concatenates and returns predicted bounding boxes and class probabilities."""
+        bs = x[0].shape[0]  # batch size
+        angle = torch.cat([self.cv4[i](x[i]).view(bs, self.ne, -1) for i in range(self.nl)], 2)  # OBB theta logits
+        # NOTE: set `angle` as an attribute so that `decode_bboxes` could use it.
+        angle = (angle.sigmoid() - 0.25) * math.pi  # [-pi/4, 3pi/4]
+        # angle = angle.sigmoid() * math.pi / 2  # [0, pi/2]
+        self.angle = angle
+
+        for i in range(self.nl):
+            x[i] = torch.cat((self.cv2[i](x[i]), self.cv3[i](x[i])), 1)
+
+        # Inference path
+        shape = x[0].shape  # BCHW
+        x_cat = torch.cat([xi.view(shape[0], self.no, -1) for xi in x], 2)
+        if self.dynamic or self.shape != shape:
+            self.anchors, self.strides = (x.transpose(0, 1) for x in make_anchors(x, self.stride, 0.5))
+            self.shape = shape
+
+        box, cls = x_cat.split((self.reg_max * 4, self.nc), 1)
+        dbox = self.decode_bboxes(self.dfl(box), self.anchors.unsqueeze(0)) * self.strides
+        rotated_box = torch.cat([dbox.transpose(1, 2), angle.transpose(1, 2)], 2)
+
+        # Using transpose for compatibility with EfficientRotatedNMS_TRT
+        return EfficientRotatedNMS_TRT.apply(
+            rotated_box,
             cls.sigmoid().transpose(1, 2),
             self.iou_thres,
             self.conf_thres,

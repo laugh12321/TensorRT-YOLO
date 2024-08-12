@@ -2,6 +2,9 @@ English | [中文](../cn/build_and_install.md)
 
 # Quick Build and Installation
 
+> [!NOTE]  
+> If you want to use the [EfficientRotatedNMS](../../plugin/efficientRotatedNMSPlugin) plugin for inference with OBB models, please refer to [Build TensorRT Custom plugin](./build_trt_custom_plugin.md) for the build process.
+
 ## `Deploy` Build
 
 ### Environment Requirements

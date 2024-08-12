@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   cli.py
-# Version :   1.0
+# Version :   2.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/07/05 14:26:53
@@ -135,11 +135,12 @@ def export(
 
 @trtyolo.command(help="Perform inference with TensorRT-YOLO.")
 @click.option('-e', '--engine', help='Engine file for inference.', type=str, required=True)
+@click.option('-m', '--mode', help='Mode for inference: 0 for Detection, 1 for OBB.', type=int, required=True)
 @click.option('-i', '--input', help='Input directory or file for inference.', type=str, required=True)
 @click.option('-o', '--output', help='Output directory for inference results.', type=str)
 @click.option('-l', '--labels', help='Labels file for inference.', type=str)
 @click.option('--cudaGraph', help='Optimize inference using CUDA Graphs, compatible with static models only.', is_flag=True)
-def infer(engine, input, output, labels, cudagraph):
+def infer(engine, mode, input, output, labels, cudagraph):
     """Perform inference with TensorRT-YOLO.
 
     This command performs inference using TensorRT-YOLO with the specified engine file and input source.
@@ -155,10 +156,15 @@ def infer(engine, input, output, labels, cudagraph):
         output_dir.mkdir(parents=True, exist_ok=True)
         labels = generate_labels_with_colors(labels)
 
+    if mode not in (0, 1):
+        logger.error(f"Invalid mode: {mode}. Please use 0 for Detection, 1 for OBB.")
+        sys.exit(1)
+    is_obb = mode == 1
+
     if cudagraph:
-        model = DeployCGDet(engine)
+        model = DeployCGDet(engine, is_obb)
     else:
-        model = DeployDet(engine)
+        model = DeployDet(engine, is_obb)
 
     cpu_timer = CpuTimer()
     gpu_timer = GpuTimer()
@@ -179,7 +185,7 @@ def infer(engine, input, output, labels, cudagraph):
 
         if output:
             for image_path, image, result in zip(batch, images, results):
-                vis_image = visualize_detections(image, result, labels)
+                vis_image = visualize_detections(image, result, labels, is_obb)
                 cv2.imwrite(str(output_dir / image_path.name), cv2.cvtColor(vis_image, cv2.COLOR_RGB2BGR))
 
     logger.success(

@@ -56,8 +56,36 @@ std::vector<std::pair<std::string, cv::Scalar>> generateLabelColorPairs(const st
     return labelColorPairs;
 }
 
+// Converts a bounding box with a given angle to its four corner points
+std::vector<cv::Point> xyxyr2xyxyxyxy(const deploy::Box& box) {
+    // Calculate the cosine and sine of the angle
+    float cos_value = std::cos(box.theta);
+    float sin_value = std::sin(box.theta);
+
+    // Calculate the center coordinates of the box
+    float center_x = (box.left + box.right) * 0.5f;
+    float center_y = (box.top + box.bottom) * 0.5f;
+
+    // Calculate the half width and half height of the box
+    float half_width  = (box.right - box.left) * 0.5f;
+    float half_height = (box.bottom - box.top) * 0.5f;
+
+    // Calculate the rotated corner vectors
+    float vec_x1 = half_width * cos_value;
+    float vec_y1 = half_width * sin_value;
+    float vec_x2 = half_height * sin_value;
+    float vec_y2 = half_height * cos_value;
+
+    // Return the four corners of the rotated rectangle
+    return {
+        cv::Point(center_x + vec_x1 - vec_x2, center_y + vec_y1 + vec_y2),
+        cv::Point(center_x + vec_x1 + vec_x2, center_y + vec_y1 - vec_y2),
+        cv::Point(center_x - vec_x1 + vec_x2, center_y - vec_y1 - vec_y2),
+        cv::Point(center_x - vec_x1 - vec_x2, center_y - vec_y1 + vec_y2)};
+}
+
 // Visualize detection results
-void visualize(cv::Mat& image, const deploy::DetectionResult& result, const std::vector<std::pair<std::string, cv::Scalar>>& labelColorPairs) {
+void visualize(cv::Mat& image, const deploy::DetectionResult& result, const std::vector<std::pair<std::string, cv::Scalar>>& labelColorPairs, bool is_obb) {
     for (size_t i = 0; i < result.num; ++i) {
         const auto& box       = result.boxes[i];
         int         cls       = result.classes[i];
@@ -69,18 +97,28 @@ void visualize(cv::Mat& image, const deploy::DetectionResult& result, const std:
         // Draw rectangle and label
         int      baseLine;
         cv::Size labelSize = cv::getTextSize(labelText, cv::FONT_HERSHEY_SIMPLEX, 0.6, 1, &baseLine);
-        cv::rectangle(image, cv::Point(box.left, box.top), cv::Point(box.right, box.bottom), color, 2, cv::LINE_AA);
-        cv::rectangle(image, cv::Point(box.left, box.top - labelSize.height), cv::Point(box.left + labelSize.width, box.top), color, -1);
-        cv::putText(image, labelText, cv::Point(box.left, box.top), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 255, 255), 1);
+
+        if (is_obb) {
+            auto corners = xyxyr2xyxyxyxy(box);
+            cv::polylines(image, {corners}, true, color, 2, cv::LINE_AA);
+            cv::rectangle(image, cv::Point(corners[0].x, corners[0].y - labelSize.height), cv::Point(corners[0].x + labelSize.width, corners[0].y), color, -1);
+            cv::putText(image, labelText, corners[0], cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 255, 255), 1);
+        } else {
+            cv::rectangle(image, cv::Point(box.left, box.top), cv::Point(box.right, box.bottom), color, 2, cv::LINE_AA);
+            cv::rectangle(image, cv::Point(box.left, box.top - labelSize.height), cv::Point(box.left + labelSize.width, box.top), color, -1);
+            cv::putText(image, labelText, cv::Point(box.left, box.top), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 255, 255), 1);
+        }
     }
 }
 
 int main(int argc, char** argv) {
     CLI::App app{"YOLO Series Inference Script"};
 
+    int         mode         = 0;
     bool        useCudaGraph = false;
     std::string enginePath, inputPath, outputPath, labelPath;
     app.add_option("-e,--engine", enginePath, "Serialized TensorRT engine")->required()->check(CLI::ExistingFile);
+    app.add_option("-m,--mode", mode, "Mode for inference: 0 for Detection, 1 for OBB.")->required();
     app.add_option("-i,--input", inputPath, "Path to image or directory")->required()->check(CLI::ExistingPath);
     app.add_option("-o,--output", outputPath, "Directory to save results");
     app.add_option("-l,--labels", labelPath, "File to use for reading the class labels from")->check(CLI::ExistingFile);
@@ -88,17 +126,25 @@ int main(int argc, char** argv) {
 
     CLI11_PARSE(app, argc, argv);
 
+    if (mode != 0 && mode != 1) {
+        std::cerr << "Error: "
+                  << "Invalid mode: " + std::to_string(mode) + ". Please use 0 for Detection, 1 for OBB." << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
     std::vector<std::pair<std::string, cv::Scalar>> labels;
     if (!outputPath.empty()) {
         labels = generateLabelColorPairs(labelPath);
         createOutputDirectory(outputPath);
     }
 
+    bool is_obb = (mode == 1);
+
     std::shared_ptr<deploy::BaseDet> model;
     if (useCudaGraph) {
-        model = std::make_shared<deploy::DeployCGDet>(enginePath);
+        model = std::make_shared<deploy::DeployCGDet>(enginePath, is_obb);
     } else {
-        model = std::make_shared<deploy::DeployDet>(enginePath);
+        model = std::make_shared<deploy::DeployDet>(enginePath, is_obb);
     }
 
     if (fs::is_regular_file(inputPath)) {
@@ -108,7 +154,7 @@ int main(int argc, char** argv) {
         auto          result = model->predict(image);
         if (!outputPath.empty()) {
             cv::cvtColor(cvimage, cvimage, cv::COLOR_RGB2BGR);
-            visualize(cvimage, result, labels);
+            visualize(cvimage, result, labels, is_obb);
             cv::imwrite(outputPath + "/" + fs::path(inputPath).filename().string(), cvimage);
         }
     } else {
@@ -153,7 +199,7 @@ int main(int argc, char** argv) {
             if (!outputPath.empty()) {
                 for (size_t j = 0; j < images.size(); ++j) {
                     cv::cvtColor(images[j], images[j], cv::COLOR_RGB2BGR);
-                    visualize(images[j], results[j], labels);
+                    visualize(images[j], results[j], labels, is_obb);
                     cv::imwrite(outputPath + "/" + imgNameBatch[j], images[j]);
                 }
             }

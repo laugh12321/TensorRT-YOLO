@@ -15,6 +15,7 @@ struct DEPLOY_DECL Box {
     float top;    /**< Top coordinate of the bounding box */
     float right;  /**< Right coordinate of the bounding box */
     float bottom; /**< Bottom coordinate of the bounding box */
+    float theta;  /**< Rotation angle of the bounding box, in radians, measured clockwise from the positive x-axis */
 };
 
 /**

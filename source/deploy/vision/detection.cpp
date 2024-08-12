@@ -9,7 +9,7 @@
 namespace deploy {
 
 // Constructor to initialize BaseDet with a model file and optional CUDA memory flag.
-BaseDet::BaseDet(const std::string& file, bool cudaMem, int device) : cudaMem(cudaMem) {
+BaseDet::BaseDet(const std::string& file, bool obb, bool cudaMem, int device) : obb(obb), cudaMem(cudaMem) {
     // Set the CUDA device
     CUDA(cudaSetDevice(device));
 
@@ -33,17 +33,19 @@ DetectionResult BaseDet::postProcess(const int idx) {
     DetectionResult result;
     result.num = num;
 
+    int boxSize = tensorInfos[2].dims.d[2];
     for (int i = 0; i < num; ++i) {
-        float left   = boxes[i * 4];
-        float top    = boxes[i * 4 + 1];
-        float right  = boxes[i * 4 + 2];
-        float bottom = boxes[i * 4 + 3];
+        float left   = boxes[i * boxSize];
+        float top    = boxes[i * boxSize + 1];
+        float right  = boxes[i * boxSize + 2];
+        float bottom = boxes[i * boxSize + 3];
+        float theta  = obb ? boxes[i * boxSize + 4] : 0.0f;
 
         // Apply affine transformation
         transforms[idx].transform(left, top, &left, &top);
         transforms[idx].transform(right, bottom, &right, &bottom);
 
-        result.boxes.emplace_back(Box{left, top, right, bottom});
+        result.boxes.emplace_back(Box{left, top, right, bottom, theta});
         result.scores.emplace_back(scores[i]);
         result.classes.emplace_back(classes[i]);
     }
@@ -52,7 +54,7 @@ DetectionResult BaseDet::postProcess(const int idx) {
 }
 
 // Constructor to initialize DeployDet with a model file and optional CUDA memory flag.
-DeployDet::DeployDet(const std::string& file, bool cudaMem, int device) : BaseDet(file, cudaMem, device) {
+DeployDet::DeployDet(const std::string& file, bool obb, bool cudaMem, int device) : BaseDet(file, obb, cudaMem, device) {
     // Setup tensors based on the engine context
     setupTensors();
 
@@ -212,7 +214,7 @@ std::vector<DetectionResult> DeployDet::predict(const std::vector<Image>& images
 }
 
 // Constructor to initialize DeployCGDet with a model file and optional CUDA memory flag.
-DeployCGDet::DeployCGDet(const std::string& file, bool cudaMem, int device) : BaseDet(file, cudaMem, device) {
+DeployCGDet::DeployCGDet(const std::string& file, bool obb, bool cudaMem, int device) : BaseDet(file, obb, cudaMem, device) {
     // Setup tensors based on the engine context
     setupTensors();
 

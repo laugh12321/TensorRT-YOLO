@@ -2,6 +2,9 @@
 
 # 快速编译安装
 
+> [!NOTE]  
+> 如果要使用 [EfficientRotatedNMS](../../plugin/efficientRotatedNMSPlugin)  插件推理 OBB 模型，请参考 [构建 TensorRT 自定义插件](./build_trt_custom_plugin.md) 进行构建。
+
 ## `Deploy` 编译
 
 ### 环境要求

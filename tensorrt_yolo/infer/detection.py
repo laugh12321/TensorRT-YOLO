@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   detection.py
-# Version :   1.0
+# Version :   2.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/07/03 14:06:55
@@ -25,78 +25,82 @@
 from typing import Any, List, Union
 
 from .. import c_lib_wrap as C
+from .result import DetectionResult
 
-__all__ = ["DeployDet", "DeployCGDet", "DetectionResult", "Box"]
-
-DetectionResult = C.result.DetectionResult
-Box = C.result.Box
+__all__ = ["DeployDet", "DeployCGDet"]
 
 
 class DeployDet:
-    def __init__(self, engine_file: str, use_cuda_memory: bool = False, device: int = 0) -> None:
+    def __init__(self, engine_file: str, is_obb: bool, use_cuda_memory: bool = False, device: int = 0) -> None:
         """
-        Initialize the DeployDet class with the given engine file, optional CUDA memory usage, and device index.
+        Initialize the DeployDet class with the given engine file, indicating
+        whether to use oriented bounding boxes (OBB), optional CUDA memory usage, and device index.
 
         Args:
             engine_file (str): Path to the engine file.
+            is_obb (bool): Whether the model uses oriented bounding boxes (OBB).
             use_cuda_memory (bool, optional): Whether to use CUDA memory. Defaults to False.
             device (int, optional): Device index to use. Defaults to 0.
         """
-        self._model = C.detection.DeployDet(engine_file, use_cuda_memory, device)
+        self._model = C.detection.DeployDet(engine_file, is_obb, use_cuda_memory, device)
 
     @property
     def batch(self) -> int:
         """
-        Get the batch size.
+        Get the batch size supported by the model.
 
         Returns:
             int: Batch size.
         """
         return self._model.batch
 
-    def predict(self, images: Union[Any, List[Any]]) -> Union[DetectionResult, List[DetectionResult]]:
+    def predict(self, images: Union[Any, List[Any]]) -> Union[DetectionResult, List[DetectionResult]]:  # type: ignore
         """
         Predict the detection results for the given images.
 
         Args:
-            images (Union[Any, List[Any]]): A single image or a list of images.
+            images (Union[Any, List[Any]]): A single image or a list of images for which to predict object detections.
 
         Returns:
-            Union[DetectionResult, List[DetectionResult]]: Detection result or a list of detection results.
+            Union[DetectionResult, List[DetectionResult]]: The detection result for the image or a list of
+            detection results for multiple images.
         """
         return self._model.predict(images)
 
 
 class DeployCGDet:
-    def __init__(self, engine_file: str, use_cuda_memory: bool = False, device: int = 0) -> None:
+    def __init__(self, engine_file: str, is_obb: bool, use_cuda_memory: bool = False, device: int = 0) -> None:
         """
-        Initialize the DeployCGDet class with the given engine file, optional CUDA memory usage, and device index.
+        Initialize the DeployCGDet class with the given engine file, indicating
+        whether to use oriented bounding boxes (OBB), optional CUDA memory usage, and device index.
 
         Args:
             engine_file (str): Path to the engine file.
+            is_obb (bool): Whether the model uses oriented bounding boxes (OBB).
             use_cuda_memory (bool, optional): Whether to use CUDA memory. Defaults to False.
             device (int, optional): Device index to use. Defaults to 0.
         """
-        self._model = C.detection.DeployCGDet(engine_file, use_cuda_memory, device)
+        self._model = C.detection.DeployCGDet(engine_file, is_obb, use_cuda_memory, device)
 
     @property
     def batch(self) -> int:
         """
-        Get the batch size.
+        Get the batch size supported by the model.
 
         Returns:
             int: Batch size.
         """
         return self._model.batch
 
-    def predict(self, images: Union[Any, List[Any]]) -> Union[DetectionResult, List[DetectionResult]]:
+    def predict(self, images: Union[Any, List[Any]]) -> Union[DetectionResult, List[DetectionResult]]:  # type: ignore
         """
         Predict the detection results for the given images.
 
         Args:
-            images (Union[Any, List[Any]]): A single image or a list of images.
+            images (Union[Any, List[Any]]): A single image or a list of images for which to predict object detections.
 
         Returns:
-            Union[DetectionResult, List[DetectionResult]]: Detection result or a list of detection results.
+            Union[DetectionResult, List[DetectionResult]]: The detection result for the image or a list of
+            detection results for multiple images.
         """
         return self._model.predict(images)

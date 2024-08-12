@@ -2,7 +2,7 @@ import sys
 import warnings
 from copy import deepcopy
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
 
 import onnx
 import torch
@@ -10,7 +10,7 @@ from loguru import logger
 from ultralytics import YOLO
 from ultralytics.utils.checks import check_imgsz
 
-from .head import UltralyticsDetect, YOLODetect
+from .head import UltralyticsDetect, UltralyticsOBB, YOLODetect
 from .ppyoloe import PPYOLOEGraphSurgeon
 
 __all__ = ['torch_export', 'paddle_export']
@@ -23,16 +23,29 @@ logger.configure(handlers=[{'sink': sys.stdout, 'colorize': True, 'format': "<le
 
 HEADS = {
     "Detect": {"yolov3": YOLODetect, "yolov5": YOLODetect, "yolov8": UltralyticsDetect, "ultralytics": UltralyticsDetect},
+    "OBB": {"yolov8": UltralyticsOBB, "ultralytics": UltralyticsOBB},
 }
 
-OUTPUT_NAMES = ['num_dets', 'det_boxes', 'det_scores', 'det_classes']
+OUTPUT_NAMES = {
+    "Detect": ["num_dets", "det_boxes", "det_scores", "det_classes"],
+    "OBB": ["num_dets", "det_boxes", "det_scores", "det_classes"],
+}
 
 DYNAMIC_AXES = {
-    "images": {0: "batch", 2: "height", 3: "width"},
-    "num_dets": {0: "batch"},
-    "det_boxes": {0: "batch"},
-    "det_scores": {0: "batch"},
-    "det_classes": {0: "batch"},
+    "Detect": {
+        "images": {0: "batch", 2: "height", 3: "width"},
+        "num_dets": {0: "batch"},
+        "det_boxes": {0: "batch"},
+        "det_scores": {0: "batch"},
+        "det_classes": {0: "batch"},
+    },
+    "OBB": {
+        "images": {0: "batch", 2: "height", 3: "width"},
+        "num_dets": {0: "batch"},
+        "det_boxes": {0: "batch"},
+        "det_scores": {0: "batch"},
+        "det_classes": {0: "batch"},
+    },
 }
 
 YOLO_EXPORT_INFO = {
@@ -79,7 +92,7 @@ def load_model(version: str, weights: str, repo_dir: Optional[str] = None) -> Op
 
 def update_model(
     model: torch.nn.Module, version: str, dynamic: bool, max_boxes: int, iou_thres: float, conf_thres: float
-) -> Optional[torch.nn.Module]:
+) -> Tuple[Optional[torch.nn.Module], str]:
     """
     Update YOLO model with dynamic settings.
 
@@ -92,14 +105,18 @@ def update_model(
         conf_thres (float): Confidence threshold for object detection.
 
     Returns:
-        torch.nn.Module: Updated YOLO model or None if the version is not supported.
+        Tuple[Optional[torch.nn.Module], str]:
+            - Updated YOLO model or None if the version is not supported.
+            - The name of the detection head.
     """
     model = deepcopy(model).to(torch.device("cpu"))
     supported = False
+    head_name = ""
 
     for m in model.modules():
         class_name = m.__class__.__name__
         if class_name in HEADS:
+            head_name = class_name
             detect_head = HEADS[class_name].get(version)
             if detect_head:
                 supported = True
@@ -112,9 +129,9 @@ def update_model(
 
     if not supported:
         logger.error(f"YOLO version '{version}' detect head not supported!")
-        return None
+        return None, head_name
 
-    return model
+    return model, head_name
 
 
 def torch_export(
@@ -152,8 +169,8 @@ def torch_export(
         return
 
     dynamic = batch <= 0
-    batch = 1 if batch <= 0 else batch
-    model = update_model(model, version, dynamic, max_boxes, iou_thres, conf_thres)
+    batch = 1 if dynamic else batch
+    model, head_name = update_model(model, version, dynamic, max_boxes, iou_thres, conf_thres)
     if model is None:
         return
 
@@ -178,8 +195,8 @@ def torch_export(
         f=str(onnx_filepath),
         opset_version=opset_version,
         input_names=['images'],
-        output_names=OUTPUT_NAMES,
-        dynamic_axes=DYNAMIC_AXES if dynamic else None,
+        output_names=OUTPUT_NAMES[head_name],
+        dynamic_axes=DYNAMIC_AXES[head_name] if dynamic else None,
     )
 
     model_onnx = onnx.load(onnx_filepath)
@@ -192,6 +209,9 @@ def torch_export(
         'det_scores': ["batch" if dynamic else batch, max_boxes],
         'det_classes': ["batch" if dynamic else batch, max_boxes],
     }
+    if head_name == "OBB":
+        shapes['det_boxes'] = ["batch" if dynamic else batch, max_boxes, 5]
+
     for node in model_onnx.graph.output:
         for idx, dim in enumerate(node.type.tensor_type.shape.dim):
             dim.dim_param = str(shapes[node.name][idx])

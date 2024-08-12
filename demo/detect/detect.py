@@ -16,12 +16,13 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   detect.py
-# Version :   4.0
+# Version :   5.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/01/29 15:13:41
 # Desc    :   YOLO Series Inference Script.
 # ==============================================================================
+import sys
 from pathlib import Path
 from typing import List
 
@@ -57,11 +58,12 @@ def get_images_in_batches(folder_path: str, batch: int, is_cuda_graph: bool) -> 
 
 @click.command("YOLO Series Inference Script.")
 @click.option('-e', '--engine', required=True, type=str, help='The serialized TensorRT engine.')
+@click.option('-m', '--mode', help='Mode for inference: 0 for Detection, 1 for OBB.', type=int, required=True)
 @click.option('-i', '--input', required=True, type=str, help="Path to the image or directory to process.")
 @click.option('-o', '--output', type=str, default=None, help='Directory where to save the visualization results.')
 @click.option("-l", "--labels", default="./labels.txt", help="File to use for reading the class labels from, default: ./labels.txt")
 @click.option('--cudaGraph', is_flag=True, help='Optimize inference using CUDA Graphs, compatible with static models only.')
-def main(engine, input, output, labels, cudagraph):
+def main(engine, mode, input, output, labels, cudagraph):
     """
     YOLO Series Inference Script.
     """
@@ -75,10 +77,15 @@ def main(engine, input, output, labels, cudagraph):
         output_dir.mkdir(parents=True, exist_ok=True)
         labels = generate_labels_with_colors(labels)
 
+    if mode not in (0, 1):
+        logger.error(f"Invalid mode: {mode}. Please use 0 for Detection, 1 for OBB.")
+        sys.exit(1)
+    is_obb = mode == 1
+
     if cudagraph:
-        model = DeployCGDet(engine)
+        model = DeployCGDet(engine, is_obb)
     else:
-        model = DeployDet(engine)
+        model = DeployDet(engine, is_obb)
 
     cpu_timer = CpuTimer()
     gpu_timer = GpuTimer()
@@ -99,7 +106,7 @@ def main(engine, input, output, labels, cudagraph):
 
         if output:
             for image_path, image, result in zip(batch, images, results):
-                vis_image = visualize_detections(image, result, labels)
+                vis_image = visualize_detections(image, result, labels, is_obb)
                 cv2.imwrite(str(output_dir / image_path.name), cv2.cvtColor(vis_image, cv2.COLOR_RGB2BGR))
 
     logger.success(

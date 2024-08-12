@@ -60,10 +60,11 @@ void BindResult(pybind11::module &m) {
         .def_readwrite("top", &Box::top)
         .def_readwrite("right", &Box::right)
         .def_readwrite("bottom", &Box::bottom)
+        .def_readwrite("theta", &Box::theta)
         .def("__str__", [](const Box &box) {
             std::ostringstream oss;
             oss << "Box(left=" << box.left << ", top=" << box.top
-                << ", right=" << box.right << ", bottom=" << box.bottom << ")";
+                << ", right=" << box.right << ", bottom=" << box.bottom << ", theta=" << box.theta << ")";
             return oss.str();
         });
 
@@ -99,7 +100,7 @@ void BindResult(pybind11::module &m) {
                 << "  boxes=[\n";
             for (const auto &box : dr.boxes) {
                 oss << "    Box(left=" << box.left << ", top=" << box.top
-                    << ", right=" << box.right << ", bottom=" << box.bottom << "),\n";
+                    << ", right=" << box.right << ", bottom=" << box.bottom << ", theta=" << box.theta << "),\n";
             }
             oss << "  ]\n)";
             return oss.str();
@@ -126,8 +127,8 @@ void BindDetection(pybind11::module &m) {
 
     // Bind DeployDet class
     pybind11::class_<DeployDet>(m, "DeployDet")
-        .def(pybind11::init<const std::string &, bool, int>(),
-             pybind11::arg("file"), pybind11::arg("cudaMem") = false, pybind11::arg("device") = 0)
+        .def(pybind11::init<const std::string &, bool, bool, int>(),
+             pybind11::arg("file"), pybind11::arg("obb"), pybind11::arg("cudaMem") = false, pybind11::arg("device") = 0)
         .def(
             "predict", [](DeployDet &self, pybind11::array &pyimg) {
                 Image image = PyArray2Image(pyimg);
@@ -147,8 +148,8 @@ void BindDetection(pybind11::module &m) {
 
     // Bind DeployCGDet class
     pybind11::class_<DeployCGDet>(m, "DeployCGDet")
-        .def(pybind11::init<const std::string &, bool, int>(),
-             pybind11::arg("file"), pybind11::arg("cudaMem") = false, pybind11::arg("device") = 0)
+        .def(pybind11::init<const std::string &, bool, bool, int>(),
+             pybind11::arg("file"), pybind11::arg("obb"), pybind11::arg("cudaMem") = false, pybind11::arg("device") = 0)
         .def(
             "predict", [](DeployCGDet &self, pybind11::array &pyimg) {
                 Image image = PyArray2Image(pyimg);
