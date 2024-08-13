@@ -52,17 +52,15 @@ TensorRT-YOLO 是一个支持 YOLOv3、YOLOv5、YOLOv6、YOLOv7、YOLOv8、YOLOv
 
 ## <div align="center">📺 BiliBili</div>
 
-- [啪的一下，很快啊！TensorRT YOLOv5s 在FP16模式下，批量大小4，仅需13毫秒！](https://www.bilibili.com/video/BV1dy421q7Am)
+- [【TensorRT-YOLO】你的YOLO快速部署工具](https://www.bilibili.com/video/BV12T421r7ZH)
 
-- [【TensorRT-YOLO】YOLOv9 TensorRT 推理➕EfficientNMS](https://www.bilibili.com/video/BV1uF4m1V7xF)
+- [【TensorRT-YOLO】TensorRT 自定义插件加速 YOLO OBB 部署演示](https://www.bilibili.com/video/BV1NYYze8EST)
 
-- [【TensorRT-YOLO】YOLOv8 推理最速传说 1ms](https://www.bilibili.com/video/BV13f421o7KL)
-
-- [【TensorRT-YOLO】3.0 Docker 部署演示](https://www.bilibili.com/video/BV1Jr42137EP)
+- [【TensorRT-YOLO】接入 VideoPipe 演示](https://www.bilibili.com/video/BV121421C755)
 
 - [【TensorRT-YOLO】CUDA Graphs 加速推理](https://www.bilibili.com/video/BV1RZ421M7JV)
 
-- [【TensorRT-YOLO】接入 VideoPipe 演示](https://www.bilibili.com/video/BV121421C755)
+- [【TensorRT-YOLO】3.0 Docker 部署演示](https://www.bilibili.com/video/BV1Jr42137EP)
 
 ## <div align="center">☕ 请作者喝杯咖啡</div>
 
