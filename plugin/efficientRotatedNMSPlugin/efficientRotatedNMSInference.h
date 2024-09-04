@@ -20,7 +20,7 @@
 
 #include "common/plugin.h"
 
-#include "EfficientRotatedNMSParameters.h"
+#include "efficientRotatedNMSParameters.h"
 
 size_t EfficientRotatedNMSWorkspaceSize(
     int32_t batchSize, int32_t numScoreElements, int32_t numClasses, nvinfer1::DataType datatype);
