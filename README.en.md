@@ -17,7 +17,7 @@ English | [简体中文](README.md)
     <img alt="GitHub forks" src="https://img.shields.io/github/forks/laugh12321/TensorRT-YOLO?style=for-the-badge&color=%2320878f">
 </p>
 
-TensorRT-YOLO is an inference acceleration project that supports YOLOv3, YOLOv5, YOLOv6, YOLOv7, YOLOv8, YOLOv9, YOLOv10, PP-YOLOE and PP-YOLOE+ using NVIDIA TensorRT for optimization. The project not only integrates the EfficientNMS TensorRT plugin to enhance post-processing effects but also utilizes CUDA kernel functions and CUDA graphs to accelerate inference. TensorRT-YOLO provides support for both C++ and Python inference, aiming to deliver a fast and optimized object detection solution.
+TensorRT-YOLO is an inference acceleration project that supports YOLOv3, YOLOv5, YOLOv6, YOLOv7, YOLOv8, YOLOv9, YOLOv10, YOLO11, PP-YOLOE and PP-YOLOE+ using NVIDIA TensorRT for optimization. The project not only integrates the TensorRT plugin to enhance post-processing effects but also utilizes CUDA kernel functions and CUDA graphs to accelerate inference. TensorRT-YOLO provides support for both C++ and Python inference, aiming to deliver a fast and optimized object detection solution.
 
 <div align="center">
     <img src=assets/example0.jpg height="320">
@@ -26,9 +26,10 @@ TensorRT-YOLO is an inference acceleration project that supports YOLOv3, YOLOv5,
 
 ## <div align="center">✨ Key Features</div>
 
-- Support for YOLOv3, YOLOv5, YOLOv6, YOLOv7, YOLOv8, YOLOv9, YOLOv10, PP-YOLOE and PP-YOLOE+
+- Support for YOLOv3, YOLOv5, YOLOv6, YOLOv7, YOLOv8, YOLOv9, YOLOv10, YOLO11, PP-YOLOE and PP-YOLOE+
+- Support Detect and OBB Detect models
 - Support for ONNX static and dynamic export, as well as TensorRT inference
-- Integration of EfficientNMS TensorRT plugin for accelerated post-processing
+- Integration of TensorRT plugin for accelerated post-processing
 - Utilization of CUDA kernel functions for accelerated preprocessing
 - Utilization of CUDA graphs for accelerated inference process
 - Support for inference in both C++ and Python

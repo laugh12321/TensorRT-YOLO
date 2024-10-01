@@ -11,8 +11,8 @@ requires-python = ">=3.8"
 license = {file = "LICENSE"}
 maintainers = [{ name = "laugh12321" }]
 authors = [{ name = "laugh12321", email = "laugh12321@vip.qq.com" }]
-description = "TensorRT-YOLO: Support YOLOv3, YOLOv5, YOLOv6, YOLOv7, YOLOv8, YOLOv9, YOLOv10 and PP-YOLOE using TensorRT acceleration with EfficientNMS!"
-keywords = ["machine-learning", "deep-learning", "computer-vision", "ML", "DL", "AI", "YOLO", "YOLOv3", "YOLOv5", "YOLOv6", "YOLOv7", "YOLOv8", "YOLOv9", "YOLOv10", "PP-YOLOE", "TensorRT", "CUDA", "detection", "ONNX", "EfficientNMS"]
+description = "TensorRT-YOLO: Support YOLOv3, YOLOv5, YOLOv6, YOLOv7, YOLOv8, YOLOv9, YOLOv10, YOLO11 and PP-YOLOE using TensorRT acceleration with TRTPlugins!"
+keywords = ["machine-learning", "deep-learning", "computer-vision", "ML", "DL", "AI", "YOLO", "YOLOv3", "YOLOv5", "YOLOv6", "YOLOv7", "YOLOv8", "YOLOv9", "YOLOv10", "YOLO11","PP-YOLOE", "TensorRT", "CUDA", "detection", "ONNX", "EfficientNMS"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
