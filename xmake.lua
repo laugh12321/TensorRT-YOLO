@@ -9,7 +9,7 @@ add_requireconfs("pybind11.python", {version = "3.10", override = true})
 
 -- 添加编译规则
 add_rules("plugin.compile_commands.autoupdate", {outputdir = ".vscode"})
-add_rules("mode.debug", "mode.release")
+add_rules("mode.release")
 
 -- 定义选项
 option("tensorrt")
@@ -20,6 +20,8 @@ option("tensorrt")
             raise("TensorRT path is not set. Please specify the TensorRT path.")
         end 
     end)
+
+includes("plugin/xmake.lua")
 
 -- 定义目标
 target("deploy")
@@ -44,14 +46,6 @@ target("deploy")
     add_rules("cuda")
     add_cugencodes("native")
     add_cuflags("-allow-unsupported-compiler")
-
-    -- 如果目标类型是静态库
-    if is_kind("static") then 
-        -- 设置 CUDA 开发链接为 true
-        set_policy("build.cuda.devlink", true)
-    else
-        add_defines("ENABLE_DEPLOY_BUILDING_DLL")
-    end
 
     -- 添加TensorRT链接目录和链接库
     if has_config("tensorrt") then

@@ -4,16 +4,10 @@
 
 #include <iostream>
 
-#ifdef ENABLE_DEPLOY_BUILDING_DLL
-#if defined(_WIN32)
-#define DEPLOY_DECL __declspec(dllexport)
-#elif defined(__GNUC__) && ((__GNUC__ >= 4) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3))
-#define DEPLOY_DECL __attribute__((visibility("default")))
+#ifdef _MSC_VER
+#define DEPLOYAPI __declspec(dllexport)
 #else
-#define DEPLOY_DECL
-#endif
-#else
-#define DEPLOY_DECL
+#define DEPLOYAPI __attribute__((visibility("default")))
 #endif
 
 namespace deploy {

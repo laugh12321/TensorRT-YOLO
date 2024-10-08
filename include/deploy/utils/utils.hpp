@@ -105,7 +105,7 @@ private:
 /**
  * @brief Class for GPU timer.
  */
-class DEPLOY_DECL GpuTimer : public TimerBase {
+class DEPLOYAPI GpuTimer : public TimerBase {
 public:
     /**
      * @brief Constructor.
@@ -143,7 +143,7 @@ private:
 /**
  * @brief Class for CPU timer using high resolution clock.
  */
-class DEPLOY_DECL CpuTimer : public TimerBase {
+class DEPLOYAPI CpuTimer : public TimerBase {
 public:
     /**
      * @brief Starts the CPU timer.

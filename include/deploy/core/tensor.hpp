@@ -13,7 +13,7 @@ namespace deploy {
 /**
  * @brief Class representing a Tensor.
  */
-class Tensor {
+class DEPLOYAPI Tensor {
 private:
     void*   hostPtr     = nullptr; /**< Pointer to host memory */
     void*   devicePtr   = nullptr; /**< Pointer to device memory */

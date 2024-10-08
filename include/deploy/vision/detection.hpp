@@ -20,7 +20,7 @@ namespace deploy {
  * CUDA acceleration can be optionally enabled for inference by setting the 'cudaMem'
  * flag to true during construction. The class also supports detection with oriented bounding boxes (OBB).
  */
-class DEPLOY_DECL BaseDet {
+class DEPLOYAPI BaseDet {
 public:
     /**
      * @brief Constructor to initialize BaseDet with a model file, OBB flag, optional CUDA memory flag, and device index.
@@ -132,7 +132,7 @@ protected:
  * CUDA acceleration can be optionally enabled for inference by setting the 'cudaMem'
  * flag to true during construction.
  */
-class DEPLOY_DECL DeployDet : public BaseDet {
+class DEPLOYAPI DeployDet : public BaseDet {
 public:
     /**
      * @brief Constructor to initialize DeployDet with a model file, OBB flag, optional CUDA memory flag, and device index.
@@ -207,7 +207,7 @@ private:
  * This class extends the DeployDet class and provides additional functionality using CUDA Graphs
  * for efficient inference.
  */
-class DEPLOY_DECL DeployCGDet : public BaseDet {
+class DEPLOYAPI DeployCGDet : public BaseDet {
 public:
     /**
      * @brief Constructor to initialize DeployCGDet with a model file, OBB flag, optional CUDA memory flag, and device index.

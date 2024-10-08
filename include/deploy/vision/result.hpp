@@ -10,7 +10,7 @@ namespace deploy {
 /**
  * @brief Represents a bounding box.
  */
-struct DEPLOY_DECL Box {
+struct DEPLOYAPI Box {
     float left;   /**< Left coordinate of the bounding box */
     float top;    /**< Top coordinate of the bounding box */
     float right;  /**< Right coordinate of the bounding box */
@@ -21,7 +21,7 @@ struct DEPLOY_DECL Box {
 /**
  * @brief Represents the result of object detection.
  */
-struct DEPLOY_DECL DetectionResult {
+struct DEPLOYAPI DetectionResult {
     int                num = 0;   /**< Number of detected objects */
     std::vector<Box>   boxes{};   /**< Detected bounding boxes */
     std::vector<int>   classes{}; /**< Detected classes */
@@ -47,7 +47,7 @@ struct DEPLOY_DECL DetectionResult {
 /**
  * @brief Represents an image.
  */
-struct DEPLOY_DECL Image {
+struct DEPLOYAPI Image {
     void* rgbPtr = nullptr; /**< Pointer to image data (BGR format) */
     int   width  = 0;       /**< Width of the image */
     int   height = 0;       /**< Height of the image */
