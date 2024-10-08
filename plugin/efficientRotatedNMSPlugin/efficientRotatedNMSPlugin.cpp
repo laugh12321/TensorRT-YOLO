@@ -29,6 +29,8 @@ char const* const kEFFICIENT_ROTATED_NMS_PLUGIN_VERSION{"1"};
 char const* const kEFFICIENT_ROTATED_NMS_PLUGIN_NAME{"EfficientRotatedNMS_TRT"};
 } // namespace
 
+REGISTER_TENSORRT_PLUGIN(EfficientRotatedNMSPluginCreator);
+
 EfficientRotatedNMSPlugin::EfficientRotatedNMSPlugin(EfficientRotatedNMSParameters param)
     : mParam(std::move(param))
 {

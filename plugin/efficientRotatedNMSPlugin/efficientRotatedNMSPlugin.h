@@ -18,6 +18,9 @@
 #define TRT_EFFICIENT_ROTATED_NMS_PLUGIN_H
 
 #include <vector>
+#include <string>
+
+#include <NvInferPlugin.h>
 
 #include "common/plugin.h"
 #include "efficientRotatedNMSParameters.h"
