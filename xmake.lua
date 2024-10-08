@@ -21,18 +21,28 @@ option("tensorrt")
         end 
     end)
 
-includes("plugin/xmake.lua")
+-- 定义一个函数来处理 TensorRT 和 CUDA 的配置
+function configure_tensorrt(target)
+    if has_config("tensorrt") then
+        local tensorrt_path = get_config("tensorrt")
+        add_includedirs(path.join(tensorrt_path, "include"))
+        add_linkdirs(path.join(tensorrt_path, "lib"))
+        local libs = is_plat("windows") and "nvinfer_10 nvinfer_plugin_10 nvonnxparser_10" or "nvinfer nvinfer_plugin nvonnxparser"
+        add_links(libs:split("%s+"))
+    end
+end
 
--- 定义目标
-target("deploy")
-    -- 设置目标类型
-    set_kind("$(kind)")
+-- 定义一个函数来添加 CUDA 支持
+function configure_cuda(target)
+    add_rules("cuda")
+    add_cugencodes("native")
+    add_cuflags("-allow-unsupported-compiler")
+end
 
-    -- 设置编译路径
-    set_targetdir("$(projectdir)/lib")
-
+-- 定义一个函数来添加公共配置
+function common_config(target)
     -- 添加库目录
-    add_includedirs("$(projectdir)/include", {public = true})
+    add_includedirs("$(projectdir)/include")
 
     -- 添加文件
     add_files(
@@ -43,51 +53,41 @@ target("deploy")
     )
 
     -- 添加 cuda
-    add_rules("cuda")
-    add_cugencodes("native")
-    add_cuflags("-allow-unsupported-compiler")
+    configure_cuda(target)
 
     -- 添加TensorRT链接目录和链接库
-    if has_config("tensorrt") then
-        add_includedirs(path.join("$(tensorrt)", "include"))
-        add_linkdirs(path.join("$(tensorrt)", "lib"))
-        if is_host("windows") and os.exists(path.join(get_config("tensorrt"), "lib", "nvinfer_10.dll")) then
-            add_links("nvinfer_10", "nvinfer_plugin_10", "nvonnxparser_10")
-        else
-            add_links("nvinfer", "nvinfer_plugin", "nvonnxparser")
-        end
-    end
+    configure_tensorrt(target)
+end
+
+includes("plugin/xmake.lua")
+
+-- 定义目标
+target("deploy")
+    -- 设置目标类型
+    set_kind("shared")
+
+    -- 设置编译路径
+    set_targetdir("$(projectdir)/lib")
+
+    -- 公共配置
+    common_config("deploy")
 
 -- 定义目标
 target("pydeploy")
     -- 定义规则
     add_rules("python.library")
 
+    -- 添加依赖
+    add_packages("pybind11")
+
     -- 设置编译路径
     set_targetdir("$(projectdir)/tensorrt_yolo/libs")
 
-    -- 添加依赖
-    add_deps("deploy")
-    add_packages("pybind11")
+    -- 公共配置
+    common_config("pydeploy")
 
     -- 添加文件
     add_files("$(projectdir)/source/deploy/pybind/deploy.cpp")
-
-    -- 添加 cuda
-    add_rules("cuda")
-    add_cugencodes("native")
-    add_cuflags("-allow-unsupported-compiler")
-
-    -- 添加TensorRT链接目录和链接库
-    if has_config("tensorrt") then
-        add_includedirs(path.join("$(tensorrt)", "include"))
-        add_linkdirs(path.join("$(tensorrt)", "lib"))
-        if is_host("windows") and os.exists(path.join(get_config("tensorrt"), "lib", "nvinfer_10.dll")) then
-            add_links("nvinfer_10", "nvinfer_plugin_10", "nvonnxparser_10")
-        else
-            add_links("nvinfer", "nvinfer_plugin", "nvonnxparser")
-        end
-    end
 
     -- 在配置阶段查找 CUDA SDK
     local cuda
@@ -102,9 +102,4 @@ target("pydeploy")
         -- 设置配置目录和配置文件
         target:set("configdir", "$(projectdir)/tensorrt_yolo")
         target:add("configfiles", "$(projectdir)/tensorrt_yolo/c_lib_wrap.py.in")
-    end)
-
-    after_build(function (target)
-        -- 将 $(projectdir)/lib 文件夹中的所有文件复制到 $(projectdir)/tensorrt_yolo/libs
-        os.cp("$(projectdir)/lib/*", "$(projectdir)/tensorrt_yolo/libs/")
     end)
