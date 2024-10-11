@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   cli.py
-# Version :   2.0
+# Version :   3.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/07/05 14:26:53
@@ -64,12 +64,12 @@ def trtyolo():
     pass
 
 
-@trtyolo.command(help="Export models for TensorRT-YOLO. Supports YOLOv3, YOLOv5, YOLOv6, YOLOv7, YOLOv8, YOLOv9, PP-YOLOE, and PP-YOLOE+.")
+@trtyolo.command(help="Export models for TensorRT-YOLO. Supports YOLOv3, YOLOv5, YOLOv6, YOLOv7, YOLOv8, YOLOv9, YOLOv10, YOLO11, PP-YOLOE and PP-YOLOE+.")
 @click.option('--model_dir', help='Path to the directory containing the PaddleDetection PP-YOLOE model.', type=str)
 @click.option('--model_filename', help='The filename of the PP-YOLOE model.', type=str)
 @click.option('--params_filename', help='The filename of the PP-YOLOE parameters.', type=str)
 @click.option('-w', '--weights', help='Path to YOLO weights for PyTorch.', type=str)
-@click.option('-v', '--version', help='Torch YOLO version, e.g., yolov3, yolov5, yolov6, yolov7, yolov8, yolov9, ultralytics.', type=str)
+@click.option('-v', '--version', help='Torch YOLO version, e.g., yolov3, yolov5, yolov6, yolov7, yolov8, yolov9, yolov10, yolo11, ultralytics.', type=str)
 @click.option('--imgsz', default=640, help='Inference image size. Defaults to 640.', type=int)
 @click.option('--repo_dir', default=None, help='Directory containing the local repository (if using torch.hub.load).', type=str)
 @click.option('-o', '--output', help='Directory path to save the exported model.', type=str, required=True)

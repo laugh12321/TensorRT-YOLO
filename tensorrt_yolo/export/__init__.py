@@ -4,13 +4,22 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Optional, Tuple
 
-import onnx
-import torch
 from loguru import logger
-from ultralytics import YOLO
-from ultralytics.utils.checks import check_imgsz
 
-from .head import UltralyticsDetect, UltralyticsOBB, YOLODetect
+try:
+    import torch
+except ImportError:
+    logger.error('Pytorch not found, plaese install Pytorch.' 'for example: `pip install torch`.')
+    sys.exit(1)
+
+try:
+    from ultralytics import YOLO
+    from ultralytics.utils.checks import check_imgsz
+except ImportError:
+    logger.error('Ultralytics not found, plaese install Ultralytics.' 'for example: `pip install ultralytics`.')
+    sys.exit(1)
+
+from .head import UltralyticsDetect, UltralyticsOBB, YOLODetect, v10Detect
 from .ppyoloe import PPYOLOEGraphSurgeon
 
 __all__ = ['torch_export', 'paddle_export']
@@ -22,30 +31,30 @@ warnings.filterwarnings("ignore")
 logger.configure(handlers=[{'sink': sys.stdout, 'colorize': True, 'format': "<level>[{level.name[0]}]</level> <level>{message}</level>"}])
 
 HEADS = {
-    "Detect": {"yolov3": YOLODetect, "yolov5": YOLODetect, "yolov8": UltralyticsDetect, "ultralytics": UltralyticsDetect},
-    "OBB": {"yolov8": UltralyticsOBB, "ultralytics": UltralyticsOBB},
+    "Detect": {"yolov3": YOLODetect, "yolov5": YOLODetect, "yolov8": UltralyticsDetect, "yolo11": UltralyticsDetect, "ultralytics": UltralyticsDetect},
+    "v10Detect": {"yolov10": v10Detect, "ultralytics": v10Detect},
+    "OBB": {"yolov8": UltralyticsOBB, "yolo11": UltralyticsOBB, "ultralytics": UltralyticsOBB},
+}
+
+DEFAULT_OUTPUT_NAMES = ["num_dets", "det_boxes", "det_scores", "det_classes"]
+DEFAULT_DYNAMIC_AXES = {
+    "images": {0: "batch", 2: "height", 3: "width"},
+    "num_dets": {0: "batch"},
+    "det_boxes": {0: "batch"},
+    "det_scores": {0: "batch"},
+    "det_classes": {0: "batch"},
 }
 
 OUTPUT_NAMES = {
-    "Detect": ["num_dets", "det_boxes", "det_scores", "det_classes"],
-    "OBB": ["num_dets", "det_boxes", "det_scores", "det_classes"],
+    "Detect": DEFAULT_OUTPUT_NAMES,
+    "v10Detect": DEFAULT_OUTPUT_NAMES,
+    "OBB": DEFAULT_OUTPUT_NAMES,
 }
 
 DYNAMIC_AXES = {
-    "Detect": {
-        "images": {0: "batch", 2: "height", 3: "width"},
-        "num_dets": {0: "batch"},
-        "det_boxes": {0: "batch"},
-        "det_scores": {0: "batch"},
-        "det_classes": {0: "batch"},
-    },
-    "OBB": {
-        "images": {0: "batch", 2: "height", 3: "width"},
-        "num_dets": {0: "batch"},
-        "det_boxes": {0: "batch"},
-        "det_scores": {0: "batch"},
-        "det_classes": {0: "batch"},
-    },
+    "Detect": DEFAULT_DYNAMIC_AXES,
+    "v10Detect": DEFAULT_DYNAMIC_AXES,
+    "OBB": DEFAULT_DYNAMIC_AXES,
 }
 
 YOLO_EXPORT_INFO = {
@@ -60,7 +69,7 @@ def load_model(version: str, weights: str, repo_dir: Optional[str] = None) -> Op
     Load YOLO model based on version and weights.
 
     Args:
-        version (str): YOLO version, e.g., yolov3, yolov5, yolov6, yolov7, yolov8, yolov9, ultralytics.
+        version (str): YOLO version, e.g., yolov3, yolov5, yolov6, yolov7, yolov8, yolov9, yolov10, yolo11, ultralytics.
         weights (str): Path to YOLO weights for PyTorch.
         repo_dir (Optional[str], optional): Directory containing the local repository (if using torch.hub.load). Defaults to None.
 
@@ -77,7 +86,7 @@ def load_model(version: str, weights: str, repo_dir: Optional[str] = None) -> Op
     if version in yolo_versions_with_repo:
         repo_dir = yolo_versions_with_repo[version] if repo_dir is None else repo_dir
         return torch.hub.load(repo_dir, 'custom', path=weights, source=source, verbose=False)
-    elif version in ['yolov8', 'ultralytics']:
+    elif version in ['yolov8', 'yolov10', 'yolo11', 'ultralytics']:
         return YOLO(model=weights, verbose=False).model
     elif version in YOLO_EXPORT_INFO:
         logger.warning(
@@ -98,7 +107,7 @@ def update_model(
 
     Args:
         model (torch.nn.Module): YOLO model to be updated.
-        version (str): YOLO version, e.g., yolov3, yolov5, yolov6, yolov7, yolov8, yolov9, ultralytics.
+        version (str): YOLO version, e.g., yolov3, yolov5, yolov6, yolov7, yolov8, yolov9, yolov10, yolo11, ultralytics.
         dynamic (bool): Whether to use dynamic settings.
         max_boxes (int): Maximum number of detections to output per image.
         iou_thres (float): NMS IoU threshold for post-processing.
@@ -153,7 +162,7 @@ def torch_export(
     Args:
         weights (str): Path to YOLO weights for PyTorch.
         output (str): Directory path to save the exported model.
-        version (str): YOLO version, e.g., yolov3, yolov5, yolov6, yolov7, yolov8, yolov9, ultralytics.
+        version (str): YOLO version, e.g., yolov3, yolov5, yolov6, yolov7, yolov8, yolov9, yolov10, yolo11, ultralytics.
         imgsz (Optional[int], optional): Inference image size. Defaults to 640.
         batch (Optional[int], optional): Total batch size for the model. Use -1 for dynamic batch size. Defaults to 1.
         max_boxes (Optional[int], optional): Maximum number of detections to output per image. Defaults to 100.
@@ -198,6 +207,12 @@ def torch_export(
         output_names=OUTPUT_NAMES[head_name],
         dynamic_axes=DYNAMIC_AXES[head_name] if dynamic else None,
     )
+
+    try:
+        import onnx
+    except ImportError:
+        logger.error('onnx not found, plaese install onnx.' 'for example: `pip install onnx>=1.12.0`.')
+        sys.exit(1)
 
     model_onnx = onnx.load(onnx_filepath)
     onnx.checker.check_model(model_onnx)

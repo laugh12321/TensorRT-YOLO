@@ -1,10 +1,15 @@
--- 添加编译规则
-add_rules("mode.debug", "mode.release")
+-- 设置项目信息
+set_languages("cxx17")
 set_allowedplats("windows", "linux")
+
+-- 添加依赖
 add_requires("opencv", "cli11")
-if is_host("linux") then 
+if is_plat("linux") then 
     add_requires("zlib")
 end
+
+-- 添加编译规则
+add_rules("mode.release")
 
 -- 定义选项
 option("tensorrt")
@@ -27,18 +32,23 @@ option("deploy")
 
 -- 定义目标
 target("detect")
-    set_languages("cxx17")
+    -- 设置目标类型
+    set_kind("binary")
+
+    -- 设置编译路径
+    set_targetdir("$(projectdir)/bin")
+
+    -- 设置运行路径
     set_rundir("$(projectdir)")
+
+    -- 添加依赖
     add_packages("opencv", "cli11")
-    if is_host("linux") then 
+    if is_plat("linux") then 
         add_packages("zlib")
     end
 
     -- 添加文件
     add_files("detect.cpp")
-
-    -- 设置目标类型
-    set_kind("binary")
 
     -- 添加 cuda
     add_rules("cuda")

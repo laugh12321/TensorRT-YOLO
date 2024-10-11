@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   ppyoloe.py
-# Version :   4.0
+# Version :   5.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/01/28 14:37:43
@@ -31,8 +31,6 @@ from collections import OrderedDict
 from pathlib import Path
 
 import numpy as np
-import onnx
-import onnx_graphsurgeon as gs
 from loguru import logger
 
 __all__ = ["PPYOLOEGraphSurgeon"]
@@ -68,8 +66,10 @@ class PPYOLOEGraphSurgeon:
         # Ensure the required modules are imported within the function scope
         try:
             from paddle2onnx.command import c_paddle_to_onnx
-        except Exception as e:
-            logger.exception('paddle2onnx not found, plaese install paddle2onnx.' 'for example: `pip install paddle2onnx`.')
+        except ImportError:
+            logger.error('paddle2onnx not found, plaese install paddle2onnx.' 'for example: `pip install paddle2onnx`.')
+            sys.exit(1)
+
         model_dir = Path(model_dir)
 
         # Validate model directory
@@ -89,8 +89,19 @@ class PPYOLOEGraphSurgeon:
         if not dynamic:
             try:
                 import paddle2onnx.paddle2onnx_cpp2py_export as c_p2o
-            except Exception as e:
-                logger.exception('paddle2onnx not found, plaese install paddle2onnx.' 'for example: `pip install paddle2onnx`.')
+            except ImportError:
+                logger.error('paddle2onnx not found, plaese install paddle2onnx.' 'for example: `pip install paddle2onnx`.')
+                sys.exit(1)
+            try:
+                import onnx
+            except ImportError:
+                logger.error('onnx not found, plaese install onnx.' 'for example: `pip install onnx>=1.12.0`.')
+                sys.exit(1)
+            try:
+                import onnx_graphsurgeon as gs
+            except ImportError:
+                logger.error('onnx_graphsurgeon not found, plaese install onnx_graphsurgeon.' 'for example: `pip install onnx_graphsurgeon`.')
+                sys.exit(1)
 
             # Use YOLOTRTInference to modify an existed ONNX graph.
             self.graph = gs.import_onnx(onnx.load(onnx_path))

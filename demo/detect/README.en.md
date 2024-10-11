@@ -1,42 +1,39 @@
 [简体中文](README.md) | English
 
-# Model Inference Examples
+# Model Inference Example
 
-This example demonstrates how to perform model inference using CLI, Python, and C++ with the YOLOv8s model as an example.
-
-> [!IMPORTANT]  
-> If you want to use the [EfficientRotatedNMS](../../plugin/efficientRotatedNMSPlugin) plugin to infer an OBB model, please refer to [Building TensorRT Custom Plugins](../../docs/en/build_trt_custom_plugin.md) for guidance.
+This example uses the YOLO11n model to demonstrate how to perform model inference using CLI, Python, and C++.
 
 ## Model Export
 
 ### Detection Model
 
-1. Download the [YOLOv8s](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8s.pt) model and save it to the `models` folder.
-2. Use the following command to export the model to ONNX format with the [EfficientNMS](https://github.com/NVIDIA/TensorRT/tree/main/plugin/efficientNMSPlugin) plugin:
+1. Download the [YOLO11n](https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt) model and save it to the `models` folder.
+2. Use the following command to export the ONNX format with [EfficientNMS](https://github.com/NVIDIA/TensorRT/tree/main/plugin/efficientNMSPlugin) plugin:
 
     ```bash
-    trtyolo export -w models/yolov8s.pt -v yolov8 -o models
+    trtyolo export -w models/yolo11n.pt -v yolo11 -o models
     ```
 
-    After running the above command, a `yolov8s.onnx` file will be generated in the `models` folder. Next, use the `trtexec` tool to convert the ONNX file to a TensorRT engine:
+    After running the above command, a `yolo11n.onnx` file will be generated in the `models` folder. Next, use the `trtexec` tool to convert the ONNX file to a TensorRT engine:
 
     ```bash
-    trtexec --onnx=models/yolov8s.onnx --saveEngine=models/yolov8s.engine --fp16
+    trtexec --onnx=models/yolo11n.onnx --saveEngine=models/yolo11n.engine --fp16
     ```
 
 ### Oriented Bounding Box Model (OBB)
 
-1. Download the [YOLOv8s-obb](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8s-obb.pt) model and save it to the `models` folder.
-2. Use the following command to export the model to ONNX format with the [EfficientRotatedNMS](../../plugin/efficientRotatedNMSPlugin/) plugin:
+1. Download the [YOLO11n-obb](https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n-obb.pt) model and save it to the `models` folder.
+2. Use the following command to export the ONNX format with [EfficientRotatedNMS](../../plugin/efficientRotatedNMSPlugin/) plugin:
 
     ```bash
-    trtyolo export -w models/yolov8s-obb.pt -v yolov8 -o models
+    trtyolo export -w models/yolo11n-obb.pt -v yolo11 -o models
     ```
 
-    After running the above command, a `yolov8s-obb.onnx` file will be generated in the `models` folder. Next, use the `trtexec` tool to convert the ONNX file to a TensorRT engine:
+    After running the above command, a `yolo11n-obb.onnx` file will be generated in the `models` folder. Next, use the `trtexec` tool to convert the ONNX file to a TensorRT engine:
 
     ```bash
-    trtexec --onnx=models/yolov8s-obb.onnx --saveEngine=models/yolov8s-obb.engine --fp16
+    trtexec --onnx=models/yolo11n-obb.onnx --saveEngine=models/yolo11n-obb.engine --fp16 --staticPlugins=/path/to/your/TensorRT-YOLO/lib/plugin/libcustom_plugins.so --setPluginsToSerialize=/path/to/your/TensorRT-YOLO/lib/plugin/libcustom_plugins.so
     ```
 
 ## Dataset Preparation
@@ -53,49 +50,46 @@ This example demonstrates how to perform model inference using CLI, Python, and 
 
 ## Model Inference
 
+> [!NOTE] 
+> The `--cudaGraph` command added from version 4.0 can further accelerate the inference process, but this feature only supports static models.
+> 
+> From version 4.2, OBB model inference is supported, and the `-m, --mode` command is added to select between Detection and OBB models.
+
 ### Inference Using CLI
 
-1. Use the `trtyolo` command-line tool for inference. Run the following command to view the help information:
+1. Use the `trtyolo` command-line tool for inference. Run the following command to view help information:
 
     ```bash
     trtyolo infer --help
     ```
 
-2. Run the following commands for inference:
-
-    > [!NOTE] 
-    > The `--cudaGraph` option, introduced in version 4.0, can further accelerate the inference process, but this feature only supports static models.
-    > 
-    > From version 4.2 onwards, OBB model inference is supported, with the new `-m, --mode` option for selecting Detection or OBB models.
+2. Run the following command for inference:
 
     ```bash
-    # Detection Model
-    trtyolo infer -e models/yolov8s.engine -m 0 -i images -o output -l labels_det.txt --cudaGraph
-    # Oriented Bounding Box Model
-    trtyolo infer -e models/yolov8s-obb.engine -m 1 -i images -o output -l labels_obb.txt --cudaGraph
+    # Detection model
+    trtyolo infer -e models/yolo11n.engine -m 0 -i images -o output -l labels_det.txt --cudaGraph
+    # Oriented bounding box model
+    trtyolo infer -e models/yolo11n-obb.engine -m 1 -i images -o output -l labels_obb.txt --cudaGraph
     ```
 
-    The inference results will be saved to the `output` folder and generate visualized results.
+    Inference results will be saved to the `output` folder, with visualization results generated.
 
 ### Inference Using Python
 
-1. Use the `tensorrt_yolo` library for Python inference. The sample script `detect.py` is ready for use.
-2. Run the following commands for inference:
-
-    > [!NOTE] 
-    > The `--cudaGraph` option can further accelerate the inference process, but this feature only supports static models.
+1. Use the `tensorrt_yolo` library for Python inference. The example script `detect.py` is ready to use.
+2. Run the following command for inference:
 
     ```bash
-    # Detection Model
-    python detect.py -e models/yolov8s.engine -m 0 -i images -o output -l labels_det.txt --cudaGraph
-    # Oriented Bounding Box Model
-    python detect.py -e models/yolov8s-obb.engine -m 1 -i images -o output -l labels_obb.txt --cudaGraph
+    # Detection model
+    python detect.py -e models/yolo11n.engine -m 0 -i images -o output -l labels_det.txt --cudaGraph
+    # Oriented bounding box model
+    python detect.py -e models/yolo11n-obb.engine -m 1 -i images -o output -l labels_obb.txt --cudaGraph
     ```
 
 ### Inference Using C++
 
-1. Ensure that the project has been compiled according to the [Deploy Compilation Guide](../../docs/en/build_and_install.md#deploy-compilation).
-2. Use `xmake` to compile `detect.cpp` into an executable file:
+1. Ensure that the project has been compiled according to the [`TensorRT-YOLO` Compilation](../../docs/en/build_and_install.md#tensorrt-yolo-compilation).
+2. Use xmake to compile `detect.cpp` into an executable:
 
     ```bash
     xmake f -P . --tensorrt="/path/to/your/TensorRT" --deploy="/path/to/your/TensorRT-YOLO"
@@ -103,18 +97,18 @@ This example demonstrates how to perform model inference using CLI, Python, and 
     xmake -P . -r
     ```
 
-    After compilation, the executable file will be generated in the `build` folder at the project root.
+    After compilation, the executable file will be generated in the `build` folder at the root of the project.
 
-3. Run the following commands for inference:
-
-    > [!NOTE] 
-    > The `--cudaGraph` option can further accelerate the inference process, but this feature only supports static models.
+3. Run inference with the following command:
 
     ```bash
-    # Detection Model
-    xmake run -P . detect -e models/yolov8s.engine -m 0 -i images -o output -l labels_det.txt --cudaGraph
-    # Oriented Bounding Box Model
-    xmake run -P . detect -e models/yolov8s-obb.engine -m 1 -i images -o output -l labels_obb.txt --cudaGraph
+    # Detection model
+    xmake run -P . detect -e models/yolo11n.engine -m 0 -i images -o output -l labels_det.txt --cudaGraph
+    # Oriented bounding box model
+    xmake run -P . detect -e models/yolo11n-obb.engine -m 1 -i images -o output -l labels_obb.txt --cudaGraph
     ```
 
-By following the steps above, you can successfully complete model inference.
+> [!IMPORTANT]  
+> When inferring with an OBB model built using the `--fp16` flag, there may be instances of duplicate anchor boxes. This issue is typically caused by a reduction in precision. Therefore, it is not recommended to build OBB models using the `--fp16` precision mode.
+
+You can now successfully complete model inference using the above methods.

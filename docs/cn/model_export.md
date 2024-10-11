@@ -1,32 +1,54 @@
 [English](../en/model_export.md) | 简体中文
 
-# 模型导出
+# 使用 `trtyolo` CLI 导出模型
 
-您可以使用 `tensorrt_yolo` 自带的 CLI 工具 trtyolo 导出 ONNX 模型，并使用 [EfficientNMS](https://github.com/NVIDIA/TensorRT/tree/main/plugin/efficientNMSPlugin) 插件进行后处理。您可以使用命令 `trtyolo export --help` 查看具体的导出命令。
+`tensorrt_yolo` 提供了一个方便的命令行界面（CLI）工具 `trtyolo`，用于将 ONNX 模型导出为适用于该项目推理的格式，并集成了 TensorRT 插件。要了解具体的导出命令，您可以使用 `trtyolo export --help` 查看帮助信息。
 
-> 对于导出 PP-YOLOE 和 PP-YOLOE+ 的 ONNX 模型，仅会修改 `batch` 维度，`height` 和 `width` 维度不会更改。您需要在 [PaddleDetection](https://github.com/PaddlePaddle/PaddleDetection) 中进行设置，默认为 `640`。
+> [!NOTE]  
+> 当导出 PP-YOLOE 和 PP-YOLOE+ 的 ONNX 模型时，只会调整 batch 维度，而 height 和 width 维度将保持不变。您需要在 [PaddleDetection](https://github.com/PaddlePaddle/PaddleDetection) 中进行相应的设置，默认值通常为 640。
 >
-> [YOLOv6](https://github.com/meituan/YOLOv6/tree/main/deploy/ONNX#tensorrt-backend-tensorrt-version-800), [YOLOv7](https://github.com/WongKinYiu/yolov7#export), [YOLOv9](https://github.com/WongKinYiu/yolov9/issues/130#issue-2162045461) 官方仓库提供带 EfficientNMS 插件的 ONNX 模型导出， 这里不再二次提供。
+> 官方仓库如 [YOLOv6](https://github.com/meituan/YOLOv6/tree/main/deploy/ONNX#tensorrt-backend-tensorrt-version-800), [YOLOv7](https://github.com/WongKinYiu/yolov7#export), [YOLOv9](https://github.com/WongKinYiu/yolov9/issues/130#issue-2162045461) 已经提供了带有 EfficientNMS 插件的 ONNX 模型导出，因此这里不再重复提供。
+>
+
+### 导出命令示例
 
 ```bash
-# 导出使用远程仓库的 yolov3
+# 导出远程仓库中的 YOLOv3 模型
 trtyolo export -w yolov3.pt -v yolov3 -o output
 
-# 导出使用本地仓库的 yolov5
+# 导出本地仓库中的 YOLOv5 模型
 trtyolo export -w yolov5s.pt -v yolov5 -o output --repo_dir your_local_yolovs_repository
 
-# 使用 ultralytics 训练的 yolo 系列模型 (yolov3, yolov5, yolov6, yolov8, yolov9)，并指定 EfficientNMS 插件参数, 以动态 batch 导出
+# 使用 Ultralytics 训练的 YOLO 系列模型 (YOLOv3, YOLOv5, YOLOv6, YOLOv8, YOLOv9, YOLOv10, YOLO11) ，并指定插件参数，以动态 batch 导出
 trtyolo export -w yolov8s.pt -v ultralytics -o output --max_boxes 100 --iou_thres 0.45 --conf_thres 0.25 -b -1
 
-# PP-YOLOE, PP-YOLOE+
+# 导出 YOLOv10 模型
+trtyolo export -w yolov10s.pt -v yolov10 -o output
+
+# 导出 YOLO11 OBB 模型
+trtyolo export -w yolov11n-obb.pt -v yolo11 -o output
+
+# 导出 PP-YOLOE, PP-YOLOE+ 模型
 trtyolo export --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output
 ```
 
-导出的 ONNX 模型可以使用 `trtexec` 工具导出 TensorRT 模型。
+### 使用 `trtexec` 导出 TensorRT 模型
+
+导出的 ONNX 模型可以使用 `trtexec` 工具进一步导出为 TensorRT 模型。
 
 ```bash
 # 静态 batch
 trtexec --onnx=model.onnx --saveEngine=model.engine --fp16
+
 # 动态 batch
 trtexec --onnx=model.onnx --saveEngine=model.engine --minShapes=images:1x3x640x640 --optShapes=images:4x3x640x640 --maxShapes=images:8x3x640x640 --fp16
+
+# YOLOv8-OBB 静态 batch
+trtexec --onnx=yolov8n-obb.pt --saveEngine=yolov8n-obb.engine --fp16 --staticPlugins=./lib/plugin/libcustom_plugins.so --setPluginsToSerialize=./lib/plugin/libcustom_plugins.so
+
+# YOLO11-OBB 动态 batch
+trtexec --onnx=yolov11n-obb.pt --saveEngine=yolov11n-obb.engine --fp16 --minShapes=images:1x3x640x640 --optShapes=images:4x3x640x640 --maxShapes=images:8x3x640x640 --dynamicPlugins=./lib/plugin/custom_plugins.dll --setPluginsToSerialize=./lib/plugin/custom_plugins.dll
 ```
+
+> [!NOTE]  
+> 在使用 `--dynamicPlugins` 和 `--setPluginsToSerialize` 参数构建包含自定义插件的动态模型时，如果遇到错误 `[E] Error[4]: IRuntime::deserializeCudaEngine: Error Code 4: API Usage Error (Cannot register the library as plugin creator of EfficientRotatedNMS_TRT exists already.)`，这通常意味着引擎构建已成功，但加载并反序列化引擎时检测到插件重复注册。这种情况下，可以忽略该错误。
