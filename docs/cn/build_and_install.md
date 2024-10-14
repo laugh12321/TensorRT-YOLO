@@ -8,6 +8,7 @@
 
 - Linux: gcc/g++
 - Windows: MSVC
+- CMake
 - Xmake
 - CUDA
 - cuDNN
@@ -20,18 +21,33 @@
 > 
 > [Windows 开发环境配置——C++ 篇](https://www.cnblogs.com/laugh12321/p/17827624.html) 
 
-为了满足部署需求，您可以使用 Xmake 进行编译。此过程支持动态库和静态库的编译：
+为了满足部署需求，您可以选择使用 Xmake 或 CMake 来编译动态库。以下是详细的编译指南：
+
+首先，克隆 TensorRT-YOLO 仓库：
 
 ```bash
-git clone https://github.com/laugh12321/TensorRT-YOLO 
+git clone https://github.com/laugh12321/TensorRT-YOLO  
 cd TensorRT-YOLO
+```
 
-# Windows 配置
-xmake f --tensorrt="C:/Program Files/NVIDIA GPU Computing Toolkit/TensorRT/v10.3.0.26"
-# Linux 配置
-xmake f --tensorrt="/usr/local/tensorrt"
-# 构建
-xmake -P . -r
+#### 使用 Xmake 编译
+
+如果您选择使用 Xmake，可以按照以下步骤操作：
+
+```bash
+xmake f --tensorrt="/usr/local/tensorrt"  # 配置TensorRT路径
+xmake -P . -r  # 编译项目
+```
+
+#### 使用 CMake 编译
+
+如果您选择使用 CMake，可以按照以下步骤操作：
+
+```bash
+pip install "pybind11[global]"
+mkdir build && cd build  # 创建并进入构建目录
+cmake -DTENSORRT_PATH=/usr/local/tensorrt ..  # 配置TensorRT路径
+cmake --build . -j8 --config Release  # 编译项目，使用8个核心
 ```
 
 编译完成后，根目录下将创建一个名为 `lib` 的文件夹，同时在 `tensorrt_yolo/libs` 路径下生成相应的Python绑定。`lib` 文件夹内包含两个主要元素：首先是名为 `deploy` 的动态库文件，其次是一个名为 `plugin` 的子文件夹。在这个 `plugin` 子文件夹中，您会找到编译生成的 TensorRT 自定义插件动态库。

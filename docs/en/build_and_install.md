@@ -8,6 +8,7 @@ English | [中文](../cn/build_and_install.md)
 
 - Linux: gcc/g++
 - Windows: MSVC
+- CMake
 - Xmake
 - CUDA
 - cuDNN
@@ -20,18 +21,33 @@ English | [中文](../cn/build_and_install.md)
 > 
 > [Windows Development Environment Configuration — C++ Chapter: VSCode + MSVC/MinGW/Clangd/LLDB + Xmake](https://www.cnblogs.com/laugh12321/p/17827624.html) 
 
-To meet deployment needs, you can use Xmake compilation. This process supports the compilation of both dynamic and static libraries:
+To meet deployment requirements, you can choose to compile the dynamic library using either Xmake or CMake. Here is a detailed compilation guide:
+
+First, clone the TensorRT-YOLO repository:
 
 ```bash
-git clone https://github.com/laugh12321/TensorRT-YOLO 
+git clone https://github.com/laugh12321/TensorRT-YOLO   
 cd TensorRT-YOLO
+```
 
-# Windows configuration
-xmake f --tensorrt="C:/Program Files/NVIDIA GPU Computing Toolkit/TensorRT/v10.3.0.26"
-# Linux configuration
-xmake f --tensorrt="/usr/local/tensorrt"
-# Build
-xmake -P . -r
+#### Compiling with Xmake
+
+If you choose to use Xmake, follow these steps:
+
+```bash
+xmake f --tensorrt="/usr/local/tensorrt"  # Configure the path to TensorRT
+xmake -P . -r  # Compile the project
+```
+
+#### Compiling with CMake
+
+If you choose to use CMake, follow these steps:
+
+```bash
+pip install "pybind11[global]"
+mkdir build && cd build  # Create and enter the build directory
+cmake -DTENSORRT_PATH=/usr/local/tensorrt ..  # Configure the path to TensorRT
+cmake --build . -j8 --config Release  # Compile the project using 8 cores
 ```
 
 After compilation, a folder named `lib` will be created in the root directory, along with the generation of corresponding Python bindings in the `tensorrt_yolo/libs` path. The `lib` folder contains two main elements: first, a dynamic library file named `deploy`, and second, a subfolder named `plugin`. Inside this `plugin` subfolder, you will find the TensorRT custom plugin dynamic library generated from the compilation.
