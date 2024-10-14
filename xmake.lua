@@ -28,7 +28,7 @@ function configure_tensorrt(target)
         local tensorrt_path = get_config("tensorrt")
         add_includedirs(path.join(tensorrt_path, "include"))
         add_linkdirs(path.join(tensorrt_path, "lib"))
-        local libs = is_plat("windows") and "nvinfer_10 nvinfer_plugin_10 nvonnxparser_10" or "nvinfer nvinfer_plugin nvonnxparser"
+        local libs = is_plat("windows") and os.exists(path.join(get_config("tensorrt"), "lib", "nvinfer_10.dll")) and "nvinfer_10 nvinfer_plugin_10 nvonnxparser_10" or "nvinfer nvinfer_plugin nvonnxparser"
         add_links(libs:split("%s+"))
     end
 end
@@ -97,8 +97,8 @@ target("pydeploy")
         cuda = assert(find_cuda(nil, {verbose = true}), "Cuda SDK not found!")
 
         -- 设置配置变量
-        target:set("configvar", "CUDA", cuda.bindir)
-        target:set("configvar", "TensorRT", "$(tensorrt)")
+        target:set("configvar", "CUDA_PATH", cuda.bindir)
+        target:set("configvar", "TENSORRT_PATH", "$(tensorrt)")
 
         -- 设置配置目录和配置文件
         target:set("configdir", "$(projectdir)/tensorrt_yolo")

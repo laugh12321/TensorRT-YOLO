@@ -123,7 +123,7 @@ def add_dll_search_dir(dir_path: Path) -> None:
 
 if os.name == "nt":
     libs_dir: Dict[str, Path] = {}
-    need_lib_dirs = [Path(r"${CUDA}"), Path(r"${TensorRT}")]
+    need_lib_dirs = [Path(r"${CUDA_PATH}"), Path(r"${TENSORRT_PATH}")]
     sys_paths = [Path(p) for p in os.environ["PATH"].strip().split(";")]
 
     for need_lib_dir in need_lib_dirs:
