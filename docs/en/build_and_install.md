@@ -54,7 +54,7 @@ After compilation, a folder named `lib` will be created in the root directory, a
 
 ## Installing `tensorrt_yolo`
 
-If you only want to export ONNX models (with TensorRT plugins) for inference in this project, you can install via [PyPI](https://pypi.org/project/tensorrt-yolo) by simply running the following command:
+If you only want to export ONNX models (with TensorRT plugins) for inference in the `tensorrt_yolo` project through the command-line interface (CLI) tool `trtyolo`, you can install via [PyPI](https://pypi.org/project/tensorrt-yolo) by simply running the following command:
 
 ```bash
 pip install -U tensorrt_yolo

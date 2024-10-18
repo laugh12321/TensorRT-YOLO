@@ -6,6 +6,16 @@ This example uses the YOLO11n model to demonstrate how to perform model inferenc
 
 ## Model Export
 
+> [!IMPORTANT]
+>
+> If you only want to export ONNX models (with TensorRT plugins) for inference in the `tensorrt_yolo` project through the command-line interface (CLI) tool `trtyolo`, you can install via [PyPI](https://pypi.org/project/tensorrt-yolo) by simply running the following command:
+> 
+> ```bash
+> pip install -U tensorrt_yolo
+> ```
+> 
+> If you want to experience the same inference speed as C++, please refer to [installing-tensorrt_yolo](../../docs/en/build_and_install.md#installing-tensorrt_yolo) to build the latest version of `tensorrt_yolo` yourself.
+
 ### Detection Model
 
 1. Download the [YOLO11n](https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt) model and save it to the `models` folder.

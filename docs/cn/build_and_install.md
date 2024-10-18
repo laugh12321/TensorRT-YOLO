@@ -54,7 +54,7 @@ cmake --build . -j8 --config Release  # 编译项目，使用8个核心
 
 ## 安装 `tensorrt_yolo`
 
-如果您仅想通过 `tensorrt_yolo` 导出可供该项目推理的 ONNX 模型（带 TensorRT 插件），可以通过 [PyPI](https://pypi.org/project/tensorrt-yolo) 安装，只需执行以下命令即可：
+如果您仅想通过 `tensorrt_yolo` 提供的命令行界面（CLI）工具 `trtyolo`，导出可供该项目推理的 ONNX 模型（带 TensorRT 插件），可以通过 [PyPI](https://pypi.org/project/tensorrt-yolo) 安装，只需执行以下命令即可：
 
 ```bash
 pip install -U tensorrt_yolo

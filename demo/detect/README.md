@@ -6,6 +6,16 @@
 
 ## 模型导出
 
+> [!IMPORTANT]
+>
+> 如果您仅想通过 `tensorrt_yolo` 提供的命令行界面（CLI）工具 `trtyolo`，导出可供该项目推理的 ONNX 模型（带 TensorRT 插件），可以通过 [PyPI](https://pypi.org/project/tensorrt-yolo) 安装，只需执行以下命令即可：
+>
+> ```bash
+> pip install -U tensorrt_yolo
+> ```
+> 
+> 如果想体验与 C++ 同样的推理速度，则请参考 [安装-tensorrt_yolo](../../docs/cn/build_and_install.md#安装-tensorrt_yolo) 自行构建最新版本的 `tensorrt_yolo`。
+
 ### 检测模型 (Detection)
 
 1. 下载 [YOLO11n](https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt) 模型，并将其保存至 `models` 文件夹。
