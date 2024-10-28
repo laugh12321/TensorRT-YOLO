@@ -74,6 +74,7 @@ pip install -U tensorrt_yolo
 > 3. 避免存在多个版本的 CUDA、cuDNN、TensorRT。
 
 ```bash
+cd TensorRT-YOLO
 pip install --upgrade build
 python -m build --wheel
 # 仅安装推理相关依赖

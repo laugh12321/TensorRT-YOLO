@@ -74,6 +74,7 @@ If you want to experience the same inference speed as C++, you will need to buil
 > 3. Avoid having multiple versions of CUDA, cuDNN, and TensorRT.
 
 ```bash
+cd TensorRT-YOLO
 pip install --upgrade build
 python -m build --wheel
 # Install only the inference-related dependencies
