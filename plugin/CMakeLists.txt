@@ -12,6 +12,8 @@ file(GLOB_RECURSE SOURCES
     ${CMAKE_SOURCE_DIR}/plugin/common/*.cu
     ${CMAKE_SOURCE_DIR}/plugin/efficientRotatedNMSPlugin/*.cpp
     ${CMAKE_SOURCE_DIR}/plugin/efficientRotatedNMSPlugin/*.cu
+    ${CMAKE_SOURCE_DIR}/plugin/efficientIdxNMSPlugin/*.cpp
+    ${CMAKE_SOURCE_DIR}/plugin/efficientIdxNMSPlugin/*.cu
 )
 
 # 将搜索到的文件添加到目标中

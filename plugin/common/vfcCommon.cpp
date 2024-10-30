@@ -19,11 +19,13 @@
 #include "NvInfer.h"
 #include "NvInferPlugin.h"
 #include "efficientRotatedNMSPlugin/efficientRotatedNMSPlugin.h"
+#include "efficientIdxNMSPlugin/efficientIdxNMSPlugin.h"
 #include <vector>
 #include <mutex>
 
 using namespace nvinfer1;
 using nvinfer1::plugin::EfficientRotatedNMSPluginCreator;
+using nvinfer1::plugin::EfficientIdxNMSPluginCreator;
 
 namespace nvinfer1
 {
@@ -81,7 +83,8 @@ extern "C" TENSORRTAPI IPluginCreatorInterface* const* getCreators(int32_t& nbCr
 {
     nbCreators = 1;
     static EfficientRotatedNMSPluginCreator efficientRotatedNMSPluginCreator;
-    static IPluginCreatorInterface* const kPLUGIN_CREATOR_LIST[] = {&efficientRotatedNMSPluginCreator};
+    static EfficientIdxNMSPluginCreator efficientIdxNMSPluginCreator;
+    static IPluginCreatorInterface* const kPLUGIN_CREATOR_LIST[] = {&efficientRotatedNMSPluginCreator, &efficientIdxNMSPluginCreator};
     return kPLUGIN_CREATOR_LIST;
 
 }
@@ -90,7 +93,8 @@ extern "C" TENSORRTAPI IPluginCreator* const* getPluginCreators(int32_t& nbCreat
 {
     nbCreators = 1;
     static EfficientRotatedNMSPluginCreator efficientRotatedNMSPluginCreator;
-    static IPluginCreator* const kPLUGIN_CREATOR_LIST[] = {&efficientRotatedNMSPluginCreator};
+    static EfficientIdxNMSPluginCreator efficientIdxNMSPluginCreator;
+    static IPluginCreator* const kPLUGIN_CREATOR_LIST[] = {&efficientRotatedNMSPluginCreator, &efficientIdxNMSPluginCreator};
     return kPLUGIN_CREATOR_LIST;
 }
 #endif
