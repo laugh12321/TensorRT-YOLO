@@ -1,6 +1,8 @@
 [English](../en/model_export.md) | 简体中文
 
-# 使用 `trtyolo` CLI 导出模型
+# 模型导出
+
+## 使用 `trtyolo` CLI 导出模型
 
 `tensorrt_yolo` 提供了一个方便的命令行界面（CLI）工具 `trtyolo`，用于将 ONNX 模型导出为适用于该项目推理的格式，并集成了 TensorRT 插件。要了解具体的导出命令，您可以使用 `trtyolo export --help` 查看帮助信息。
 
@@ -32,9 +34,9 @@ trtyolo export -w yolov11n-obb.pt -v yolo11 -o output
 trtyolo export --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output
 ```
 
-### 使用 `trtexec` 导出 TensorRT 模型
+## 使用 `trtexec` 构建 TensorRT 引擎
 
-导出的 ONNX 模型可以使用 `trtexec` 工具进一步导出为 TensorRT 模型。
+导出的 ONNX 模型可以使用 `trtexec` 工具构建为 TensorRT 引擎。
 
 ```bash
 # 静态 batch
@@ -52,3 +54,6 @@ trtexec --onnx=yolov11n-obb.onnx --saveEngine=yolov11n-obb.engine --fp16 --minSh
 
 > [!NOTE]  
 > 在使用 `--dynamicPlugins` 和 `--setPluginsToSerialize` 参数构建包含自定义插件的动态模型时，如果遇到错误 `[E] Error[4]: IRuntime::deserializeCudaEngine: Error Code 4: API Usage Error (Cannot register the library as plugin creator of EfficientRotatedNMS_TRT exists already.)`，这通常意味着引擎构建已成功，但加载并反序列化引擎时检测到插件重复注册。这种情况下，可以忽略该错误。
+
+> [!IMPORTANT]
+> 强烈推荐您使用Linux操作系统。经过测试，在Windows和Linux系统中使用NVIDIA 20、30、40系列显卡时发现，对于经过显存修改的2080Ti 22G显卡，在Windows环境下构建包含自定义插件的动态模型时，可能会遇到“`IPluginRegistry::loadLibrary: Error Code 3: API Usage Error (SymbolAddress for getCreators could not be loaded, check function name against library symbol)`”的错误。然而，在Linux系统中，该问题并未出现。目前尚不清楚这一问题是由于Windows系统本身的缺陷，还是由于显卡显存的修改所导致。因此，为了避免潜在的兼容性问题，强烈建议您在Linux系统下进行相关操作。
