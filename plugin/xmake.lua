@@ -13,7 +13,7 @@ target("custom_plugins")
         "$(projectdir)/plugin/common/*.cpp",
         "$(projectdir)/plugin/common/*.cu",
         "$(projectdir)/plugin/efficientRotatedNMSPlugin/*.cpp",
-        "$(projectdir)/plugin/efficientRotatedNMSPlugin/*.cu"
+        "$(projectdir)/plugin/efficientRotatedNMSPlugin/*.cu",
         "$(projectdir)/plugin/efficientIdxNMSPlugin/*.cpp",
         "$(projectdir)/plugin/efficientIdxNMSPlugin/*.cu"
     )
