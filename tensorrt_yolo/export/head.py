@@ -249,15 +249,10 @@ class UltralyticsDetect(Detect):
 
         dbox, cls = self._inference(one2one)
         y = torch.cat((dbox, cls), 1)
-        y = self.postprocess(y.permute(0, 2, 1), self.max_det, self.nc)
-
-        # Format outputs
-        det_boxes = y[:, :, :4]
-        det_scores = y[:, :, 4]
-        det_classes = y[:, :, 5].int()
-        num_dets = (y[:, :, 4] >= self.conf_thres).sum(dim=1, keepdim=True).int() 
+        det_boxes, det_scores, det_classes = self.postprocess(y.permute(0, 2, 1), self.max_det, self.nc)
+        num_dets = (det_scores >= self.conf_thres).sum(dim=1, keepdim=True).int()
         return num_dets, det_boxes, det_scores, det_classes
-    
+
     def _inference(self, x):
         """Decode predicted bounding boxes and class probabilities based on multiple-level feature maps."""
         # Inference path
@@ -271,6 +266,35 @@ class UltralyticsDetect(Detect):
         dbox = self.decode_bboxes(self.dfl(box), self.anchors.unsqueeze(0)) * self.strides
 
         return dbox, cls.sigmoid()
+
+    @staticmethod
+    def postprocess(preds: torch.Tensor, max_det: int, nc: int = 80):
+        """
+        Post-processes YOLO model predictions.
+
+        Args:
+            preds (torch.Tensor): Raw predictions with shape (batch_size, num_anchors, 4 + nc) with last dimension
+                format [x, y, w, h, class_probs].
+            max_det (int): Maximum detections per image.
+            nc (int, optional): Number of classes. Default: 80.
+
+        Returns:
+            (torch.Tensor, torch.Tensor, torch.Tensor): Processed predictions with shapes:
+                - boxes (torch.Tensor): Shape (batch_size * min(max_det, num_anchors), 4) with last dimension
+                    format [x, y, w, h].
+                - scores (torch.Tensor): Shape (batch_size * min(max_det, anchors),) with values representing
+                    the max class probability for each detection.
+                - class_index (torch.Tensor): Shape (batch_size * min(max_det, anchors),) with values representing
+                    the index of the class with the max probability for each detection.
+        """
+        batch_size, anchors, _ = preds.shape  # i.e. shape(16,8400,84)
+        boxes, scores = preds.split([4, nc], dim=-1)
+        index = scores.amax(dim=-1).topk(min(max_det, anchors))[1].unsqueeze(-1)
+        boxes = boxes.gather(dim=1, index=index.repeat(1, 1, 4))
+        scores = scores.gather(dim=1, index=index.repeat(1, 1, nc))
+        scores, index = scores.flatten(1).topk(min(max_det, anchors))
+        i = torch.arange(batch_size)[..., None]  # batch indices
+        return boxes[i, index // nc], scores, (index % nc)
 
 class UltralyticsOBB(OBB):
     """Ultralytics OBB detection head for detection with rotation models."""
