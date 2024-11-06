@@ -294,7 +294,7 @@ class UltralyticsDetect(Detect):
         scores = scores.gather(dim=1, index=index.repeat(1, 1, nc))
         scores, index = scores.flatten(1).topk(min(max_det, anchors))
         i = torch.arange(batch_size)[..., None]  # batch indices
-        return boxes[i, index // nc], scores, (index % nc)
+        return boxes[i, index // nc], scores, (index % nc).to(torch.int32)
 
 class UltralyticsOBB(OBB):
     """Ultralytics OBB detection head for detection with rotation models."""
