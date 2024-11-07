@@ -19,7 +19,7 @@ except ImportError:
     logger.error('Ultralytics not found, plaese install Ultralytics.' 'for example: `pip install ultralytics`.')
     sys.exit(1)
 
-from .head import UltralyticsDetect, UltralyticsOBB, UltralyticsSegment, YOLODetect, v10Detect
+from .head import UltralyticsDetect, UltralyticsOBB, UltralyticsSegment, YOLODetect, YOLOSegment, v10Detect
 from .ppyoloe import PPYOLOEGraphSurgeon
 
 __all__ = ['torch_export', 'paddle_export']
@@ -34,7 +34,7 @@ HEADS = {
     "Detect": {"yolov3": YOLODetect, "yolov5": YOLODetect, "yolov8": UltralyticsDetect, "yolo11": UltralyticsDetect, "ultralytics": UltralyticsDetect},
     "v10Detect": {"yolov10": v10Detect, "ultralytics": v10Detect},
     "OBB": {"yolov8": UltralyticsOBB, "yolo11": UltralyticsOBB, "ultralytics": UltralyticsOBB},
-    "Segment": {"yolov8": UltralyticsSegment, "yolo11": UltralyticsSegment, "ultralytics": UltralyticsSegment},
+    "Segment": {"yolov3": YOLOSegment, "yolov5": YOLOSegment, "yolov8": UltralyticsSegment, "yolo11": UltralyticsSegment, "ultralytics": UltralyticsSegment},
 }
 
 DEFAULT_OUTPUT_NAMES = ["num_dets", "det_boxes", "det_scores", "det_classes"]

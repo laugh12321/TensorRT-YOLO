@@ -28,11 +28,11 @@ from typing import Tuple
 import torch
 import torch.nn.functional as F
 from torch import Tensor, Value, nn
-from ultralytics.nn.modules import OBB, Detect
+from ultralytics.nn.modules import OBB, Detect, Proto
 from ultralytics.utils.checks import check_version
 from ultralytics.utils.tal import make_anchors
 
-__all__ = ["YOLODetect", "V10Detect", "UltralyticsDetect", "UltralyticsOBB", "UltralyticsSegment"]
+__all__ = ["YOLODetect", "YOLOSegment", "V10Detect", "UltralyticsDetect", "UltralyticsOBB", "UltralyticsSegment"]
 
 
 class EfficientNMS_TRT(torch.autograd.Function):
@@ -201,7 +201,7 @@ class EfficientIdxNMS_TRT(torch.autograd.Function):
 
 """
 ===============================================================================
-            YOLOv3 and YOLOv5 Detect head for detection models
+        YOLOv3 and YOLOv5 Model head for detection and segmentation models
 ===============================================================================
 """
 
@@ -240,9 +240,8 @@ class YOLODetect(nn.Module):
             xy, wh, conf = x[i].sigmoid().split((2, 2, self.nc + 1), 4)
             xy = (xy * 2 + self.grid[i]) * self.stride[i]  # xy
             wh = (wh * 2) ** 2 * self.anchor_grid[i]  # wh
-
             y = torch.cat((xy, wh, conf), 4)
-            z.append(y.view(bs, -1, self.no))
+            z.append(y.view(bs, self.na * nx * ny, self.no))
 
         z = torch.cat(z, 1)
 
@@ -261,6 +260,66 @@ class YOLODetect(nn.Module):
         grid = torch.stack((xv, yv), 2).expand(shape) - 0.5  # add grid offset, i.e. y = 2.0 * x - 0.5
         anchor_grid = (self.anchors[i] * self.stride[i]).view((1, self.na, 1, 1, 2)).expand(shape)
         return grid, anchor_grid
+
+class YOLOSegment(YOLODetect):
+    """YOLOv3 and YOLOv5 Segment head for segmentation models, extending Detect with mask and prototype layers."""
+
+    stride = None  # strides computed during build
+    dynamic = False  # force grid reconstruction
+    iou_thres = 0.45
+    conf_thres = 0.25
+    max_det = 100
+
+    def __init__(self, nc=80, anchors=(), nm=32, npr=256, ch=(), inplace=True):
+        """Initializes YOLOv3 and YOLOv5 Segment head with options for mask count, protos, and channel adjustments."""
+        super().__init__(nc, anchors, ch, inplace)
+        self.nm = nm  # number of masks
+        self.npr = npr  # number of protos
+        self.no = 5 + nc + self.nm  # number of outputs per anchor
+        self.m = nn.ModuleList(nn.Conv2d(x, self.no * self.na, 1) for x in ch)  # output conv
+        self.proto = Proto(ch[0], self.npr, self.nm)  # protos
+
+    def forward(self, x):
+        """Processes input through the network, returning detections and prototypes; adjusts output based on
+        training/export mode.
+        """
+        p = self.proto(x[0])
+        bs, _, mask_h, mask_w = p.shape
+
+        # Detect forward
+        z = []  # inference output
+        for i in range(self.nl):
+            x[i] = self.m[i](x[i])  # conv
+            bs, _, ny, nx = x[i].shape  # x(bs, 255, 20, 20) to x(bs, 3, 20, 20, 85)
+            x[i] = x[i].view(bs, self.na, self.no, ny, nx).permute(0, 1, 3, 4, 2)
+
+            if self.dynamic or self.grid[i].shape[2:4] != x[i].shape[2:4]:
+                self.grid[i], self.anchor_grid[i] = self._make_grid(nx, ny, i)
+
+            xy, wh, conf, mask = x[i].split((2, 2, self.nc + 1, self.no - self.nc - 5), 4)
+            xy = (xy.sigmoid() * 2 + self.grid[i]) * self.stride[i]  # xy
+            wh = (wh.sigmoid() * 2) ** 2 * self.anchor_grid[i]  # wh
+            y = torch.cat((xy, wh, conf.sigmoid(), mask), 4)
+            z.append(y.view(bs, self.na * nx * ny, self.no))
+
+        z = torch.cat(z, 1)
+
+        # Separate boxes and scores for EfficientIdxNMS_TRT
+        boxes, conf, mc = z[..., :4], z[..., 4:self.no - self.nm], z[..., self.no - self.nm:]
+        scores = conf[..., 0:1] * conf[..., 1:]
+        num_dets, det_boxes, det_scores, det_classes, det_indices = EfficientIdxNMS_TRT.apply(
+            boxes, scores, self.iou_thres, self.conf_thres, self.max_det,
+        )
+
+        # Retrieve the corresponding masks using batch and detection indices.
+        batch_indices = torch.arange(bs, device=det_classes.device, dtype=det_classes.dtype).unsqueeze(1).expand(-1, self.max_det).view(-1)
+        det_indices = det_indices.view(-1)
+        selected_masks = mc[batch_indices, det_indices].view(bs, self.max_det, 1, self.nm)
+
+        masks_protos = p.view(bs, self.nm, mask_h * mask_w)
+        det_masks = torch.matmul(selected_masks, masks_protos).sigmoid().view(bs, self.max_det, mask_h, mask_w)
+
+        return num_dets, det_boxes, det_scores, det_classes, F.interpolate(det_masks, size=(mask_h * 4, mask_w * 4), mode="bilinear", align_corners=False).gt_(0.5).to(torch.uint8)
 
 
 """
