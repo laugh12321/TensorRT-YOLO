@@ -16,22 +16,23 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   head.py
-# Version :   5.0
+# Version :   6.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/04/22 09:45:11
-# Desc    :   YOLO Series Detect Head.
+# Desc    :   YOLO Series Model head modules.
 # ==============================================================================
 import math
 from typing import Tuple
 
 import torch
+import torch.nn.functional as F
 from torch import Tensor, Value, nn
 from ultralytics.nn.modules import OBB, Detect
 from ultralytics.utils.checks import check_version
 from ultralytics.utils.tal import make_anchors
 
-__all__ = ["YOLODetect", "V10Detect", "UltralyticsDetect", "UltralyticsOBB"]
+__all__ = ["YOLODetect", "V10Detect", "UltralyticsDetect", "UltralyticsOBB", "UltralyticsSegment"]
 
 
 class EfficientNMS_TRT(torch.autograd.Function):
@@ -143,6 +144,60 @@ class EfficientRotatedNMS_TRT(torch.autograd.Function):
             plugin_version_s=plugin_version,
         )
 
+class EfficientIdxNMS_TRT(torch.autograd.Function):
+    """NMS with Index block for YOLO-fused model for TensorRT."""
+
+    @staticmethod
+    def forward(
+        ctx,
+        boxes,
+        scores,
+        iou_threshold: float = 0.65,
+        score_threshold: float = 0.25,
+        max_output_boxes: float = 100,
+        box_coding: int = 1,
+        background_class: int = -1,
+        score_activation: int = 0,
+        class_agnostic: int = 1,
+        plugin_version: str = '1',
+    ) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor]:
+        batch_size, num_boxes, num_classes = scores.shape
+        num_dets = torch.randint(0, max_output_boxes, (batch_size, 1), dtype=torch.int32)
+        det_boxes = torch.randn(batch_size, max_output_boxes, 4, dtype=torch.float32)
+        det_scores = torch.randn(batch_size, max_output_boxes, dtype=torch.float32)
+        det_classes = torch.randint(0, num_classes, (batch_size, max_output_boxes), dtype=torch.int32)
+        det_indices = torch.randint(0, num_boxes, (batch_size, max_output_boxes), dtype=torch.int32)
+
+        return num_dets, det_boxes, det_scores, det_classes, det_indices
+
+    @staticmethod
+    def symbolic(
+        g,
+        boxes,
+        scores,
+        iou_threshold: float = 0.65,
+        score_threshold: float = 0.25,
+        max_output_boxes: float = 100,
+        box_coding: int = 1,
+        background_class: int = -1,
+        score_activation: int = 0,
+        class_agnostic: int = 1,
+        plugin_version: str = '1',
+    ) -> Tuple[Value, Value, Value, Value, Value]:
+        return g.op(
+            'TRT::EfficientIdxNMS_TRT',
+            boxes,
+            scores,
+            outputs=5,
+            box_coding_i=box_coding,
+            iou_threshold_f=iou_threshold,
+            score_threshold_f=score_threshold,
+            max_output_boxes_i=max_output_boxes,
+            background_class_i=background_class,
+            score_activation_i=score_activation,
+            class_agnostic_i=class_agnostic,
+            plugin_version_s=plugin_version,
+        )
 
 """
 ===============================================================================
@@ -210,7 +265,7 @@ class YOLODetect(nn.Module):
 
 """
 ===============================================================================
-            Ultralytics Detect head for detection models
+        Ultralytics Model head for detection and segmentation models
 ===============================================================================
 """
 
@@ -369,3 +424,53 @@ class v10Detect(UltralyticsDetect):
             for x in ch
         )
         self.one2one_cv3 = copy.deepcopy(self.cv3)
+
+class UltralyticsSegment(Detect):
+    """Ultralytics Segment head for segmentation models."""
+
+    max_det = 100
+    iou_thres = 0.45
+    conf_thres = 0.25
+
+    def forward(self, x):
+        """Return model outputs and mask coefficients if training, otherwise return outputs and mask coefficients."""
+        p = self.proto(x[0])  # mask protos
+        bs, _, mask_h, mask_w = p.shape
+        mc = torch.cat([self.cv4[i](x[i]).view(bs, self.nm, -1) for i in range(self.nl)], 2).permute(0, 2, 1)  # mask coefficients
+
+        # Detect forward
+        x = [torch.cat((self.cv2[i](x[i]), self.cv3[i](x[i])), 1) for i in range(self.nl)]
+        dbox, cls = self._inference(x)
+
+        ## Using transpose for compatibility with EfficientIdxNMS_TRT
+        num_dets, det_boxes, det_scores, det_classes, det_indices = EfficientIdxNMS_TRT.apply(
+            dbox.transpose(1, 2),
+            cls.transpose(1, 2),
+            self.iou_thres,
+            self.conf_thres,
+            self.max_det,
+        )
+
+        # Retrieve the corresponding masks using batch and detection indices.
+        batch_indices = torch.arange(bs, device=det_classes.device, dtype=det_classes.dtype).unsqueeze(1).expand(-1, self.max_det).view(-1)
+        det_indices = det_indices.view(-1)
+        selected_masks = mc[batch_indices, det_indices].view(bs, self.max_det, 1, self.nm)
+
+        masks_protos = p.view(bs, self.nm, mask_h * mask_w)
+        det_masks = torch.matmul(selected_masks, masks_protos).sigmoid().view(bs, self.max_det, mask_h, mask_w)
+
+        return num_dets, det_boxes, det_scores, det_classes, F.interpolate(det_masks, size=(mask_h * 4, mask_w * 4), mode="bilinear", align_corners=False).gt_(0.5).to(torch.uint8)
+
+    def _inference(self, x):
+        """Decode predicted bounding boxes and class probabilities based on multiple-level feature maps."""
+        # Inference path
+        shape = x[0].shape  # BCHW
+        x_cat = torch.cat([xi.view(shape[0], self.no, -1) for xi in x], 2)
+        if self.dynamic or self.shape != shape:
+            self.anchors, self.strides = (x.transpose(0, 1) for x in make_anchors(x, self.stride, 0.5))
+            self.shape = shape
+
+        box, cls = x_cat.split((self.reg_max * 4, self.nc), 1)
+        dbox = self.decode_bboxes(self.dfl(box), self.anchors.unsqueeze(0)) * self.strides
+
+        return dbox, cls.sigmoid()
