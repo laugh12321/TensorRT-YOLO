@@ -88,7 +88,7 @@ def load_model(version: str, weights: str, repo_dir: Optional[str] = None) -> Op
 
     if version in yolo_versions_with_repo:
         repo_dir = yolo_versions_with_repo[version] if repo_dir is None else repo_dir
-        return torch.hub.load(repo_dir, 'custom', path=weights, source=source, verbose=False)
+        return torch.hub.load(repo_dir, 'custom', path=weights, source=source, _verbose=False)
     elif version in ['yolov8', 'yolov10', 'yolo11', 'ultralytics']:
         return YOLO(model=weights, verbose=False).model
     else:
