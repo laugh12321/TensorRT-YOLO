@@ -72,7 +72,7 @@ def load_model(version: str, weights: str, repo_dir: Optional[str] = None) -> Op
     Load YOLO model based on version and weights.
 
     Args:
-        version (str): YOLO version, e.g., yolov3, yolov5, yolov6, yolov7, yolov8, yolov9, yolov10, yolo11, ultralytics.
+        version (str): YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, ultralytics.
         weights (str): Path to YOLO weights for PyTorch.
         repo_dir (Optional[str], optional): Directory containing the local repository (if using torch.hub.load). Defaults to None.
 
@@ -91,14 +91,16 @@ def load_model(version: str, weights: str, repo_dir: Optional[str] = None) -> Op
         return torch.hub.load(repo_dir, 'custom', path=weights, source=source, verbose=False)
     elif version in ['yolov8', 'yolov10', 'yolo11', 'ultralytics']:
         return YOLO(model=weights, verbose=False).model
-    elif version in YOLO_EXPORT_INFO:
-        logger.warning(
-            f"The official {version} repository supports exporting an ONNX model with the EfficientNMS_TRT plugin. "
-            f"Please refer to {YOLO_EXPORT_INFO[version]} for instructions on how to export it."
-        )
-        return None
     else:
-        logger.error(f"YOLO version '{version}' not supported!")
+        logger.error(
+            f"YOLO version '{version}' is unsupported for export with trtyolo CLI tool. "
+            "Please provide a valid version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, ultralytics."
+        )
+        if version in YOLO_EXPORT_INFO:
+            logger.warning(
+                f"The official {version} repository supports exporting an ONNX model with the EfficientNMS_TRT plugin. "
+                f"Please refer to {YOLO_EXPORT_INFO[version]} for instructions on how to export it."
+            )
         return None
 
 
@@ -110,7 +112,7 @@ def update_model(
 
     Args:
         model (torch.nn.Module): YOLO model to be updated.
-        version (str): YOLO version, e.g., yolov3, yolov5, yolov6, yolov7, yolov8, yolov9, yolov10, yolo11, ultralytics.
+        version (str): YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, ultralytics.
         dynamic (bool): Whether to use dynamic settings.
         max_boxes (int): Maximum number of detections to output per image.
         iou_thres (float): NMS IoU threshold for post-processing.
@@ -165,7 +167,7 @@ def torch_export(
     Args:
         weights (str): Path to YOLO weights for PyTorch.
         output (str): Directory path to save the exported model.
-        version (str): YOLO version, e.g., yolov3, yolov5, yolov6, yolov7, yolov8, yolov9, yolov10, yolo11, ultralytics.
+        version (str): YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, ultralytics.
         imgsz (Optional[int], optional): Inference image size. Defaults to 640.
         batch (Optional[int], optional): Total batch size for the model. Use -1 for dynamic batch size. Defaults to 1.
         max_boxes (Optional[int], optional): Maximum number of detections to output per image. Defaults to 100.
