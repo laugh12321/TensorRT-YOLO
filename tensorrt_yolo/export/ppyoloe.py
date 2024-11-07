@@ -27,10 +27,13 @@ This code is based on the following repository:
     - https://github.com/zhiqwang/yolort/blob/main/yolort/relay/trt_graphsurgeon.py
 """
 
+import sys
 from collections import OrderedDict
 from pathlib import Path
 
 import numpy as np
+import onnx
+import onnx_graphsurgeon as gs
 from loguru import logger
 
 __all__ = ["PPYOLOEGraphSurgeon"]
@@ -65,7 +68,7 @@ class PPYOLOEGraphSurgeon:
     ) -> None:
         # Ensure the required modules are imported within the function scope
         try:
-            from paddle2onnx.command import c_paddle_to_onnx
+            from paddle2onnx.command import c_paddle_to_onnx  # type: ignore
         except ImportError:
             logger.error('paddle2onnx not found, plaese install paddle2onnx.' 'for example: `pip install paddle2onnx`.')
             sys.exit(1)
@@ -88,19 +91,9 @@ class PPYOLOEGraphSurgeon:
 
         if not dynamic:
             try:
-                import paddle2onnx.paddle2onnx_cpp2py_export as c_p2o
+                import paddle2onnx.paddle2onnx_cpp2py_export as c_p2o  # type: ignore
             except ImportError:
                 logger.error('paddle2onnx not found, plaese install paddle2onnx.' 'for example: `pip install paddle2onnx`.')
-                sys.exit(1)
-            try:
-                import onnx
-            except ImportError:
-                logger.error('onnx not found, plaese install onnx.' 'for example: `pip install onnx>=1.12.0`.')
-                sys.exit(1)
-            try:
-                import onnx_graphsurgeon as gs
-            except ImportError:
-                logger.error('onnx_graphsurgeon not found, plaese install onnx_graphsurgeon.' 'for example: `pip install onnx_graphsurgeon`.')
                 sys.exit(1)
 
             # Use YOLOTRTInference to modify an existed ONNX graph.
@@ -150,9 +143,9 @@ class PPYOLOEGraphSurgeon:
                         if o in self.graph.outputs:
                             continue
                         o.shape = None
-                model = gs.export_onnx(self.graph)
-                model = onnx.shape_inference.infer_shapes(model)
-                self.graph = gs.import_onnx(model)
+                model = gs.export_onnx(self.graph) # type: ignore
+                model = onnx.shape_inference.infer_shapes(model) # type: ignore
+                self.graph = gs.import_onnx(model) # type: ignore
             except Exception as e:
                 logger.warning(f"Shape inference could not be performed at this time:\n{e}")
             try:
@@ -220,9 +213,11 @@ class PPYOLOEGraphSurgeon:
             try:
                 import onnxsim
 
-                logger.info(f"simplifying with onnxsim {onnxsim.__version__}...")
+                logger.success(f"Simplifying ONNX model with onnxsim version {onnxsim.__version__}...")
                 model_onnx, check = onnxsim.simplify(model_onnx)
                 assert check, "Simplified ONNX model could not be validated"
+            except ImportError:
+                logger.warning('onnxsim not found. Please install onnx-simplifier for example: `pip install onnx-simplifier>=0.4.1`.')
             except Exception as e:
                 logger.warning(f"Simplifier failure: {e}")
         onnx.save(model_onnx, output_path)

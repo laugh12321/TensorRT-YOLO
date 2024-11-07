@@ -47,6 +47,7 @@ dependencies = [
     "loguru",
     "rich_click",
     "opencv-python",
+    "numpy>=1.23.5,<2.0.0",
 ]
 
 # Optional dependencies ------------------------------------------------------------------------------------------------
@@ -55,8 +56,7 @@ export = [
     "ultralytics",
     "onnx>=1.12.0",
     "onnx_graphsurgeon",
-    "onnxruntime",
-    "onnxsim",
+    # "onnx-simplifier>=0.4.1"  # ONNX simplifier
 ]
 
 [project.urls]

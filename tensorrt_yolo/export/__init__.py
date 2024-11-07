@@ -4,6 +4,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Optional, Tuple
 
+import onnx
 from loguru import logger
 
 try:
@@ -213,12 +214,6 @@ def torch_export(
         dynamic_axes=DYNAMIC_AXES[head_name] if dynamic else None,
     )
 
-    try:
-        import onnx
-    except ImportError:
-        logger.error('onnx not found, plaese install onnx.' 'for example: `pip install onnx>=1.12.0`.')
-        sys.exit(1)
-
     model_onnx = onnx.load(onnx_filepath)
     onnx.checker.check_model(model_onnx)
 
@@ -242,9 +237,11 @@ def torch_export(
         try:
             import onnxsim
 
-            logger.success(f"Simplifying with onnxsim {onnxsim.__version__}...")
+            logger.success(f"Simplifying ONNX model with onnxsim version {onnxsim.__version__}...")
             model_onnx, check = onnxsim.simplify(model_onnx)
             assert check, "Simplified ONNX model could not be validated"
+        except ImportError:
+            logger.warning('onnxsim not found. Please install onnx-simplifier for example: `pip install onnx-simplifier>=0.4.1`.')
         except Exception as e:
             logger.warning(f"Simplifier failure: {e}")
 

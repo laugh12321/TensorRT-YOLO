@@ -22,13 +22,14 @@
 # Date    :   2024/04/22 09:45:11
 # Desc    :   YOLO Series Model head modules.
 # ==============================================================================
+import copy
 import math
 from typing import Tuple
 
 import torch
 import torch.nn.functional as F
 from torch import Tensor, Value, nn
-from ultralytics.nn.modules import OBB, Detect, Proto
+from ultralytics.nn.modules import OBB, Conv, Detect, Proto
 from ultralytics.utils.checks import check_version
 from ultralytics.utils.tal import make_anchors
 
