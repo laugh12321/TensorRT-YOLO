@@ -31,7 +31,7 @@ __all__ = ["DeployDet", "DeployCGDet"]
 
 
 class DeployDet:
-    def __init__(self, engine_file: str, is_obb: bool, use_cuda_memory: bool = False, device: int = 0) -> None:
+    def __init__(self, engine_file: str, is_obb: bool, cuda_memory: bool = False, device: int = 0) -> None:
         """
         Initialize the DeployDet class with the given engine file, indicating
         whether to use oriented bounding boxes (OBB), optional CUDA memory usage, and device index.
@@ -39,10 +39,10 @@ class DeployDet:
         Args:
             engine_file (str): Path to the engine file.
             is_obb (bool): Whether the model uses oriented bounding boxes (OBB).
-            use_cuda_memory (bool, optional): Whether to use CUDA memory. Defaults to False.
+            cuda_memory (bool, optional): If true, the input image will be stored in GPU memory for inference; false for CPU memory. Defaults to false.
             device (int, optional): Device index to use. Defaults to 0.
         """
-        self._model = C.detection.DeployDet(engine_file, is_obb, use_cuda_memory, device)
+        self._model = C.detection.DeployDet(engine_file, is_obb, cuda_memory, device)
 
     @property
     def batch(self) -> int:
@@ -69,7 +69,7 @@ class DeployDet:
 
 
 class DeployCGDet:
-    def __init__(self, engine_file: str, is_obb: bool, use_cuda_memory: bool = False, device: int = 0) -> None:
+    def __init__(self, engine_file: str, is_obb: bool, cuda_memory: bool = False, device: int = 0) -> None:
         """
         Initialize the DeployCGDet class with the given engine file, indicating
         whether to use oriented bounding boxes (OBB), optional CUDA memory usage, and device index.
@@ -77,10 +77,10 @@ class DeployCGDet:
         Args:
             engine_file (str): Path to the engine file.
             is_obb (bool): Whether the model uses oriented bounding boxes (OBB).
-            use_cuda_memory (bool, optional): Whether to use CUDA memory. Defaults to False.
+            cuda_memory (bool, optional): If true, the input image will be stored in GPU memory for inference; false for CPU memory. Defaults to false.
             device (int, optional): Device index to use. Defaults to 0.
         """
-        self._model = C.detection.DeployCGDet(engine_file, is_obb, use_cuda_memory, device)
+        self._model = C.detection.DeployCGDet(engine_file, is_obb, cuda_memory, device)
 
     @property
     def batch(self) -> int:

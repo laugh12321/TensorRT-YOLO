@@ -17,8 +17,8 @@ namespace deploy {
  *
  * This class provides common functionality for object detection using YOLO series models.
  * It supports both single image inference and batch inference.
- * CUDA acceleration can be optionally enabled for inference by setting the 'cudaMem'
- * flag to true during construction. The class also supports detection with oriented bounding boxes (OBB).
+ * The 'cudaMem' parameter sets whether the input image is in GPU memory (true) or CPU memory (false).
+ * The class also supports detection with oriented bounding boxes (OBB).
  */
 class DEPLOYAPI BaseDet {
 public:
@@ -29,6 +29,7 @@ public:
      * @param obb Flag indicating whether the model uses oriented bounding boxes (OBB). If true, the model is expected
      *            to handle rotated bounding boxes.
      * @param cudaMem (Optional) Flag to enable CUDA memory usage for inference. Defaults to false.
+     * @param cudaMem (Optional) Sets whether the input image is in GPU memory (true) or CPU memory (false). Defaults to false.
      * @param device (Optional) Device index to use for inference. Defaults to 0.
      */
     explicit BaseDet(const std::string& file, bool obb, bool cudaMem = false, int device = 0);
@@ -66,7 +67,7 @@ protected:
     bool obb{false};
 
     /**
-     * @brief Flag indicating whether CUDA memory is used.
+     * @brief Sets whether the input image is in GPU memory (true) or CPU memory (false). Defaults to false.
      */
     bool cudaMem{false};
 
@@ -129,8 +130,8 @@ protected:
  *
  * This class provides functionality for object detection using YOLO series models.
  * It supports both single image inference and batch inference.
- * CUDA acceleration can be optionally enabled for inference by setting the 'cudaMem'
- * flag to true during construction.
+ * The 'cudaMem' parameter sets whether the input image is in GPU memory (true) or CPU memory (false).
+ * The class also supports detection with oriented bounding boxes (OBB).
  */
 class DEPLOYAPI DeployDet : public BaseDet {
 public:
@@ -139,7 +140,7 @@ public:
      *
      * @param file The path to the model file.
      * @param obb Flag indicating whether the model uses oriented bounding boxes (OBB).
-     * @param cudaMem (Optional) Flag to enable CUDA memory usage for inference. Defaults to false.
+     * @param cudaMem (Optional) Sets whether the input image is in GPU memory (true) or CPU memory (false). Defaults to false.
      * @param device (Optional) Device index to use for inference. Defaults to 0.
      */
     explicit DeployDet(const std::string& file, bool obb, bool cudaMem = false, int device = 0);
@@ -214,7 +215,7 @@ public:
      *
      * @param file The path to the model file.
      * @param obb Flag indicating whether the model uses oriented bounding boxes (OBB).
-     * @param cudaMem (Optional) Flag to enable CUDA memory usage for inference. Defaults to false.
+     * @param cudaMem (Optional) Sets whether the input image is in GPU memory (true) or CPU memory (false). Defaults to false.
      * @param device (Optional) Device index to use for inference. Defaults to 0.
      */
     explicit DeployCGDet(const std::string& file, bool obb, bool cudaMem = false, int device = 0);
