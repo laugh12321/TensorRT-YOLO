@@ -28,7 +28,6 @@ public:
      * @param file The path to the model file.
      * @param obb Flag indicating whether the model uses oriented bounding boxes (OBB). If true, the model is expected
      *            to handle rotated bounding boxes.
-     * @param cudaMem (Optional) Flag to enable CUDA memory usage for inference. Defaults to false.
      * @param cudaMem (Optional) Sets whether the input image is in GPU memory (true) or CPU memory (false). Defaults to false.
      * @param device (Optional) Device index to use for inference. Defaults to 0.
      */
