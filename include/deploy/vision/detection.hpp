@@ -244,7 +244,7 @@ private:
     /**
      * @brief Input image size.
      */
-    int inputSize{0};
+    int64_t inputSize{0};
 
     /**
      * @brief CUDA graph and its executable instance.
@@ -284,7 +284,7 @@ private:
     /**
      * @brief Sizes of the input images.
      */
-    std::vector<int> imageSize{0};
+    std::vector<int64_t> imageSize{0};
 
     /**
      * @brief Allocate necessary resources.
