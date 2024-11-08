@@ -48,7 +48,7 @@ struct DEPLOYAPI DetectionResult {
  * @brief Represents an image.
  */
 struct DEPLOYAPI Image {
-    void* rgbPtr = nullptr; /**< Pointer to image data (BGR format) */
+    void* rgbPtr = nullptr; /**< Pointer to image data (uint8, RGB format) */
     int   width  = 0;       /**< Width of the image */
     int   height = 0;       /**< Height of the image */
 
