@@ -155,7 +155,7 @@ class PPYOLOEGraphSurgeon:
                     "This version of ONNX GraphSurgeon does not support folding shapes, "
                     f"please upgrade your onnx_graphsurgeon module. Error:\n{e}"
                 )
-                raise
+                sys.exit(1)
 
             count_after = len(self.graph.nodes)
             if count_before == count_after:
