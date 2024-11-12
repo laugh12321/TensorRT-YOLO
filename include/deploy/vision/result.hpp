@@ -15,13 +15,19 @@ struct DEPLOYAPI Box {
     float top;    /**< Top coordinate of the bounding box */
     float right;  /**< Right coordinate of the bounding box */
     float bottom; /**< Bottom coordinate of the bounding box */
+};
+
+/**
+ * @brief Represents an oriented bounding box (OBB) by extending Box with a rotation angle.
+ */
+struct DEPLOYAPI RotatedBox : public Box {
     float theta;  /**< Rotation angle of the bounding box, in radians, measured clockwise from the positive x-axis */
 };
 
 /**
  * @brief Represents the result of object detection.
  */
-struct DEPLOYAPI DetectionResult {
+struct DEPLOYAPI DetResult {
     int                num = 0;   /**< Number of detected objects */
     std::vector<Box>   boxes{};   /**< Detected bounding boxes */
     std::vector<int>   classes{}; /**< Detected classes */
@@ -30,15 +36,36 @@ struct DEPLOYAPI DetectionResult {
     /**
      * @brief Copy assignment operator.
      *
-     * @param other The source DetectionResult to copy from.
-     * @return DetectionResult& Reference to the assigned DetectionResult.
+     * @param other The source DetResult to copy from.
+     * @return DetResult& Reference to the assigned DetResult.
      */
-    DetectionResult& operator=(const DetectionResult& other) {
+    DetResult& operator=(const DetResult& other) {
         if (this != &other) {
-            num     = other.num;     /**< Assign number of detected objects */
-            boxes   = other.boxes;   /**< Assign detected bounding boxes */
-            classes = other.classes; /**< Assign detected classes */
-            scores  = other.scores;  /**< Assign detection scores */
+            num     = other.num;
+            boxes   = other.boxes;
+            classes = other.classes;
+            scores  = other.scores;
+        }
+        return *this;
+    }
+};
+
+/**
+ * @brief Represents the result of object detection with oriented bounding boxes.
+ */
+struct DEPLOYAPI OBBResult : public DetResult {
+    std::vector<RotatedBox> boxes{}; /**< Detected oriented bounding boxes */
+
+    /**
+     * @brief Copy assignment operator.
+     *
+     * @param other The source OBBResult to copy from.
+     * @return OBBResult& Reference to the assigned OBBResult.
+     */
+    OBBResult& operator=(const OBBResult& other) {
+        if (this != &other) {
+            DetResult::operator=(static_cast<const DetResult&>(other));
+            boxes = other.boxes;
         }
         return *this;
     }

@@ -1,15 +1,20 @@
-from .detection import DeployCGDet, DeployDet
-from .result import Box, DetectionResult
+from .inference import DeployCGDet, DeployCGOBB, DeployDet, DeployOBB
+from .result import Box, DetResult, OBBResult, RotatedBox
 from .timer import CpuTimer, GpuTimer
-from .visualize import generate_labels_with_colors, visualize_detections
+from .utils import generate_labels_with_colors, image_batches, visualize
 
 __all__ = [
     "DeployDet",
     "DeployCGDet",
-    "DetectionResult",
+    "DeployOBB",
+    "DeployCGOBB",
+    "DetResult",
+    "OBBResult",
     "Box",
+    "RotatedBox",
     "GpuTimer",
     "CpuTimer",
     "generate_labels_with_colors",
-    "visualize_detections",
+    "image_batches",
+    "visualize"
 ]

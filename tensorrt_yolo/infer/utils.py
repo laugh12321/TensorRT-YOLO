@@ -16,21 +16,72 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   visualize.py
-# Version :   2.0
+# Version :   3.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/07/05 14:06:46
-# Desc    :   Utility functions for visualizing object detection results on images.
+# Desc    :   Utility functions for visualizing infernce results on images.
 # ==============================================================================
+import os
 import random
-from typing import List, Tuple
+import sys
+from glob import glob
+from typing import List, Set, Tuple, Union
 
 import cv2
 import numpy as np
+from loguru import logger
 
-from .result import Box, DetectionResult
+from .result import DetResult, OBBResult, RotatedBox
 
-__all__ = ["generate_labels_with_colors", "visualize_detections"]
+__all__ = ["generate_labels_with_colors", "visualize", "image_batches"]
+
+def image_batches(data_path: str, batch_size: int, pad_extra: bool, image_extensions: Set[str] = {'.jpg', '.jpeg', '.png', '.bmp'}) -> List[List[str]]:
+    """
+    Group image files in the specified directory into batches.
+
+    Args:
+        data_path (str): Path to the directory containing image files or a single image file.
+        batch_size (int): Number of images per batch.
+        pad_extra (bool): Whether to pad the last batch with extra images if they don't fit into a full batch.
+        image_extensions (Set[str]): A set of file extensions to consider as image files.
+
+    Returns:
+        List[List[str]]: A list of batches, where each batch is a list of image file paths.
+
+    Raises:
+        ValueError: If the data path is not a valid directory or a supported image file.
+        ValueError: If no image files are found in the directory.
+    """
+    # Check if the data path is a valid directory or a supported image file
+    if not (os.path.isdir(data_path) or (os.path.isfile(data_path) and data_path.lower().endswith(tuple(image_extensions)))):
+        logger.error(f"The provided data path '{data_path}' is not a valid directory or a supported image file.")
+        sys.exit(1)
+
+    # Initialize the list to store image file paths
+    image_files = []
+
+    # If it's a directory, find all image files with the specified extensions
+    if os.path.isdir(data_path):
+        # Use glob to find all image files with the specified extensions
+        image_files = [file for ext in image_extensions for file in glob(os.path.join(data_path, f'*{ext}'), recursive=True)]
+        # Raise an error if no image files are found
+        if not image_files:
+            logger.error(f"No image files found in the directory '{data_path}'.")
+            sys.exit(1)
+    else:
+        # If it's a single image file, add it to the list
+        image_files.append(data_path)
+
+    # Divide the image files into batches
+    batches = [image_files[i:i + batch_size] for i in range(0, len(image_files), batch_size)]
+
+    # Handle extra images if necessary
+    if pad_extra and batches and len(batches[-1]) < batch_size:
+        last_image = batches[-1][-1]
+        batches[-1].extend([last_image] * (batch_size - len(batches[-1])))
+
+    return batches
 
 
 def generate_labels_with_colors(labels_file: str) -> List[Tuple[str, Tuple[int, int, int]]]:
@@ -57,12 +108,12 @@ def generate_labels_with_colors(labels_file: str) -> List[Tuple[str, Tuple[int, 
         return [(label.strip(), generate_random_rgb()) for label in f]
 
 
-def xyxyr2xyxyxyxy(box: Box) -> List[Tuple[int, int]]:  # type: ignore
+def xyxyr2xyxyxyxy(box: RotatedBox) -> List[Tuple[int, int]]:  # type: ignore
     """
     Convert a rotated bounding box to the coordinates of its four corners.
 
     Args:
-        box (Box): The bounding box with left, top, right, bottom attributes,
+        box (RotatedBox): The bounding box with left, top, right, bottom attributes,
         and a rotation angle (theta).
 
     Returns:
@@ -96,35 +147,29 @@ def xyxyr2xyxyxyxy(box: Box) -> List[Tuple[int, int]]:  # type: ignore
     ]
 
 
-def visualize_detections(
+def visualize(
     image: np.ndarray,
-    det_result: DetectionResult,  # type: ignore
+    result: Union[DetResult, OBBResult],  # type: ignore
     labels: List[Tuple[str, Tuple[int, int, int]]],
-    is_obb: bool,
 ) -> np.ndarray:
     """
-    Visualize object detections on the input image and return the result.
+    Draw inference results on the input image and return the resulting image.
 
     Args:
-        image (np.ndarray): The input image on which to visualize detections.
-        det_result (DetectionResult): Object containing detection results, including the number of detections,
-                                      bounding boxes, class indices, and scores.
-        labels (List[Tuple[str, Tuple[int, int, int]]]): A list of label names and their corresponding RGB colors.
-                                                         Each element is a tuple where the first item is the label name
-                                                         and the second is the color tuple (R, G, B).
-        is_obb (bool): A flag indicating whether the bounding boxes are oriented (rotated) bounding boxes (OBB).
-                       If True, the bounding boxes are treated as rotated rectangles.
+        image (np.ndarray): The input image on which to draw inference results.
+        result (Union[DetResult, OBBResult]): The inference result object.
+        labels (List[Tuple[str, Tuple[int, int, int]]]): A list containing label names and their corresponding RGB color values.
 
     Returns:
-        np.ndarray: The image with visualized detections, including labeled bounding boxes or rotated rectangles.
+        np.ndarray: The image with drawn inference results.
     """
-    for box, class_, score in zip(det_result.boxes, det_result.classes, det_result.scores):
-        color = labels[class_][1]
-        label_text = f"{labels[class_][0]} {score:.2f}"
+    for i in range(result.num):
+        color = labels[result.classes[i]][1]
+        label_text = f"{labels[result.classes[i]][0]} {result.scores[i]:.2f}"
         label_size, _ = cv2.getTextSize(label_text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 1)
 
-        if is_obb:
-            corners = xyxyr2xyxyxyxy(box)
+        if isinstance(result, OBBResult):
+            corners = xyxyr2xyxyxyxy(result.boxes[i])
             corners = np.array(corners, dtype=np.int32).reshape((-1, 1, 2))
 
             # Draw label text
@@ -137,7 +182,7 @@ def visualize_detections(
             corners = np.array(corners, dtype=np.int32).reshape((-1, 1, 2))
             cv2.polylines(image, [corners], isClosed=True, color=color, thickness=1, lineType=cv2.LINE_AA)
         else:
-            box = list(map(int, [box.left, box.top, box.right, box.bottom]))
+            box = list(map(int, [result.boxes[i].left, result.boxes[i].top, result.boxes[i].right, result.boxes[i].bottom]))
 
             # Draw label text
             label_rect = (box[0], box[1], label_size[0], label_size[1])

@@ -4,12 +4,13 @@
 
 #include "deploy/core/types.hpp"
 #include "deploy/utils/utils.hpp"
-#include "deploy/vision/detection.hpp"
+#include "deploy/vision/inference.hpp"
 
 namespace deploy {
 
-// Constructor to initialize BaseDet with a model file and optional CUDA memory flag.
-BaseDet::BaseDet(const std::string& file, bool obb, bool cudaMem, int device) : obb(obb), cudaMem(cudaMem) {
+// Constructor to initialize BaseTemplate with a model file, optional CUDA memory flag, and device index.
+template<typename T>
+BaseTemplate<T>::BaseTemplate(const std::string& file, bool cudaMem, int device) : cudaMem(cudaMem) {
     // Set the CUDA device
     CUDA(cudaSetDevice(device));
 
@@ -23,14 +24,15 @@ BaseDet::BaseDet(const std::string& file, bool obb, bool cudaMem, int device) : 
     }
 }
 
-// Post-process inference results.
-DetectionResult BaseDet::postProcess(const int idx) {
+// Processes the inference results for a specific index.
+template<>
+DetResult BaseTemplate<DetResult>::postProcess(const int idx) {
     int    num     = static_cast<int*>(this->tensorInfos[1].tensor.host())[idx];
     float* boxes   = static_cast<float*>(this->tensorInfos[2].tensor.host()) + idx * this->tensorInfos[2].dims.d[1] * this->tensorInfos[2].dims.d[2];
     float* scores  = static_cast<float*>(this->tensorInfos[3].tensor.host()) + idx * this->tensorInfos[3].dims.d[1];
     int*   classes = static_cast<int*>(this->tensorInfos[4].tensor.host()) + idx * this->tensorInfos[4].dims.d[1];
 
-    DetectionResult result;
+    DetResult result;
     result.num = num;
 
     int boxSize = this->tensorInfos[2].dims.d[2];
@@ -39,13 +41,12 @@ DetectionResult BaseDet::postProcess(const int idx) {
         float top    = boxes[i * boxSize + 1];
         float right  = boxes[i * boxSize + 2];
         float bottom = boxes[i * boxSize + 3];
-        float theta  = obb ? boxes[i * boxSize + 4] : 0.0f;
 
         // Apply affine transformation
         transforms[idx].transform(left, top, &left, &top);
         transforms[idx].transform(right, bottom, &right, &bottom);
 
-        result.boxes.emplace_back(Box{left, top, right, bottom, theta});
+        result.boxes.emplace_back(Box{left, top, right, bottom});
         result.scores.emplace_back(scores[i]);
         result.classes.emplace_back(classes[i]);
     }
@@ -53,8 +54,39 @@ DetectionResult BaseDet::postProcess(const int idx) {
     return result;
 }
 
-// Constructor to initialize DeployDet with a model file and optional CUDA memory flag.
-DeployDet::DeployDet(const std::string& file, bool obb, bool cudaMem, int device) : BaseDet(file, obb, cudaMem, device) {
+template<>
+OBBResult BaseTemplate<OBBResult>::postProcess(const int idx) {
+    int    num     = static_cast<int*>(this->tensorInfos[1].tensor.host())[idx];
+    float* boxes   = static_cast<float*>(this->tensorInfos[2].tensor.host()) + idx * this->tensorInfos[2].dims.d[1] * this->tensorInfos[2].dims.d[2];
+    float* scores  = static_cast<float*>(this->tensorInfos[3].tensor.host()) + idx * this->tensorInfos[3].dims.d[1];
+    int*   classes = static_cast<int*>(this->tensorInfos[4].tensor.host()) + idx * this->tensorInfos[4].dims.d[1];
+
+    OBBResult result;
+    result.num = num;
+
+    int boxSize = this->tensorInfos[2].dims.d[2];
+    for (int i = 0; i < num; ++i) {
+        float left   = boxes[i * boxSize];
+        float top    = boxes[i * boxSize + 1];
+        float right  = boxes[i * boxSize + 2];
+        float bottom = boxes[i * boxSize + 3];
+        float theta  = boxes[i * boxSize + 4];
+
+        // Apply affine transformation
+        transforms[idx].transform(left, top, &left, &top);
+        transforms[idx].transform(right, bottom, &right, &bottom);
+
+        result.boxes.emplace_back(RotatedBox{left, top, right, bottom, theta});
+        result.scores.emplace_back(scores[i]);
+        result.classes.emplace_back(classes[i]);
+    }
+
+    return result;
+}
+
+// Constructor to initialize DeployTemplate with a model file, optional CUDA memory flag, and device index.
+template<typename T>
+DeployTemplate<T>::DeployTemplate(const std::string& file, bool cudaMem, int device) : BaseTemplate<T>(file, cudaMem, device) {
     // Setup tensors based on the engine context
     this->setupTensors();
 
@@ -62,13 +94,15 @@ DeployDet::DeployDet(const std::string& file, bool obb, bool cudaMem, int device
     this->allocate();
 }
 
-// Destructor to clean up resources.
-DeployDet::~DeployDet() {
+// Destructor for releasing allocated resources used by the DeployTemplate class.
+template<typename T>
+DeployTemplate<T>::~DeployTemplate() {
     this->release();
 }
 
-// Allocate necessary resources.
-void DeployDet::allocate() {
+// Allocates required resources for inference execution.
+template<typename T>
+void DeployTemplate<T>::allocate() {
     // Create infer stream
     CUDA(cudaStreamCreate(&this->inferStream));
 
@@ -83,8 +117,9 @@ void DeployDet::allocate() {
     if (!this->cudaMem) this->imageTensors.resize(this->batch, Tensor());
 }
 
-// Release allocated resources.
-void DeployDet::release() {
+// Releases resources that were allocated for inference.
+template<typename T>
+void DeployTemplate<T>::release() {
     // Release infer stream
     if (this->inferStream != nullptr) {
         CUDA(cudaStreamDestroy(this->inferStream));
@@ -106,8 +141,9 @@ void DeployDet::release() {
     if (!this->cudaMem) this->imageTensors.clear();
 }
 
-// Setup input and output tensors.
-void DeployDet::setupTensors() {
+// Configures input and output tensors for model inference.
+template<typename T>
+void DeployTemplate<T>::setupTensors() {
     int tensorNum = this->engineCtx->mEngine->getNbIOTensors();
     this->tensorInfos.reserve(tensorNum);
     for (size_t i = 0; i < tensorNum; i++) {
@@ -132,8 +168,9 @@ void DeployDet::setupTensors() {
     }
 }
 
-// Preprocess image before inference.
-void DeployDet::preProcess(const int idx, const Image& image, cudaStream_t stream) {
+// Preprocesses a single image in the batch before inference.
+template<typename T>
+void DeployTemplate<T>::preProcess(const int idx, const Image& image, cudaStream_t stream) {
     this->transforms[idx].update(image.width, image.height, this->width, this->height);
 
     int64_t inputSize   = 3 * this->height * this->width;
@@ -154,19 +191,21 @@ void DeployDet::preProcess(const int idx, const Image& image, cudaStream_t strea
     cudaWarpAffine(static_cast<uint8_t*>(imageDevice), image.width, image.height, inputDevice, this->width, this->height, this->transforms[idx].matrix, stream);
 }
 
-// Perform object detection on a single image.
-DetectionResult DeployDet::predict(const Image& image) {
+// Performs inference on a single input image.
+template<typename T>
+T DeployTemplate<T>::predict(const Image& image) {
     auto results = this->predict(std::vector<Image>{image});
     if (results.empty()) {
-        return DetectionResult();
+        return T();
     }
     return results[0];
 }
 
-// Perform object detection on a batch of images.
-std::vector<DetectionResult> DeployDet::predict(const std::vector<Image>& images) {
-    std::vector<DetectionResult> results;
-    int                     numImages = images.size();
+// Performs inference on a batch of input images.
+template<typename T>
+std::vector<T> DeployTemplate<T>::predict(const std::vector<Image>& images) {
+    std::vector<T> results;
+    int            numImages = images.size();
     if (numImages < 1 || numImages > this->batch) {
         std::cerr << "Error: Number of images (" << numImages << ") must be between 1 and " << this->batch << " inclusive." << std::endl;
         return results;
@@ -213,8 +252,9 @@ std::vector<DetectionResult> DeployDet::predict(const std::vector<Image>& images
     return results;
 }
 
-// Constructor to initialize DeployCGDet with a model file and optional CUDA memory flag.
-DeployCGDet::DeployCGDet(const std::string& file, bool obb, bool cudaMem, int device) : BaseDet(file, obb, cudaMem, device) {
+// Constructor to initialize DeployCGTemplate with a model file, optional CUDA memory flag, and device index.
+template<typename T>
+DeployCGTemplate<T>::DeployCGTemplate(const std::string& file, bool cudaMem, int device) : BaseTemplate<T>(file, cudaMem, device) {
     // Setup tensors based on the engine context
     this->setupTensors();
 
@@ -233,13 +273,15 @@ DeployCGDet::DeployCGDet(const std::string& file, bool obb, bool cudaMem, int de
     }
 }
 
-// Destructor to clean up resources.
-DeployCGDet::~DeployCGDet() {
+// Destructor for releasing allocated resources used by the DeployCGTemplate class.
+template<typename T>
+DeployCGTemplate<T>::~DeployCGTemplate() {
     this->release();
 }
 
-// Allocate necessary resources.
-void DeployCGDet::allocate() {
+// Allocates required resources for inference execution.
+template<typename T>
+void DeployCGTemplate<T>::allocate() {
     // Create the main inference stream
     CUDA(cudaStreamCreate(&this->inferStream));
 
@@ -276,8 +318,9 @@ void DeployCGDet::allocate() {
     }
 }
 
-// Release allocated resources.
-void DeployCGDet::release() {
+// Releases resources that were allocated for inference.
+template<typename T>
+void DeployCGTemplate<T>::release() {
     // Release CUDA graph execution
     if (this->inferGraphExec != nullptr) {
         CUDA(cudaGraphExecDestroy(this->inferGraphExec));
@@ -324,8 +367,9 @@ void DeployCGDet::release() {
     this->imageTensor.reset();
 }
 
-// Setup input and output tensors.
-void DeployCGDet::setupTensors() {
+// Configures input and output tensors for model inference.
+template<typename T>
+void DeployCGTemplate<T>::setupTensors() {
     int tensorNum = this->engineCtx->mEngine->getNbIOTensors();
     this->tensorInfos.reserve(tensorNum);
     for (size_t i = 0; i < tensorNum; i++) {
@@ -351,8 +395,9 @@ void DeployCGDet::setupTensors() {
     }
 }
 
-// Create CUDA graph for inference.
-void DeployCGDet::createGraph() {
+// Creates the CUDA graph for inference execution.
+template<typename T>
+void DeployCGTemplate<T>::createGraph() {
     // Set tensor addresses for the engine context
     for (auto& tensorInfo : this->tensorInfos) {
         this->engineCtx->mContext->setTensorAddress(tensorInfo.name.data(), tensorInfo.tensor.device(tensorInfo.bytes));
@@ -411,10 +456,11 @@ void DeployCGDet::createGraph() {
     CUDA(cudaGraphInstantiate(&this->inferGraphExec, this->inferGraph, nullptr, nullptr, 0));
 }
 
-// Retrieve graph nodes for the CUDA graph.
-void DeployCGDet::getGraphNodes() {
-    size_t numNodes = this->cudaMem ? this->batch : this->batch + 1;
-    this->graphNodes      = std::make_unique<cudaGraphNode_t[]>(numNodes);
+// Retrieves and stores nodes in the CUDA graph.
+template<typename T>
+void DeployCGTemplate<T>::getGraphNodes() {
+    size_t numNodes  = this->cudaMem ? this->batch : this->batch + 1;
+    this->graphNodes = std::make_unique<cudaGraphNode_t[]>(numNodes);
     CUDA(cudaGraphGetNodes(this->inferGraph, this->graphNodes.get(), &numNodes));
 
     int idx = 0;
@@ -430,18 +476,20 @@ void DeployCGDet::getGraphNodes() {
     }
 }
 
-// Perform object detection on a single image.
-DetectionResult DeployCGDet::predict(const Image& image) {
+// Performs inference on a single input image.
+template<typename T>
+T DeployCGTemplate<T>::predict(const Image& image) {
     auto results = this->predict(std::vector<Image>{image});
     if (results.empty()) {
-        return DetectionResult();
+        return T();
     }
     return results[0];
 }
 
-// Perform object detection on a batch of images.
-std::vector<DetectionResult> DeployCGDet::predict(const std::vector<Image>& images) {
-    std::vector<DetectionResult> results;
+// Performs inference on a batch of input images.
+template<typename T>
+std::vector<T> DeployCGTemplate<T>::predict(const std::vector<Image>& images) {
+    std::vector<T> results;
     if (images.size() != this->batch) {
         std::cerr << "Error: Batch size mismatch. Expected " << this->batch << " images, but got " << images.size() << " images." << std::endl;
         return results;
