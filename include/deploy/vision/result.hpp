@@ -21,7 +21,7 @@ struct DEPLOYAPI Box {
  * @brief Represents an oriented bounding box (OBB) by extending Box with a rotation angle.
  */
 struct DEPLOYAPI RotatedBox : public Box {
-    float theta;  /**< Rotation angle of the bounding box, in radians, measured clockwise from the positive x-axis */
+    float theta; /**< Rotation angle of the bounding box, in radians, measured clockwise from the positive x-axis */
 };
 
 /**

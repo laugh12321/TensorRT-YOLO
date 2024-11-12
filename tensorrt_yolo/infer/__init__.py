@@ -16,5 +16,5 @@ __all__ = [
     "CpuTimer",
     "generate_labels_with_colors",
     "image_batches",
-    "visualize"
+    "visualize",
 ]

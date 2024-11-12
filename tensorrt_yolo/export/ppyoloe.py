@@ -143,9 +143,9 @@ class PPYOLOEGraphSurgeon:
                         if o in self.graph.outputs:
                             continue
                         o.shape = None
-                model = gs.export_onnx(self.graph) # type: ignore
-                model = onnx.shape_inference.infer_shapes(model) # type: ignore
-                self.graph = gs.import_onnx(model) # type: ignore
+                model = gs.export_onnx(self.graph)  # type: ignore
+                model = onnx.shape_inference.infer_shapes(model)  # type: ignore
+                self.graph = gs.import_onnx(model)  # type: ignore
             except Exception as e:
                 logger.warning(f"Shape inference could not be performed at this time:\n{e}")
             try:

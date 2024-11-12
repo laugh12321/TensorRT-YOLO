@@ -36,7 +36,10 @@ from .result import DetResult, OBBResult, RotatedBox
 
 __all__ = ["generate_labels_with_colors", "visualize", "image_batches"]
 
-def image_batches(data_path: str, batch_size: int, pad_extra: bool, image_extensions: Set[str] = {'.jpg', '.jpeg', '.png', '.bmp'}) -> List[List[str]]:
+
+def image_batches(
+    data_path: str, batch_size: int, pad_extra: bool, image_extensions: Set[str] = {'.jpg', '.jpeg', '.png', '.bmp'}
+) -> List[List[str]]:
     """
     Group image files in the specified directory into batches.
 
@@ -74,7 +77,7 @@ def image_batches(data_path: str, batch_size: int, pad_extra: bool, image_extens
         image_files.append(data_path)
 
     # Divide the image files into batches
-    batches = [image_files[i:i + batch_size] for i in range(0, len(image_files), batch_size)]
+    batches = [image_files[i : i + batch_size] for i in range(0, len(image_files), batch_size)]
 
     # Handle extra images if necessary
     if pad_extra and batches and len(batches[-1]) < batch_size:

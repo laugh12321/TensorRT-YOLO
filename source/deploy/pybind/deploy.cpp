@@ -112,10 +112,7 @@ void BindResult(pybind11::module &m) {
             oss << "  ])";
             return oss.str();
         })
-        .def(pybind11::pickle([](const DetResult &dr) {
-            return pybind11::make_tuple(dr.num, dr.boxes, dr.classes, dr.scores);
-        },
-        [](pybind11::tuple t) {
+        .def(pybind11::pickle([](const DetResult &dr) { return pybind11::make_tuple(dr.num, dr.boxes, dr.classes, dr.scores); }, [](pybind11::tuple t) {
             if (t.size() != 4)
                 throw std::runtime_error("Invalid state!");
 
@@ -124,8 +121,7 @@ void BindResult(pybind11::module &m) {
             dr.boxes = t[1].cast<std::vector<Box>>();
             dr.classes = t[2].cast<std::vector<int>>();
             dr.scores = t[3].cast<std::vector<float>>();
-            return dr;
-        }));
+            return dr; }));
 
     // Bind OBBResult structure
     pybind11::class_<OBBResult, DetResult>(m, "OBBResult")
@@ -158,10 +154,7 @@ void BindResult(pybind11::module &m) {
             oss << "  ])";
             return oss.str();
         })
-        .def(pybind11::pickle([](const OBBResult &obr) {
-            return pybind11::make_tuple(obr.num, obr.boxes, obr.classes, obr.scores);
-        },
-        [](pybind11::tuple t) {
+        .def(pybind11::pickle([](const OBBResult &obr) { return pybind11::make_tuple(obr.num, obr.boxes, obr.classes, obr.scores); }, [](pybind11::tuple t) {
             if (t.size() != 4)
                 throw std::runtime_error("Invalid state!");
 
@@ -170,13 +163,12 @@ void BindResult(pybind11::module &m) {
             obr.boxes = t[1].cast<std::vector<RotatedBox>>();
             obr.classes = t[2].cast<std::vector<int>>();
             obr.scores = t[3].cast<std::vector<float>>();
-            return obr;
-        }));
+            return obr; }));
 }
 
 // Bind inference class template
 template <typename ClassType>
-void BindClsTemplate(pybind11::module& m, const std::string& className) {
+void BindClsTemplate(pybind11::module &m, const std::string &className) {
     pybind11::class_<ClassType>(m, className.c_str())
         .def(pybind11::init<const std::string &, bool, int>(),
              pybind11::arg("file"), pybind11::arg("cudaMem") = false, pybind11::arg("device") = 0)
@@ -186,15 +178,12 @@ void BindClsTemplate(pybind11::module& m, const std::string& className) {
                 return self.predict(image);
             },
             "Predict the result from a single image")
-        .def(
-            "predict", [](ClassType &self, std::vector<pybind11::array> &pyimgs) {
+        .def("predict", [](ClassType &self, std::vector<pybind11::array> &pyimgs) {
                 std::vector<Image> images;
                 for (auto &pyimg : pyimgs) {
                     images.push_back(PyArray2Image(pyimg));
                 }
-                return self.predict(images);
-            },
-            "Predict the results from a list of images")
+                return self.predict(images); }, "Predict the results from a list of images")
         .def_readwrite("batch", &ClassType::batch, "Batch size for prediction");
 }
 
@@ -202,16 +191,16 @@ void BindClsTemplate(pybind11::module& m, const std::string& className) {
 void BindInference(pybind11::module &m) {
     m.doc() = "Bindings for inference classes like DeployDet, DeployCGDet, DeployOBB and DeployCGOBB";
 
-    // 绑定 DeployDet 类
+    // bind DeployDet
     BindClsTemplate<DeployDet>(m, "DeployDet");
 
-    // 绑定 DeployCGDet 类
+    // bind DeployCGDet
     BindClsTemplate<DeployCGDet>(m, "DeployCGDet");
 
-    // 绑定 DeployOBB 类
+    // bind DeployOBB
     BindClsTemplate<DeployOBB>(m, "DeployOBB");
 
-    // 绑定 DeployCGOBB 类
+    // bind DeployCGOBB
     BindClsTemplate<DeployCGOBB>(m, "DeployCGOBB");
 }
 

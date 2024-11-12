@@ -9,7 +9,7 @@
 namespace deploy {
 
 // Constructor to initialize BaseTemplate with a model file, optional CUDA memory flag, and device index.
-template<typename T>
+template <typename T>
 BaseTemplate<T>::BaseTemplate(const std::string& file, bool cudaMem, int device) : cudaMem(cudaMem) {
     // Set the CUDA device
     CUDA(cudaSetDevice(device));
@@ -25,7 +25,7 @@ BaseTemplate<T>::BaseTemplate(const std::string& file, bool cudaMem, int device)
 }
 
 // Processes the inference results for a specific index.
-template<>
+template <>
 DetResult BaseTemplate<DetResult>::postProcess(const int idx) {
     int    num     = static_cast<int*>(this->tensorInfos[1].tensor.host())[idx];
     float* boxes   = static_cast<float*>(this->tensorInfos[2].tensor.host()) + idx * this->tensorInfos[2].dims.d[1] * this->tensorInfos[2].dims.d[2];
@@ -54,7 +54,7 @@ DetResult BaseTemplate<DetResult>::postProcess(const int idx) {
     return result;
 }
 
-template<>
+template <>
 OBBResult BaseTemplate<OBBResult>::postProcess(const int idx) {
     int    num     = static_cast<int*>(this->tensorInfos[1].tensor.host())[idx];
     float* boxes   = static_cast<float*>(this->tensorInfos[2].tensor.host()) + idx * this->tensorInfos[2].dims.d[1] * this->tensorInfos[2].dims.d[2];
@@ -85,7 +85,7 @@ OBBResult BaseTemplate<OBBResult>::postProcess(const int idx) {
 }
 
 // Constructor to initialize DeployTemplate with a model file, optional CUDA memory flag, and device index.
-template<typename T>
+template <typename T>
 DeployTemplate<T>::DeployTemplate(const std::string& file, bool cudaMem, int device) : BaseTemplate<T>(file, cudaMem, device) {
     // Setup tensors based on the engine context
     this->setupTensors();
@@ -95,13 +95,13 @@ DeployTemplate<T>::DeployTemplate(const std::string& file, bool cudaMem, int dev
 }
 
 // Destructor for releasing allocated resources used by the DeployTemplate class.
-template<typename T>
+template <typename T>
 DeployTemplate<T>::~DeployTemplate() {
     this->release();
 }
 
 // Allocates required resources for inference execution.
-template<typename T>
+template <typename T>
 void DeployTemplate<T>::allocate() {
     // Create infer stream
     CUDA(cudaStreamCreate(&this->inferStream));
@@ -118,7 +118,7 @@ void DeployTemplate<T>::allocate() {
 }
 
 // Releases resources that were allocated for inference.
-template<typename T>
+template <typename T>
 void DeployTemplate<T>::release() {
     // Release infer stream
     if (this->inferStream != nullptr) {
@@ -142,7 +142,7 @@ void DeployTemplate<T>::release() {
 }
 
 // Configures input and output tensors for model inference.
-template<typename T>
+template <typename T>
 void DeployTemplate<T>::setupTensors() {
     int tensorNum = this->engineCtx->mEngine->getNbIOTensors();
     this->tensorInfos.reserve(tensorNum);
@@ -169,7 +169,7 @@ void DeployTemplate<T>::setupTensors() {
 }
 
 // Preprocesses a single image in the batch before inference.
-template<typename T>
+template <typename T>
 void DeployTemplate<T>::preProcess(const int idx, const Image& image, cudaStream_t stream) {
     this->transforms[idx].update(image.width, image.height, this->width, this->height);
 
@@ -192,7 +192,7 @@ void DeployTemplate<T>::preProcess(const int idx, const Image& image, cudaStream
 }
 
 // Performs inference on a single input image.
-template<typename T>
+template <typename T>
 T DeployTemplate<T>::predict(const Image& image) {
     auto results = this->predict(std::vector<Image>{image});
     if (results.empty()) {
@@ -202,7 +202,7 @@ T DeployTemplate<T>::predict(const Image& image) {
 }
 
 // Performs inference on a batch of input images.
-template<typename T>
+template <typename T>
 std::vector<T> DeployTemplate<T>::predict(const std::vector<Image>& images) {
     std::vector<T> results;
     int            numImages = images.size();
@@ -253,7 +253,7 @@ std::vector<T> DeployTemplate<T>::predict(const std::vector<Image>& images) {
 }
 
 // Constructor to initialize DeployCGTemplate with a model file, optional CUDA memory flag, and device index.
-template<typename T>
+template <typename T>
 DeployCGTemplate<T>::DeployCGTemplate(const std::string& file, bool cudaMem, int device) : BaseTemplate<T>(file, cudaMem, device) {
     // Setup tensors based on the engine context
     this->setupTensors();
@@ -274,13 +274,13 @@ DeployCGTemplate<T>::DeployCGTemplate(const std::string& file, bool cudaMem, int
 }
 
 // Destructor for releasing allocated resources used by the DeployCGTemplate class.
-template<typename T>
+template <typename T>
 DeployCGTemplate<T>::~DeployCGTemplate() {
     this->release();
 }
 
 // Allocates required resources for inference execution.
-template<typename T>
+template <typename T>
 void DeployCGTemplate<T>::allocate() {
     // Create the main inference stream
     CUDA(cudaStreamCreate(&this->inferStream));
@@ -319,7 +319,7 @@ void DeployCGTemplate<T>::allocate() {
 }
 
 // Releases resources that were allocated for inference.
-template<typename T>
+template <typename T>
 void DeployCGTemplate<T>::release() {
     // Release CUDA graph execution
     if (this->inferGraphExec != nullptr) {
@@ -368,7 +368,7 @@ void DeployCGTemplate<T>::release() {
 }
 
 // Configures input and output tensors for model inference.
-template<typename T>
+template <typename T>
 void DeployCGTemplate<T>::setupTensors() {
     int tensorNum = this->engineCtx->mEngine->getNbIOTensors();
     this->tensorInfos.reserve(tensorNum);
@@ -396,7 +396,7 @@ void DeployCGTemplate<T>::setupTensors() {
 }
 
 // Creates the CUDA graph for inference execution.
-template<typename T>
+template <typename T>
 void DeployCGTemplate<T>::createGraph() {
     // Set tensor addresses for the engine context
     for (auto& tensorInfo : this->tensorInfos) {
@@ -457,7 +457,7 @@ void DeployCGTemplate<T>::createGraph() {
 }
 
 // Retrieves and stores nodes in the CUDA graph.
-template<typename T>
+template <typename T>
 void DeployCGTemplate<T>::getGraphNodes() {
     size_t numNodes  = this->cudaMem ? this->batch : this->batch + 1;
     this->graphNodes = std::make_unique<cudaGraphNode_t[]>(numNodes);
@@ -477,7 +477,7 @@ void DeployCGTemplate<T>::getGraphNodes() {
 }
 
 // Performs inference on a single input image.
-template<typename T>
+template <typename T>
 T DeployCGTemplate<T>::predict(const Image& image) {
     auto results = this->predict(std::vector<Image>{image});
     if (results.empty()) {
@@ -487,7 +487,7 @@ T DeployCGTemplate<T>::predict(const Image& image) {
 }
 
 // Performs inference on a batch of input images.
-template<typename T>
+template <typename T>
 std::vector<T> DeployCGTemplate<T>::predict(const std::vector<Image>& images) {
     std::vector<T> results;
     if (images.size() != this->batch) {
@@ -512,7 +512,7 @@ std::vector<T> DeployCGTemplate<T>::predict(const std::vector<Image>& images) {
         for (int i = 0; i < this->batch; i++) {
             this->transforms[i].update(images[i].width, images[i].height, this->width, this->height);
             this->imageSize[i]  = images[i].width * images[i].height * 3;
-            totalSize    += this->imageSize[i];
+            totalSize          += this->imageSize[i];
         }
 
         void* host   = this->imageTensor->host(totalSize * sizeof(uint8_t));

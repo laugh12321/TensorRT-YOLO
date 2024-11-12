@@ -32,10 +32,22 @@ warnings.filterwarnings("ignore")
 logger.configure(handlers=[{'sink': sys.stdout, 'colorize': True, 'format': "<level>[{level.name[0]}]</level> <level>{message}</level>"}])
 
 HEADS = {
-    "Detect": {"yolov3": YOLODetect, "yolov5": YOLODetect, "yolov8": UltralyticsDetect, "yolo11": UltralyticsDetect, "ultralytics": UltralyticsDetect},
+    "Detect": {
+        "yolov3": YOLODetect,
+        "yolov5": YOLODetect,
+        "yolov8": UltralyticsDetect,
+        "yolo11": UltralyticsDetect,
+        "ultralytics": UltralyticsDetect,
+    },
     "v10Detect": {"yolov10": v10Detect, "ultralytics": v10Detect},
     "OBB": {"yolov8": UltralyticsOBB, "yolo11": UltralyticsOBB, "ultralytics": UltralyticsOBB},
-    "Segment": {"yolov3": YOLOSegment, "yolov5": YOLOSegment, "yolov8": UltralyticsSegment, "yolo11": UltralyticsSegment, "ultralytics": UltralyticsSegment},
+    "Segment": {
+        "yolov3": YOLOSegment,
+        "yolov5": YOLOSegment,
+        "yolov8": UltralyticsSegment,
+        "yolo11": UltralyticsSegment,
+        "ultralytics": UltralyticsSegment,
+    },
 }
 
 DEFAULT_OUTPUT_NAMES = ["num_dets", "det_boxes", "det_scores", "det_classes"]
@@ -227,7 +239,12 @@ def torch_export(
     if head_name == "OBB":
         shapes['det_boxes'] = ["batch" if dynamic else batch, max_boxes, 5]
     elif head_name == "Segment":
-        shapes['det_masks'] = ["batch" if dynamic else batch, max_boxes, "height" if dynamic else imgsz[0], "width" if dynamic else imgsz[1]]
+        shapes['det_masks'] = [
+            "batch" if dynamic else batch,
+            max_boxes,
+            "height" if dynamic else imgsz[0],
+            "width" if dynamic else imgsz[1],
+        ]
 
     for node in model_onnx.graph.output:
         for idx, dim in enumerate(node.type.tensor_type.shape.dim):

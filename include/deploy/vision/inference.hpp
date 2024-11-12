@@ -2,9 +2,8 @@
 
 #include <memory>
 #include <string>
-#include <vector>
-#include <stdexcept>
 #include <type_traits>
+#include <vector>
 
 #include "deploy/core/core.hpp"
 #include "deploy/core/macro.hpp"
@@ -21,7 +20,7 @@ namespace deploy {
  * (such as object detection, oriented bounding boxes, segmentation, etc.).
  * It supports both single image inference and batch inference.
  */
-template<typename T>
+template <typename T>
 class DEPLOYAPI BaseTemplate {
 public:
     // Use static_assert to ensure that T is either DetResult or OBBResult
@@ -39,7 +38,7 @@ public:
     /**
      * @brief Destructor for releasing allocated resources used by the BaseTemplate class.
      */
-    virtual ~BaseTemplate(){};
+    virtual ~BaseTemplate() {};
 
     /**
      * @brief Performs inference on a single input image.
@@ -125,12 +124,12 @@ protected:
 /**
  * @brief DeployTemplate class, a template class for YOLO series models (e.g., Det, OBB, Seg, etc.).
  *
- * This class is a specialized template class derived from BaseTemplate, providing functionality for 
+ * This class is a specialized template class derived from BaseTemplate, providing functionality for
  * YOLO series models in tasks like object detection, oriented bounding boxes, segmentation, etc.
  * It supports both single image inference and batch inference, allowing for efficient deployment on
  * both GPU and CPU.
  */
-template<typename T>
+template <typename T>
 class DEPLOYAPI DeployTemplate : public BaseTemplate<T> {
 public:
     // Use static_assert to ensure that T is either DetResult or OBBResult
@@ -194,7 +193,7 @@ private:
 
     /**
      * @brief Preprocesses a single image in the batch before inference.
-     * 
+     *
      * @param idx Index of the image in the batch.
      * @param image The input image to preprocess.
      * @param stream CUDA stream used to perform asynchronous operations for preprocessing.
@@ -210,7 +209,7 @@ private:
  * DeployCGTemplate integrates CUDA Graphs to enhance inference efficiency and supports both single image and batch inference.
  * Only static models are supported; dynamic models are not supported.
  */
-template<typename T>
+template <typename T>
 class DEPLOYAPI DeployCGTemplate : public BaseTemplate<T> {
 public:
     // Use static_assert to ensure that T is either DetResult or OBBResult
@@ -327,11 +326,11 @@ template class DeployTemplate<OBBResult>;
 template class DeployCGTemplate<OBBResult>;
 
 // Use the template class to create concrete deployment classes
-typedef BaseTemplate<DetResult> BaseDet;
-typedef DeployTemplate<DetResult> DeployDet;
+typedef BaseTemplate<DetResult>     BaseDet;
+typedef DeployTemplate<DetResult>   DeployDet;
 typedef DeployCGTemplate<DetResult> DeployCGDet;
-typedef BaseTemplate<OBBResult> BaseOBB;
-typedef DeployTemplate<OBBResult> DeployOBB;
+typedef BaseTemplate<OBBResult>     BaseOBB;
+typedef DeployTemplate<OBBResult>   DeployOBB;
 typedef DeployCGTemplate<OBBResult> DeployCGOBB;
 
 }  // namespace deploy

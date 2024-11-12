@@ -33,7 +33,7 @@ from ultralytics.nn.modules import OBB, Conv, Detect, Proto
 from ultralytics.utils.checks import check_version
 from ultralytics.utils.tal import make_anchors
 
-__all__ = ["YOLODetect", "YOLOSegment", "V10Detect", "UltralyticsDetect", "UltralyticsOBB", "UltralyticsSegment"]
+__all__ = ["YOLODetect", "YOLOSegment", "V10Detect", "UltralyticsDetect", "UltralyticsOBB", "UltralyticsSegment"]  # noqa: F822
 
 
 class EfficientNMS_TRT(torch.autograd.Function):
@@ -145,6 +145,7 @@ class EfficientRotatedNMS_TRT(torch.autograd.Function):
             plugin_version_s=plugin_version,
         )
 
+
 class EfficientIdxNMS_TRT(torch.autograd.Function):
     """NMS with Index block for YOLO-fused model for TensorRT."""
 
@@ -199,6 +200,7 @@ class EfficientIdxNMS_TRT(torch.autograd.Function):
             class_agnostic_i=class_agnostic,
             plugin_version_s=plugin_version,
         )
+
 
 """
 ===============================================================================
@@ -262,6 +264,7 @@ class YOLODetect(nn.Module):
         anchor_grid = (self.anchors[i] * self.stride[i]).view((1, self.na, 1, 1, 2)).expand(shape)
         return grid, anchor_grid
 
+
 class YOLOSegment(YOLODetect):
     """YOLOv3 and YOLOv5 Segment head for segmentation models, extending Detect with mask and prototype layers."""
 
@@ -306,10 +309,14 @@ class YOLOSegment(YOLODetect):
         z = torch.cat(z, 1)
 
         # Separate boxes and scores for EfficientIdxNMS_TRT
-        boxes, conf, mc = z[..., :4], z[..., 4:self.no - self.nm], z[..., self.no - self.nm:]
+        boxes, conf, mc = z[..., :4], z[..., 4 : self.no - self.nm], z[..., self.no - self.nm :]
         scores = conf[..., 0:1] * conf[..., 1:]
         num_dets, det_boxes, det_scores, det_classes, det_indices = EfficientIdxNMS_TRT.apply(
-            boxes, scores, self.iou_thres, self.conf_thres, self.max_det,
+            boxes,
+            scores,
+            self.iou_thres,
+            self.conf_thres,
+            self.max_det,
         )
 
         # Retrieve the corresponding masks using batch and detection indices.
@@ -320,7 +327,13 @@ class YOLOSegment(YOLODetect):
         masks_protos = p.view(bs, self.nm, mask_h * mask_w)
         det_masks = torch.matmul(selected_masks, masks_protos).sigmoid().view(bs, self.max_det, mask_h, mask_w)
 
-        return num_dets, det_boxes, det_scores, det_classes, F.interpolate(det_masks, size=(mask_h * 4, mask_w * 4), mode="bilinear", align_corners=False).gt_(0.5).to(torch.uint8)
+        return (
+            num_dets,
+            det_boxes,
+            det_scores,
+            det_classes,
+            F.interpolate(det_masks, size=(mask_h * 4, mask_w * 4), mode="bilinear", align_corners=False).gt_(0.5).to(torch.uint8),
+        )
 
 
 """
@@ -358,9 +371,7 @@ class UltralyticsDetect(Detect):
     def forward_end2end(self, x):
         """Performs forward pass of the v10Detect module."""
         x_detach = [xi.detach() for xi in x]
-        one2one = [
-            torch.cat((self.one2one_cv2[i](x_detach[i]), self.one2one_cv3[i](x_detach[i])), 1) for i in range(self.nl)
-        ]
+        one2one = [torch.cat((self.one2one_cv2[i](x_detach[i]), self.one2one_cv3[i](x_detach[i])), 1) for i in range(self.nl)]
 
         dbox, cls = self._inference(one2one)
         y = torch.cat((dbox, cls), 1)
@@ -411,6 +422,7 @@ class UltralyticsDetect(Detect):
         i = torch.arange(batch_size)[..., None]  # batch indices
         return boxes[i, index // nc], scores, (index % nc).to(torch.int32)
 
+
 class UltralyticsOBB(OBB):
     """Ultralytics OBB detection head for detection with rotation models."""
 
@@ -450,6 +462,7 @@ class UltralyticsOBB(OBB):
             self.max_det,
         )
 
+
 class v10Detect(UltralyticsDetect):
     """
     v10 Detection head from https://arxiv.org/pdf/2405.14458.
@@ -485,6 +498,7 @@ class v10Detect(UltralyticsDetect):
         )
         self.one2one_cv3 = copy.deepcopy(self.cv3)
 
+
 class UltralyticsSegment(Detect):
     """Ultralytics Segment head for segmentation models."""
 
@@ -519,7 +533,13 @@ class UltralyticsSegment(Detect):
         masks_protos = p.view(bs, self.nm, mask_h * mask_w)
         det_masks = torch.matmul(selected_masks, masks_protos).sigmoid().view(bs, self.max_det, mask_h, mask_w)
 
-        return num_dets, det_boxes, det_scores, det_classes, F.interpolate(det_masks, size=(mask_h * 4, mask_w * 4), mode="bilinear", align_corners=False).gt_(0.5).to(torch.uint8)
+        return (
+            num_dets,
+            det_boxes,
+            det_scores,
+            det_classes,
+            F.interpolate(det_masks, size=(mask_h * 4, mask_w * 4), mode="bilinear", align_corners=False).gt_(0.5).to(torch.uint8),
+        )
 
     def _inference(self, x):
         """Decode predicted bounding boxes and class probabilities based on multiple-level feature maps."""
