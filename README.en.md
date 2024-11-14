@@ -20,6 +20,10 @@ English | [简体中文](README.md)
 TensorRT-YOLO is an inference acceleration project that supports YOLOv3, YOLOv5, YOLOv6, YOLOv7, YOLOv8, YOLOv9, YOLOv10, YOLO11, PP-YOLOE and PP-YOLOE+ using NVIDIA TensorRT for optimization. The project not only integrates the TensorRT plugin to enhance post-processing effects but also utilizes CUDA kernel functions and CUDA graphs to accelerate inference. TensorRT-YOLO provides support for both C++ and Python inference, aiming to deliver a fast and optimized object detection solution.
 
 <div align="center">
+    <img src=assets/example.gif width="644">
+</div>
+
+<div align="center">
     <img src=assets/example0.jpg height="320">
     <img src=assets/example1.jpg height="320">
 </div>
