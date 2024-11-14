@@ -3,12 +3,10 @@ set_languages("cxx17")
 set_allowedplats("windows", "linux")
 
 -- 添加依赖
-add_requires("opencv", "cli11")
-if is_plat("linux") then 
-    add_requires("zlib")
-end
+add_requires("opencv", {system = true})
 
 -- 添加编译规则
+add_rules("plugin.compile_commands.autoupdate", {outputdir = "build"})
 add_rules("mode.release")
 
 -- 定义选项
@@ -42,10 +40,7 @@ target("detect")
     set_rundir("$(projectdir)")
 
     -- 添加依赖
-    add_packages("opencv", "cli11")
-    if is_plat("linux") then 
-        add_packages("zlib")
-    end
+    add_packages("opencv")
 
     -- 添加文件
     add_files("detect.cpp")
@@ -81,11 +76,9 @@ target("detect")
 
     -- 添加TensorRT链接目录和链接库
     if has_config("tensorrt") then
-        add_includedirs(path.join("$(tensorrt)", "include"))
-        add_linkdirs(path.join("$(tensorrt)", "lib"))
-        if is_host("windows") and os.exists(path.join(get_config("tensorrt"), "lib", "nvinfer_10.dll")) then
-            add_links("nvinfer_10", "nvinfer_plugin_10", "nvonnxparser_10")
-        else
-            add_links("nvinfer", "nvinfer_plugin", "nvonnxparser")
-        end
+        local tensorrt_path = get_config("tensorrt")
+        add_includedirs(path.join(tensorrt_path, "include"))
+        add_linkdirs(path.join(tensorrt_path, "lib"))
+        local libs = is_plat("windows") and os.exists(path.join(get_config("tensorrt"), "lib", "nvinfer_10.dll")) and "nvinfer_10 nvinfer_plugin_10 nvonnxparser_10" or "nvinfer nvinfer_plugin nvonnxparser"
+        add_links(libs:split("%s+"))
     end

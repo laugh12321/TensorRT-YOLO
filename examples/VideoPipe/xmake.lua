@@ -1,8 +1,12 @@
--- 添加编译规则
-add_rules("mode.debug", "mode.release")
+-- 设置项目信息
+set_languages("cxx17")
 set_allowedplats("linux")
 
 add_requires("opencv", "gstreamer-1.0", {system = true})
+
+-- 添加编译规则
+add_rules("plugin.compile_commands.autoupdate", {outputdir = "build"})
+add_rules("mode.release")
 
 -- 定义选项
 option("tensorrt")
@@ -35,7 +39,14 @@ end)
 -- 定义目标
 target("PipeDemo")
     set_languages("cxx17")
+
+    -- 设置编译路径
+    set_targetdir("$(projectdir)/workspace")
+
+    -- 设置运行路径
     set_rundir("$(projectdir)/workspace")
+
+    -- 添加依赖
     add_packages("opencv", "gstreamer-1.0")
 
     -- 添加文件
