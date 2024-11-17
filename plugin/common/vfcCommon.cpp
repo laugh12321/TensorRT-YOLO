@@ -88,7 +88,9 @@ extern "C" TENSORRTAPI IPluginCreatorInterface* const* getCreators(int32_t& nbCr
     return kPLUGIN_CREATOR_LIST;
 
 }
-#else
+#endif
+
+#if (TENSORRT_VERSION < 100100)
 extern "C" TENSORRTAPI IPluginCreator* const* getPluginCreators(int32_t& nbCreators)
 {
     nbCreators = 1;
