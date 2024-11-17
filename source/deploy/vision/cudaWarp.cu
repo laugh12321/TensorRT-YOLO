@@ -86,6 +86,9 @@ void TransformMatrix::update(int fromWidth, int fromHeight, int toWidth, int toH
 
     matrix[0] = make_float3(A, 0.0, -A * (scaleFromWidth + halfToWidth + offset));
     matrix[1] = make_float3(0.0, A, -A * (scaleFromHeight + halfToHeight + offset));
+
+    dw = int(toWidth * 0.5 + scaleFromWidth);
+    dh = int(toHeight * 0.5 + scaleFromHeight);
 }
 
 void TransformMatrix::transform(float x, float y, float* ox, float* oy) const {

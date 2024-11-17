@@ -1,11 +1,101 @@
 #pragma once
 
+#include <cstdint>
 #include <stdexcept>
 #include <vector>
 
 #include "deploy/core/macro.hpp"
 
 namespace deploy {
+
+/**
+ * @brief Represents an image.
+ */
+struct DEPLOYAPI Image {
+    void* rgbPtr = nullptr; /**< Pointer to image data (uint8, RGB format) */
+    int   width  = 0;       /**< Width of the image */
+    int   height = 0;       /**< Height of the image */
+
+    // Default constructor
+    // constexpr Image() : rgbPtr(nullptr), width(0), height(0) {}
+    Image() = default;
+
+    /**
+     * @brief Parameterized constructor with boundary checks.
+     *
+     * @param rgbPtr Pointer to image data.
+     * @param width Width of the image.
+     * @param height Height of the image.
+     * @throws std::invalid_argument If width or height is negative.
+     */
+    Image(void* rgbPtr, int width, int height)
+        : rgbPtr(rgbPtr), width(width), height(height) {
+        if (width < 0 || height < 0) {
+            throw std::invalid_argument("Width and height must be non-negative");
+        }
+    }
+};
+
+/**
+ * @brief Represents a mask image.
+ */
+struct DEPLOYAPI Mask {
+    std::vector<uint8_t> data;       /**< Pointer to image data (uint8, grayscale format) */
+    int                  width  = 0; /**< Width of the image */
+    int                  height = 0; /**< Height of the image */
+
+    // Default constructor
+    Mask() = default;
+
+    /**
+     * @brief Parameterized constructor with boundary checks.
+     *
+     * @param width Width of the image.
+     * @param height Height of the image.
+     * @throws std::invalid_argument If width or height is negative.
+     */
+    Mask(int width, int height) : width(width), height(height) {
+        if (width < 0 || height < 0) {
+            throw std::invalid_argument("Width and height must be non-negative");
+        }
+        // Resize the data vector to hold width * height elements
+        data.resize(width * height);
+    }
+
+    // Copy constructor
+    Mask(const Mask& other)
+        : width(other.width), height(other.height), data(other.data) {
+    }
+
+    // Copy assignment operator
+    Mask& operator=(const Mask& other) {
+        if (this != &other) {
+            width  = other.width;
+            height = other.height;
+            data   = other.data;  // Copy the data vector
+        }
+        return *this;
+    }
+
+    // Move constructor
+    Mask(Mask&& other) noexcept
+        : data(std::move(other.data)), width(other.width), height(other.height) {
+        other.width  = 0;
+        other.height = 0;
+    }
+
+    // Move assignment operator
+    Mask& operator=(Mask&& other) noexcept {
+        if (this != &other) {
+            data         = std::move(other.data);
+            width        = other.width;
+            height       = other.height;
+            other.width  = 0;
+            other.height = 0;
+        }
+        return *this;
+    }
+};
 
 /**
  * @brief Represents a bounding box.
@@ -72,30 +162,21 @@ struct DEPLOYAPI OBBResult : public DetResult {
 };
 
 /**
- * @brief Represents an image.
+ * @brief Represents the result of instance segmentation.
  */
-struct DEPLOYAPI Image {
-    void* rgbPtr = nullptr; /**< Pointer to image data (uint8, RGB format) */
-    int   width  = 0;       /**< Width of the image */
-    int   height = 0;       /**< Height of the image */
-
-    // Default constructor
-    // constexpr Image() : rgbPtr(nullptr), width(0), height(0) {}
-    Image() = default;
+struct DEPLOYAPI SegResult : public DetResult {
+    std::vector<Mask> masks{}; /**< Detected object masks (binary, 0 for background, 1 for foreground) */
 
     /**
-     * @brief Parameterized constructor with boundary checks.
+     * @brief Copy assignment operator.
      *
-     * @param rgbPtr Pointer to image data.
-     * @param width Width of the image.
-     * @param height Height of the image.
-     * @throws std::invalid_argument If width or height is negative.
+     * @param other The source SegResult to copy from.
+     * @return SegResult& Reference to the assigned SegResult.
      */
-    Image(void* rgbPtr, int width, int height)
-        : rgbPtr(rgbPtr), width(width), height(height) {
-        if (width < 0 || height < 0) {
-            throw std::invalid_argument("Width and height must be non-negative");
-        }
+    SegResult& operator=(const SegResult& other) {
+        DetResult::operator=(static_cast<const DetResult&>(other));
+        masks = other.masks;
+        return *this;
     }
 };
 

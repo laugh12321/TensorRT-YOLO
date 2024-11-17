@@ -23,8 +23,12 @@ namespace deploy {
 template <typename T>
 class DEPLOYAPI BaseTemplate {
 public:
-    // Use static_assert to ensure that T is either DetResult or OBBResult
-    static_assert(std::is_same<T, DetResult>::value || std::is_same<T, OBBResult>::value, "T must be either DetResult or OBBResult");
+    // Use static_assert to ensure that T is either DetResult, OBBResult, or SegResult.
+    static_assert(
+        std::is_same<T, DetResult>::value ||
+            std::is_same<T, OBBResult>::value ||
+            std::is_same<T, SegResult>::value,
+        "T must be either DetResult, OBBResult, or SegResult.");
 
     /**
      * @brief Constructor to initialize BaseTemplate with a model file, optional CUDA memory flag, and device index.
@@ -132,8 +136,12 @@ protected:
 template <typename T>
 class DEPLOYAPI DeployTemplate : public BaseTemplate<T> {
 public:
-    // Use static_assert to ensure that T is either DetResult or OBBResult
-    static_assert(std::is_same<T, DetResult>::value || std::is_same<T, OBBResult>::value, "T must be either DetResult or OBBResult");
+    // Use static_assert to ensure that T is either DetResult, OBBResult, or SegResult.
+    static_assert(
+        std::is_same<T, DetResult>::value ||
+            std::is_same<T, OBBResult>::value ||
+            std::is_same<T, SegResult>::value,
+        "T must be either DetResult, OBBResult, or SegResult.");
 
     /**
      * @brief Constructor to initialize DeployTemplate with a model file, optional CUDA memory flag, and device index.
@@ -212,8 +220,12 @@ private:
 template <typename T>
 class DEPLOYAPI DeployCGTemplate : public BaseTemplate<T> {
 public:
-    // Use static_assert to ensure that T is either DetResult or OBBResult
-    static_assert(std::is_same<T, DetResult>::value || std::is_same<T, OBBResult>::value, "T must be either DetResult or OBBResult");
+    // Use static_assert to ensure that T is either DetResult, OBBResult, or SegResult.
+    static_assert(
+        std::is_same<T, DetResult>::value ||
+            std::is_same<T, OBBResult>::value ||
+            std::is_same<T, SegResult>::value,
+        "T must be either DetResult, OBBResult, or SegResult.");
 
     /**
      * @brief Constructor to initialize DeployCGTemplate with a model file, optional CUDA memory flag, and device index.
@@ -324,6 +336,9 @@ template class DeployCGTemplate<DetResult>;
 template class BaseTemplate<OBBResult>;
 template class DeployTemplate<OBBResult>;
 template class DeployCGTemplate<OBBResult>;
+template class BaseTemplate<SegResult>;
+template class DeployTemplate<SegResult>;
+template class DeployCGTemplate<SegResult>;
 
 // Use the template class to create concrete deployment classes
 typedef BaseTemplate<DetResult>     BaseDet;
@@ -332,5 +347,8 @@ typedef DeployCGTemplate<DetResult> DeployCGDet;
 typedef BaseTemplate<OBBResult>     BaseOBB;
 typedef DeployTemplate<OBBResult>   DeployOBB;
 typedef DeployCGTemplate<OBBResult> DeployCGOBB;
+typedef BaseTemplate<SegResult>     BaseSeg;
+typedef DeployTemplate<SegResult>   DeploySeg;
+typedef DeployCGTemplate<SegResult> DeployCGSeg;
 
 }  // namespace deploy
