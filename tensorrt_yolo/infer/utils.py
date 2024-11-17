@@ -32,7 +32,7 @@ import cv2
 import numpy as np
 from loguru import logger
 
-from .result import DetResult, OBBResult, RotatedBox
+from .result import DetResult, OBBResult, SegResult, RotatedBox
 
 __all__ = ["generate_labels_with_colors", "visualize", "image_batches"]
 
@@ -152,7 +152,7 @@ def xyxyr2xyxyxyxy(box: RotatedBox) -> List[Tuple[int, int]]:  # type: ignore
 
 def visualize(
     image: np.ndarray,
-    result: Union[DetResult, OBBResult],  # type: ignore
+    result: Union[DetResult, OBBResult, SegResult],  # type: ignore
     labels: List[Tuple[str, Tuple[int, int, int]]],
 ) -> np.ndarray:
     """
@@ -160,7 +160,7 @@ def visualize(
 
     Args:
         image (np.ndarray): The input image on which to draw inference results.
-        result (Union[DetResult, OBBResult]): The inference result object.
+        result (Union[DetResult, OBBResult, SegResult]): The inference result object.
         labels (List[Tuple[str, Tuple[int, int, int]]]): A list containing label names and their corresponding RGB color values.
 
     Returns:
@@ -197,5 +197,22 @@ def visualize(
 
             # Draw bounding box
             cv2.rectangle(image, (box[0], box[1]), (box[2], box[3]), color, thickness=1, lineType=cv2.LINE_AA)
+
+            if isinstance(result, SegResult):
+                # Resize the segmentation mask to match the image dimensions and convert to a boolean mask
+                mask = cv2.resize(result.masks[i], (image.shape[1], image.shape[0])) > 0
+
+                # Create a boolean mask for the bounding box area
+                box_mask = np.zeros_like(mask, dtype=bool)
+                box_mask[box[1]:box[3], box[0]:box[2]] = True
+
+                # Combine the segmentation mask with the bounding box mask
+                mask &= box_mask
+
+                # Blend the mask color with the image only within the masked area
+                image[mask] = image[mask] * 0.5 + np.array(color) * 0.5
+
+                # Clip the values to valid range and ensure the result is an unsigned 8-bit integer
+                image = np.clip(image, 0, 255).astype(np.uint8)
 
     return image

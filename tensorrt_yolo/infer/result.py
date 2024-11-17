@@ -24,9 +24,10 @@
 # ==============================================================================
 from .. import c_lib_wrap as C
 
-__all__ = ["Box", "RotatedBox", "DetResult", "OBBResult"]
+__all__ = ["Box", "RotatedBox", "DetResult", "SegResult"]
 
 Box = C.result.Box
 RotatedBox = C.result.RotatedBox
 DetResult = C.result.DetResult
 OBBResult = C.result.OBBResult
+SegResult = C.result.SegResult

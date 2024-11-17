@@ -13,6 +13,8 @@ struct TransformMatrix {
     float3 matrix[2];   // The 2x3 transformation matrix for affine warp.
     int    lastWidth;   // Width of the last processed source image.
     int    lastHeight;  // Height of the last processed source image.
+    int    dw;          // Destination image's width offset after transformation.
+    int    dh;          // Destination image's height offset after transformation.
 
     /**
      * @brief Updates the warp matrix based on the change in source and target image dimensions.
