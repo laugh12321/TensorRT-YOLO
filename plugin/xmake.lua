@@ -15,7 +15,9 @@ target("custom_plugins")
         "$(projectdir)/plugin/efficientRotatedNMSPlugin/*.cpp",
         "$(projectdir)/plugin/efficientRotatedNMSPlugin/*.cu",
         "$(projectdir)/plugin/efficientIdxNMSPlugin/*.cpp",
-        "$(projectdir)/plugin/efficientIdxNMSPlugin/*.cu"
+        "$(projectdir)/plugin/efficientIdxNMSPlugin/*.cu",
+        "$(projectdir)/plugin/efficientPoseNMSPlugin/*.cpp",
+        "$(projectdir)/plugin/efficientPoseNMSPlugin/*.cu"
     )
 
     -- 添加 cuda

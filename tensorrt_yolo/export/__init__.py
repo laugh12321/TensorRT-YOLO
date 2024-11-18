@@ -20,7 +20,7 @@ except ImportError:
     logger.error('Ultralytics not found, plaese install Ultralytics.' 'for example: `pip install ultralytics`.')
     sys.exit(1)
 
-from .head import UltralyticsDetect, UltralyticsOBB, UltralyticsSegment, YOLODetect, YOLOSegment, v10Detect
+from .head import UltralyticsDetect, UltralyticsOBB, UltralyticsSegment, YOLODetect, YOLOSegment, v10Detect, UltralyticsPose
 from .ppyoloe import PPYOLOEGraphSurgeon
 
 __all__ = ['torch_export', 'paddle_export']
@@ -48,6 +48,10 @@ HEADS = {
         "yolo11": UltralyticsSegment,
         "ultralytics": UltralyticsSegment,
     },
+    "Pose": {
+        "yolov8": UltralyticsPose,
+        "yolo11": UltralyticsPose,
+    },
 }
 
 DEFAULT_OUTPUT_NAMES = ["num_dets", "det_boxes", "det_scores", "det_classes"]
@@ -64,6 +68,7 @@ OUTPUT_NAMES = {
     "v10Detect": DEFAULT_OUTPUT_NAMES,
     "OBB": DEFAULT_OUTPUT_NAMES,
     "Segment": DEFAULT_OUTPUT_NAMES + ["det_masks"],
+    "Pose": DEFAULT_OUTPUT_NAMES + ["det_keypoints"],
 }
 
 DYNAMIC_AXES = {
@@ -71,6 +76,7 @@ DYNAMIC_AXES = {
     "v10Detect": DEFAULT_DYNAMIC_AXES,
     "OBB": DEFAULT_DYNAMIC_AXES,
     "Segment": {**DEFAULT_DYNAMIC_AXES, "det_masks": {0: "batch", 2: "height", 3: "width"}},
+    "Pose": {**DEFAULT_DYNAMIC_AXES, "det_keypoints": {0: "batch"}},
 }
 
 YOLO_EXPORT_INFO = {
@@ -245,6 +251,8 @@ def torch_export(
             "height" if dynamic else imgsz[0],
             "width" if dynamic else imgsz[1],
         ]
+    elif head_name == "Pose":
+        shapes['det_keypoints'] = ["batch" if dynamic else batch, max_boxes, 17*3]
 
     for node in model_onnx.graph.output:
         for idx, dim in enumerate(node.type.tensor_type.shape.dim):

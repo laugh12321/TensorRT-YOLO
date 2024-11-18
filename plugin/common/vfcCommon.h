@@ -22,8 +22,6 @@
 #include "NvInferRuntimeCommon.h"
 #include "NvInferVersion.h"
 
-#define TENSORRT_VERSION (NV_TENSORRT_MAJOR * 10000L + NV_TENSORRT_MINOR * 100L  + NV_TENSORRT_PATCH * 1L)
-
 using namespace nvinfer1;
 
 namespace nvinfer1
@@ -38,12 +36,12 @@ ILogger* getPluginLogger();
 
 extern "C" TENSORRTAPI void setLoggerFinder(nvinfer1::ILoggerFinder* finder);
 
-#if (TENSORRT_VERSION >= 100000)
-extern "C" TENSORRTAPI IPluginCreatorInterface* const* getCreators(int32_t& nbCreators);
+#if (NV_TENSORRT_MAJOR == 10)
+extern "C" TENSORRTAPI nvinfer1::IPluginCreatorInterface *const *getCreators(int32_t &nbCreators);
 #endif
 
-#if (TENSORRT_VERSION < 100100)
-extern "C" TENSORRTAPI IPluginCreator* const* getPluginCreators(int32_t& nbCreators);
+#if (NV_TENSORRT_MAJOR < 10 || (NV_TENSORRT_MAJOR == 10 && NV_TENSORRT_MINOR == 0))
+extern "C" TENSORRTAPI nvinfer1::IPluginCreator *const *getPluginCreators(int32_t &nbCreators);
 #endif
 
 #endif // TRT_PLUGIN_VFC_COMMON_H
