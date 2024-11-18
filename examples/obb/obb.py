@@ -51,8 +51,8 @@ def main():
         logger.error("Please provide a labels file using -l or --labels.")
         sys.exit(1)
 
-    output_dir = Path(args.output)
     if args.output:
+        output_dir = Path(args.output)
         output_dir.mkdir(parents=True, exist_ok=True)
         args.labels = generate_labels_with_colors(args.labels)
 
