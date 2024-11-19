@@ -31,7 +31,7 @@ TensorRT-YOLO 是一个支持 YOLOv3、YOLOv5、YOLOv6、YOLOv7、YOLOv8、YOLOv
 ## <div align="center">✨ 主要特性</div>
 
 - 支持 YOLOv3、YOLOv5、YOLOv6、YOLOv7、YOLOv8、YOLOv9、YOLOv10、YOLO11、PP-YOLOE 和 PP-YOLOE+
-- 支持 Detection 与 OBB Detection 模型
+- 支持 Detection、OBB Detection 与 Segmentation 模型
 - 支持 ONNX 静态、动态导出以及 TensorRT 推理
 - 集成 TensorRT 插件加速后处理
 - 利用 CUDA 核函数加速前处理

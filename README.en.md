@@ -31,7 +31,7 @@ TensorRT-YOLO is an inference acceleration project that supports YOLOv3, YOLOv5,
 ## <div align="center">✨ Key Features</div>
 
 - Support for YOLOv3, YOLOv5, YOLOv6, YOLOv7, YOLOv8, YOLOv9, YOLOv10, YOLO11, PP-YOLOE and PP-YOLOE+
-- Support Detect and OBB Detect models
+- Support Detection, OBB Detection and Segmentation models
 - Support for ONNX static and dynamic export, as well as TensorRT inference
 - Integration of TensorRT plugin for accelerated post-processing
 - Utilization of CUDA kernel functions for accelerated preprocessing
