@@ -12,7 +12,7 @@ license = {file = "LICENSE"}
 maintainers = [{ name = "laugh12321" }]
 authors = [{ name = "laugh12321", email = "laugh12321@vip.qq.com" }]
 description = "Your YOLO Deployment Powerhouse. With the synergy of TensorRT Plugins, CUDA Kernels, and CUDA Graphs, experience lightning-fast inference speeds."
-keywords = ["machine-learning", "deep-learning", "computer-vision", "ML", "DL", "AI", "YOLO", "YOLOv3", "YOLOv5", "YOLOv6", "YOLOv7", "YOLOv8", "YOLOv9", "YOLOv10", "YOLO11", "PP-YOLOE", "TensorRT", "CUDA", "detection", "ONNX", "EfficientNMS"]
+keywords = ["machine-learning", "deep-learning", "computer-vision", "ML", "DL", "AI", "YOLO", "YOLOv3", "YOLOv5", "YOLOv6", "YOLOv7", "YOLOv8", "YOLOv9", "YOLOv10", "YOLO11", "PP-YOLOE", "TensorRT", "CUDA", "detection", "segmentation", "ONNX", "EfficientNMS"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
@@ -56,7 +56,7 @@ export = [
     "ultralytics",
     "onnx>=1.12.0",
     "onnx_graphsurgeon",
-    # "onnx-simplifier>=0.4.1"  # ONNX simplifier
+    "onnx-simplifier>=0.4.1"  # ONNX simplifier
 ]
 
 [project.urls]

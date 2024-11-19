@@ -44,7 +44,7 @@ RUN pip3 install setuptools>=41.0.0
 RUN pip3 install "pybind11[global]"
 
 # Install Cmake
-RUN axel --insecure -o /tmp/cmake.sh https://www.ghproxy.cn/https://github.com/Kitware/CMake/releases/download/v3.30.5/cmake-3.30.5-linux-x86_64.sh && \
+RUN wget -O /tmp/cmake.sh https://www.ghproxy.cn/https://github.com/Kitware/CMake/releases/download/v3.30.5/cmake-3.30.5-linux-x86_64.sh && \
     chmod +x /tmp/cmake.sh && \
     /tmp/cmake.sh --prefix=/usr/local --exclude-subdir --skip-license && \
     rm /tmp/cmake.sh
