@@ -20,7 +20,7 @@ except ImportError:
     logger.error('Ultralytics not found, plaese install Ultralytics.' 'for example: `pip install ultralytics`.')
     sys.exit(1)
 
-from .head import UltralyticsDetect, UltralyticsOBB, UltralyticsSegment, YOLODetect, YOLOSegment, v10Detect
+from .head import UltralyticsDetect, UltralyticsOBB, UltralyticsPose, UltralyticsSegment, YOLODetect, YOLOSegment, v10Detect
 from .ppyoloe import PPYOLOEGraphSurgeon
 
 __all__ = ['torch_export', 'paddle_export']
@@ -48,6 +48,11 @@ HEADS = {
         "yolo11": UltralyticsSegment,
         "ultralytics": UltralyticsSegment,
     },
+    "Pose": {
+        "yolov8": UltralyticsPose,
+        "yolo11": UltralyticsPose,
+        "ultralytics": UltralyticsPose,
+    },
 }
 
 DEFAULT_OUTPUT_NAMES = ["num_dets", "det_boxes", "det_scores", "det_classes"]
@@ -64,6 +69,7 @@ OUTPUT_NAMES = {
     "v10Detect": DEFAULT_OUTPUT_NAMES,
     "OBB": DEFAULT_OUTPUT_NAMES,
     "Segment": DEFAULT_OUTPUT_NAMES + ["det_masks"],
+    "Pose": DEFAULT_OUTPUT_NAMES + ["det_kpts"],
 }
 
 DYNAMIC_AXES = {
@@ -71,6 +77,7 @@ DYNAMIC_AXES = {
     "v10Detect": DEFAULT_DYNAMIC_AXES,
     "OBB": DEFAULT_DYNAMIC_AXES,
     "Segment": {**DEFAULT_DYNAMIC_AXES, "det_masks": {0: "batch", 2: "height", 3: "width"}},
+    "Pose": {**DEFAULT_DYNAMIC_AXES, "det_kpts": {0: "batch"}},
 }
 
 YOLO_EXPORT_INFO = {
@@ -209,8 +216,7 @@ def torch_export(
         p.requires_grad = False
     model.eval()
     model.float()
-    for _ in range(2):  # Warm-up run
-        model(im)
+    preds = model(im)  # Warm-up run
 
     output_path = Path(output)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -238,6 +244,8 @@ def torch_export(
     }
     if head_name == "OBB":
         shapes['det_boxes'] = ["batch" if dynamic else batch, max_boxes, 5]
+    elif head_name == "Pose":
+        shapes['det_kpts'] = ["batch" if dynamic else batch, max_boxes, preds[-1].shape[-1]]
     elif head_name == "Segment":
         shapes['det_masks'] = [
             "batch" if dynamic else batch,
