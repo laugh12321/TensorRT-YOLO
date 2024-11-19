@@ -4,7 +4,9 @@
 
 本示例以 YOLO11n 模型为例，演示如何将 TensorRT-YOLO 的 Deploy 模块集成到 [VideoPipe](https://github.com/sherlockchou86/VideoPipe) 中进行视频分析。
 
-所需的 `yolo11n.pt` 与测试视频已经提供，均保存至 `worksapce` 文件夹。
+[yolo11n.pt](https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt)，[demo0.mp4](https://www.ilanzou.com/s/yhUyq8f3)，[demo1.mp4](https://www.ilanzou.com/s/aIhyq8ET)
+
+请通过提供的链接下载所需的 `yolo11n.pt` 模型文件和测试视频，并均保存至 `worksapce` 文件夹。
 
 ## 模型导出
 

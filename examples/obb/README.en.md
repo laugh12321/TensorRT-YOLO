@@ -6,6 +6,10 @@ This example uses the YOLO11n-obb model to demonstrate how to perform OBB Detect
 
 The required `yolo11n-obb.pt` and test images are provided and saved in the `images` folder and `models` folder, respectively.
 
+[yolo11n-obb.pt](https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n-obb.pt)，[【TestImages】DOTA-part.zip](https://www.ilanzou.com/s/yK6yq8H5)
+
+Please download the required `yolo11n-obb.pt` model file and test images through the provided link, and save the model file to the `models` folder, and place the extracted test images into the `images` folder after unzipping.
+
 ## Model Export
 
 > [!IMPORTANT]

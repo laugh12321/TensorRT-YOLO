@@ -4,7 +4,9 @@
 
 This example uses the YOLO11n model to demonstrate how to perform Detection model inference using the Command Line Interface (CLI), Python, and C++.
 
-The required `yolo11n.pt` and test images are provided and saved in the `images` folder and `models` folder, respectively.
+[yolo11n.pt](https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt)，[【TestImages】COCO-part.zip](https://www.ilanzou.com/s/N5Oyq8hZ)
+
+Please download the required `yolo11n.pt` model file and test images through the provided link, and save the model file to the `models` folder, and place the extracted test images into the `images` folder after unzipping.
 
 ## Model Export
 

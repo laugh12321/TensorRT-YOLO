@@ -4,7 +4,9 @@
 
 本示例以 YOLO11n 模型为例，展示如何使用命令行界面（CLI）、Python 和 C++ 三种方式进行 Detection 模型推理。
 
-所需的 `yolo11n.pt` 与测试图片已经提供，分别保存至 `images` 文件夹与 `models` 文件夹。
+[yolo11n.pt](https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt)，[【测试图片】COCO-part.zip](https://www.ilanzou.com/s/N5Oyq8hZ)
+
+请通过提供的链接下载所需的 `yolo11n.pt` 模型文件和测试图片，并将模型文件保存至 `models` 文件夹，测试图片解压后存放至 `images` 文件夹。
 
 ## 模型导出
 
