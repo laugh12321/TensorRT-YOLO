@@ -162,7 +162,7 @@ def update_model(
             break
 
     if not supported:
-        logger.error(f"YOLO version '{version}' detect head not supported!")
+        logger.error(f"YOLO version '{version}' output head not supported!")
         return None, head_name
 
     return model, head_name

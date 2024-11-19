@@ -29,7 +29,7 @@ from typing import Tuple
 import torch
 import torch.nn.functional as F
 from torch import Tensor, Value, nn
-from ultralytics.nn.modules import OBB, Conv, Detect, Pose, Proto
+from ultralytics.nn.modules import OBB, Conv, Detect, Pose, Proto, Segment
 from ultralytics.utils.checks import check_version
 from ultralytics.utils.tal import make_anchors
 
@@ -463,43 +463,7 @@ class UltralyticsOBB(OBB):
         )
 
 
-class v10Detect(UltralyticsDetect):
-    """
-    v10 Detection head from https://arxiv.org/pdf/2405.14458.
-
-    Args:
-        nc (int): Number of classes.
-        ch (tuple): Tuple of channel sizes.
-
-    Attributes:
-        max_det (int): Maximum number of detections.
-
-    Methods:
-        __init__(self, nc=80, ch=()): Initializes the v10Detect object.
-        forward(self, x): Performs forward pass of the v10Detect module.
-        bias_init(self): Initializes biases of the Detect module.
-
-    """
-
-    end2end = True
-
-    def __init__(self, nc=80, ch=()):
-        """Initializes the v10Detect object with the specified number of classes and input channels."""
-        super().__init__(nc, ch)
-        c3 = max(ch[0], min(self.nc, 100))  # channels
-        # Light cls head
-        self.cv3 = nn.ModuleList(
-            nn.Sequential(
-                nn.Sequential(Conv(x, x, 3, g=x), Conv(x, c3, 1)),
-                nn.Sequential(Conv(c3, c3, 3, g=c3), Conv(c3, c3, 1)),
-                nn.Conv2d(c3, self.nc, 1),
-            )
-            for x in ch
-        )
-        self.one2one_cv3 = copy.deepcopy(self.cv3)
-
-
-class UltralyticsSegment(Detect):
+class UltralyticsSegment(Segment):
     """Ultralytics Segment head for segmentation models."""
 
     max_det = 100
@@ -612,3 +576,39 @@ class UltralyticsPose(Pose):
         if ndim == 3:
             a = torch.cat((a, y[:, :, 2:3].sigmoid()), 2)
         return a.view(bs, self.nk, -1).transpose(1, 2)
+
+
+class v10Detect(UltralyticsDetect):
+    """
+    v10 Detection head from https://arxiv.org/pdf/2405.14458.
+
+    Args:
+        nc (int): Number of classes.
+        ch (tuple): Tuple of channel sizes.
+
+    Attributes:
+        max_det (int): Maximum number of detections.
+
+    Methods:
+        __init__(self, nc=80, ch=()): Initializes the v10Detect object.
+        forward(self, x): Performs forward pass of the v10Detect module.
+        bias_init(self): Initializes biases of the Detect module.
+
+    """
+
+    end2end = True
+
+    def __init__(self, nc=80, ch=()):
+        """Initializes the v10Detect object with the specified number of classes and input channels."""
+        super().__init__(nc, ch)
+        c3 = max(ch[0], min(self.nc, 100))  # channels
+        # Light cls head
+        self.cv3 = nn.ModuleList(
+            nn.Sequential(
+                nn.Sequential(Conv(x, x, 3, g=x), Conv(x, c3, 1)),
+                nn.Sequential(Conv(c3, c3, 3, g=c3), Conv(c3, c3, 1)),
+                nn.Conv2d(c3, self.nc, 1),
+            )
+            for x in ch
+        )
+        self.one2one_cv3 = copy.deepcopy(self.cv3)

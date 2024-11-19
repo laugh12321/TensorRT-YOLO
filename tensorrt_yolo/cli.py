@@ -136,7 +136,7 @@ def infer(engine, mode, input, output, labels, cudagraph):
     import cv2
     from rich.progress import track
 
-    from .infer import CpuTimer, DeployCGDet, DeployCGOBB, DeployDet, DeployOBB, DeployCGSeg, DeploySeg, GpuTimer, image_batches, visualize
+    from .infer import CpuTimer, DeployCGDet, DeployCGOBB, DeployCGSeg, DeployDet, DeployOBB, DeploySeg, GpuTimer, image_batches, visualize
 
     model = (
         DeployCGOBB(engine)

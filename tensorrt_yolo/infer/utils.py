@@ -32,7 +32,7 @@ import cv2
 import numpy as np
 from loguru import logger
 
-from .result import DetResult, OBBResult, SegResult, RotatedBox
+from .result import DetResult, OBBResult, RotatedBox, SegResult
 
 __all__ = ["generate_labels_with_colors", "visualize", "image_batches"]
 
@@ -204,7 +204,7 @@ def visualize(
 
                 # Create a boolean mask for the bounding box area
                 box_mask = np.zeros_like(mask, dtype=bool)
-                box_mask[box[1]:box[3], box[0]:box[2]] = True
+                box_mask[box[1] : box[3], box[0] : box[2]] = True
 
                 # Combine the segmentation mask with the bounding box mask
                 mask &= box_mask
