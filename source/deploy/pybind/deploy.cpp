@@ -97,6 +97,25 @@ void BindResult(pybind11::module &m) {
             return oss.str();
         });
 
+    // Bind KeyPoint structure
+    pybind11::class_<KeyPoint>(m, "KeyPoint")
+        .def(pybind11::init<>())
+        .def(pybind11::init<float, float, std::optional<float>>(),
+             pybind11::arg("x"), pybind11::arg("y"), pybind11::arg("conf") = std::nullopt)
+        .def_readwrite("x", &KeyPoint::x)
+        .def_readwrite("y", &KeyPoint::y)
+        .def_property("conf", [](const KeyPoint &kp) { return kp.conf; }, [](KeyPoint &kp, const std::optional<float> &value) { kp.conf = value; })
+        .def("__str__", [](const KeyPoint &kp) {
+        std::ostringstream oss;
+        oss << "KeyPoint(x=" << kp.x << ", y=" << kp.y;
+        if (kp.conf) {
+            oss << ", conf=" << *kp.conf;
+        } else {
+            oss << ", conf=None";
+        }
+        oss << ")";
+        return oss.str(); });
+
     // Bind DetResult structure
     pybind11::class_<DetResult>(m, "DetResult")
         .def(pybind11::init<>())
@@ -274,6 +293,64 @@ void BindResult(pybind11::module &m) {
                 sgr.masks.push_back(std::move(mask));
             }
             return sgr; }));
+
+    // Bind PoseResult structure
+    pybind11::class_<PoseResult, DetResult>(m, "PoseResult")
+        .def(pybind11::init<>())
+        .def_readwrite("kpts", &PoseResult::kpts)
+        .def("__copy__", [](const PoseResult &self) {
+            return PoseResult(self);
+        })
+        .def("__deepcopy__", [](const PoseResult &self, pybind11::dict) {
+            return PoseResult(self);
+        })
+        .def("__str__", [](const PoseResult &pr) {
+            std::ostringstream oss;
+            oss << "PoseResult(num=" << pr.num << ", classes=[";
+            for (size_t i = 0; i < pr.classes.size(); ++i) {
+                oss << pr.classes[i];
+                if (i != pr.classes.size() - 1) oss << ", ";
+            }
+            oss << "], scores=[";
+            for (size_t i = 0; i < pr.scores.size(); ++i) {
+                oss << pr.scores[i];
+                if (i != pr.scores.size() - 1) oss << ", ";
+            }
+            oss << "], boxes=[\n";
+            for (size_t i = 0; i < pr.boxes.size(); ++i) {
+                oss << "    Box(left=" << pr.boxes[i].left << ", top=" << pr.boxes[i].top
+                    << ", right=" << pr.boxes[i].right << ", bottom=" << pr.boxes[i].bottom << "),\n";
+            }
+            oss << "], kpts=[\n";
+            for (size_t i = 0; i < pr.kpts.size(); ++i) {
+                oss << "    [";
+                for (size_t j = 0; j < pr.kpts[i].size(); ++j) {
+                    oss << "KeyPoint(x=" << pr.kpts[i][j].x << ", y=" << pr.kpts[i][j].y;
+                    if (pr.kpts[i][j].conf) {
+                        oss << ", conf=" << *pr.kpts[i][j].conf;
+                    } else {
+                        oss << ", conf=None";
+                    }
+                    oss << ")";
+                    if (j != pr.kpts[i].size() - 1) oss << ", ";
+                }
+                oss << "]";
+                if (i != pr.kpts.size() - 1) oss << ",\n";
+            }
+            oss << "])";
+            return oss.str();
+        })
+        .def(pybind11::pickle([](const PoseResult &pr) { return pybind11::make_tuple(pr.num, pr.boxes, pr.classes, pr.scores, pr.kpts); }, [](pybind11::tuple t) {
+            if (t.size() != 5)
+                throw std::runtime_error("Invalid state!");
+
+            PoseResult pr;
+            pr.num = t[0].cast<int>();
+            pr.boxes = t[1].cast<std::vector<Box>>();
+            pr.classes = t[2].cast<std::vector<int>>();
+            pr.scores = t[3].cast<std::vector<float>>();
+            pr.kpts = t[4].cast<std::vector<std::vector<KeyPoint>>>();
+            return pr; }));
 }
 
 // Bind inference class template
@@ -299,7 +376,7 @@ void BindClsTemplate(pybind11::module &m, const std::string &className) {
 
 // Bind inference classes
 void BindInference(pybind11::module &m) {
-    m.doc() = "Bindings for inference classes like DeployDet, DeployCGDet, DeployOBB and DeployCGOBB";
+    m.doc() = "Bindings for inference classes, including DeployDet, DeployCGDet, DeployOBB, DeployCGOBB, DeploySeg, DeployCGSeg, DeployPose, and DeployCGPose.";
 
     // bind DeployDet
     BindClsTemplate<DeployDet>(m, "DeployDet");
@@ -318,6 +395,12 @@ void BindInference(pybind11::module &m) {
 
     // bind DeployCGSeg
     BindClsTemplate<DeployCGSeg>(m, "DeployCGSeg");
+
+    // bind DeploySeg
+    BindClsTemplate<DeployPose>(m, "DeployPose");
+
+    // bind DeployCGSeg
+    BindClsTemplate<DeployCGPose>(m, "DeployCGPose");
 }
 
 // Define the pydeploy module

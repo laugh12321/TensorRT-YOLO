@@ -32,7 +32,7 @@ import cv2
 import numpy as np
 from loguru import logger
 
-from .result import DetResult, OBBResult, RotatedBox, SegResult
+from .result import DetResult, OBBResult, PoseResult, RotatedBox, SegResult
 
 __all__ = ["generate_labels_with_colors", "visualize", "image_batches"]
 
@@ -111,7 +111,7 @@ def generate_labels_with_colors(labels_file: str) -> List[Tuple[str, Tuple[int, 
         return [(label.strip(), generate_random_rgb()) for label in f]
 
 
-def xyxyr2xyxyxyxy(box: RotatedBox) -> List[Tuple[int, int]]:  # type: ignore
+def xyxyr2xyxyxyxy(box: RotatedBox) -> List[Tuple[float, float]]:  # type: ignore
     """
     Convert a rotated bounding box to the coordinates of its four corners.
 
@@ -120,7 +120,7 @@ def xyxyr2xyxyxyxy(box: RotatedBox) -> List[Tuple[int, int]]:  # type: ignore
         and a rotation angle (theta).
 
     Returns:
-        List[Tuple[int, int]]: A list of four corner coordinates,
+        List[Tuple[float, float]]: A list of four corner coordinates,
         each as an (x, y) tuple.
     """
     # Calculate the cosine and sine of the angle
@@ -143,16 +143,16 @@ def xyxyr2xyxyxyxy(box: RotatedBox) -> List[Tuple[int, int]]:  # type: ignore
 
     # Return the four corners of the rotated rectangle
     return [
-        (int(center_x + vec_x1 - vec_x2), int(center_y + vec_y1 + vec_y2)),
-        (int(center_x + vec_x1 + vec_x2), int(center_y + vec_y1 - vec_y2)),
-        (int(center_x - vec_x1 + vec_x2), int(center_y - vec_y1 - vec_y2)),
-        (int(center_x - vec_x1 - vec_x2), int(center_y - vec_y1 + vec_y2)),
+        (center_x + vec_x1 - vec_x2, center_y + vec_y1 + vec_y2),
+        (center_x + vec_x1 + vec_x2, center_y + vec_y1 - vec_y2),
+        (center_x - vec_x1 + vec_x2, center_y - vec_y1 - vec_y2),
+        (center_x - vec_x1 - vec_x2, center_y - vec_y1 + vec_y2),
     ]
 
 
 def visualize(
     image: np.ndarray,
-    result: Union[DetResult, OBBResult, SegResult],  # type: ignore
+    result: Union[DetResult, OBBResult, SegResult, PoseResult],  # type: ignore
     labels: List[Tuple[str, Tuple[int, int, int]]],
 ) -> np.ndarray:
     """
@@ -160,59 +160,124 @@ def visualize(
 
     Args:
         image (np.ndarray): The input image on which to draw inference results.
-        result (Union[DetResult, OBBResult, SegResult]): The inference result object.
+        result (Union[DetResult, OBBResult, SegResult, PoseResult]): The inference result object.
         labels (List[Tuple[str, Tuple[int, int, int]]]): A list containing label names and their corresponding RGB color values.
 
     Returns:
         np.ndarray: The image with drawn inference results.
     """
+    height, width, _ = image.shape
+    lw = max(round(sum(image.shape) / 2 * 0.003), 2)  # line width
+    tf = max(lw - 1, 1)  # font thickness
+    sf = lw / 3  # font scale
+
+    # Pose
+    if isinstance(result, PoseResult):
+        conf_thres = 0.25
+        radius = lw
+        skeleton = [
+            [16, 14],
+            [14, 12],
+            [17, 15],
+            [15, 13],
+            [12, 13],
+            [6, 12],
+            [7, 13],
+            [6, 7],
+            [6, 8],
+            [7, 9],
+            [8, 10],
+            [9, 11],
+            [2, 3],
+            [1, 2],
+            [1, 3],
+            [2, 4],
+            [3, 5],
+            [4, 6],
+            [5, 7],
+        ]
+
+    img = image.copy()
     for i in range(result.num):
         color = labels[result.classes[i]][1]
-        label_text = f"{labels[result.classes[i]][0]} {result.scores[i]:.2f}"
-        label_size, _ = cv2.getTextSize(label_text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 1)
 
-        if isinstance(result, OBBResult):
-            corners = xyxyr2xyxyxyxy(result.boxes[i])
-            corners = np.array(corners, dtype=np.int32).reshape((-1, 1, 2))
-
-            # Draw label text
-            label_top_left = (corners[0][0][0], corners[0][0][1] - label_size[1])
-            label_bottom_right = (corners[0][0][0] + label_size[0], corners[0][0][1])
-            cv2.rectangle(image, label_top_left, label_bottom_right, color, thickness=-1)
-            cv2.putText(image, label_text, (corners[0][0][0], corners[0][0][1]), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
-
-            # Draw polylines for rotated bounding box
-            corners = np.array(corners, dtype=np.int32).reshape((-1, 1, 2))
-            cv2.polylines(image, [corners], isClosed=True, color=color, thickness=1, lineType=cv2.LINE_AA)
+        # bounding box
+        if isinstance(result.boxes[i], RotatedBox):
+            box = xyxyr2xyxyxyxy(result.boxes[i])
+            p1 = [int(b) for b in box[0]]
+            cv2.polylines(img, [np.asarray(box, dtype=int)], True, color, lw)  # cv2 requires nparray box
         else:
             box = list(map(int, [result.boxes[i].left, result.boxes[i].top, result.boxes[i].right, result.boxes[i].bottom]))
+            p1, p2 = (int(box[0]), int(box[1])), (int(box[2]), int(box[3]))
+            cv2.rectangle(img, p1, p2, color, thickness=lw, lineType=cv2.LINE_AA)
 
-            # Draw label text
-            label_rect = (box[0], box[1], label_size[0], label_size[1])
-            label_rect = tuple(map(int, label_rect))
-            cv2.rectangle(image, label_rect[:2], (label_rect[0] + label_rect[2], label_rect[1] + label_rect[3]), color, -1)
-            cv2.putText(
-                image, label_text, (label_rect[0], label_rect[1] + label_size[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1
-            )
+        # mask
+        if isinstance(result, SegResult):
+            # Resize the segmentation mask to match the image dimensions and convert to a boolean mask
+            mask = cv2.resize(result.masks[i], (width, height)) > 0
 
-            # Draw bounding box
-            cv2.rectangle(image, (box[0], box[1]), (box[2], box[3]), color, thickness=1, lineType=cv2.LINE_AA)
+            # Create a boolean mask for the bounding box area
+            box_mask = np.zeros_like(mask, dtype=bool)
+            box_mask[box[1] : box[3], box[0] : box[2]] = True
 
-            if isinstance(result, SegResult):
-                # Resize the segmentation mask to match the image dimensions and convert to a boolean mask
-                mask = cv2.resize(result.masks[i], (image.shape[1], image.shape[0])) > 0
+            # Combine the segmentation mask with the bounding box mask
+            mask &= box_mask
 
-                # Create a boolean mask for the bounding box area
-                box_mask = np.zeros_like(mask, dtype=bool)
-                box_mask[box[1] : box[3], box[0] : box[2]] = True
+            # Blend the mask color with the image only within the masked area
+            img[mask] = img[mask] * 0.5 + np.array(color) * 0.5
 
-                # Combine the segmentation mask with the bounding box mask
-                mask &= box_mask
+            # Clip the values to valid range and ensure the result is an unsigned 8-bit integer
+            img = np.clip(img, 0, 255).astype(np.uint8)
 
-                # Blend the mask color with the image only within the masked area
-                image[mask] = image[mask] * 0.5 + np.array(color) * 0.5
+        # keypoint
+        if isinstance(result, PoseResult):
+            nkpt = len(result.kpts[i])
+            is_pose = nkpt == 17
+            kpt_line = is_pose  # `kpt_line=True` for now only supports human pose plotting
+            for kpt in result.kpts[i]:
+                if kpt.x % width != 0 and kpt.y % height != 0:
+                    if kpt.conf is not None and kpt.conf < conf_thres:
+                        continue
+                    cv2.circle(img, (int(kpt.x), int(kpt.y)), radius, color, -1, lineType=cv2.LINE_AA)
 
-                # Clip the values to valid range and ensure the result is an unsigned 8-bit integer
-                image = np.clip(image, 0, 255).astype(np.uint8)
+            if kpt_line:
+                for sk in skeleton:
+                    kpt1 = result.kpts[i][sk[0] - 1]
+                    kpt2 = result.kpts[i][sk[1] - 1]
 
-    return image
+                    if kpt1.conf < conf_thres or kpt2.conf < conf_thres:
+                        continue
+                    if kpt1.x % width == 0 or kpt1.y % height == 0 or kpt1.x < 0 or kpt1.y < 0:
+                        continue
+                    if kpt2.x % width == 0 or kpt2.y % height == 0 or kpt2.x < 0 or kpt2.y < 0:
+                        continue
+                    cv2.line(
+                        img,
+                        (int(kpt1.x), int(kpt1.y)),
+                        (int(kpt2.x), int(kpt2.y)),
+                        color,
+                        thickness=int(np.ceil(lw / 2)),
+                        lineType=cv2.LINE_AA,
+                    )
+
+        # label
+        label = f"{labels[result.classes[i]][0]} {result.scores[i]:.2f}"
+        w, h = cv2.getTextSize(label, 0, fontScale=sf, thickness=tf)[0]  # text width, height
+        h += 3  # add pixels to pad text
+        outside = p1[1] >= h  # label fits outside box
+        if p1[0] > width - w:  # shape is (h, w), check if label extend beyond right side of image
+            p1 = width - w, p1[1]
+        p2 = p1[0] + w, p1[1] - h if outside else p1[1] + h
+        cv2.rectangle(img, p1, p2, color, -1, cv2.LINE_AA)  # filled
+        cv2.putText(
+            img,
+            label,
+            (p1[0], p1[1] - 2 if outside else p1[1] + h - 1),
+            0,
+            sf,
+            (255, 255, 255),
+            thickness=tf,
+            lineType=cv2.LINE_AA,
+        )
+
+    return img

@@ -108,7 +108,7 @@ def export(
 
 @trtyolo.command(help="Perform inference with TensorRT-YOLO.")
 @click.option('-e', '--engine', help='Engine file for inference.', type=str, required=True)
-@click.option('-m', '--mode', help='Mode for inference: 0 for Detect, 1 for OBB, 2 for Segment.', type=int, required=True)
+@click.option('-m', '--mode', help='Mode for inference: 0 for Detect, 1 for OBB, 2 for Segment, 3 for Pose.', type=int, required=True)
 @click.option('-i', '--input', help='Input directory or file for inference.', type=str, required=True)
 @click.option('-o', '--output', help='Output directory for inference results.', type=str)
 @click.option('-l', '--labels', help='Labels file for inference.', type=str)
@@ -118,8 +118,8 @@ def infer(engine, mode, input, output, labels, cudagraph):
 
     This command performs inference using TensorRT-YOLO with the specified engine file and input source.
     """
-    if mode not in (0, 1, 2):
-        logger.error(f"Invalid mode: {mode}. Please use 0 for Detect, 1 for OBB, 2 for Segment.")
+    if mode not in (0, 1, 2, 3):
+        logger.error(f"Invalid mode: {mode}. Please use 0 for Detect, 1 for OBB, 2 for Segment, 3 for Pose.")
         sys.exit(1)
 
     if output and not labels:
@@ -136,19 +136,36 @@ def infer(engine, mode, input, output, labels, cudagraph):
     import cv2
     from rich.progress import track
 
-    from .infer import CpuTimer, DeployCGDet, DeployCGOBB, DeployCGSeg, DeployDet, DeployOBB, DeploySeg, GpuTimer, image_batches, visualize
+    from .infer import (
+        CpuTimer,
+        DeployCGDet,
+        DeployCGOBB,
+        DeployCGPose,
+        DeployCGSeg,
+        DeployDet,
+        DeployOBB,
+        DeployPose,
+        DeploySeg,
+        GpuTimer,
+        image_batches,
+        visualize,
+    )
 
     model = (
         DeployCGOBB(engine)
         if cudagraph and mode == 1
         else DeployCGSeg(engine)
         if cudagraph and mode == 2
+        else DeployCGPose(engine)
+        if cudagraph and mode == 3
         else DeployCGDet(engine)
         if cudagraph
         else DeployOBB(engine)
         if mode == 1
         else DeploySeg(engine)
         if mode == 2
+        else DeployPose(engine)
+        if mode == 3
         else DeployDet(engine)
     )
 

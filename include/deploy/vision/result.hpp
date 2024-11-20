@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 #include <stdexcept>
 #include <vector>
 
@@ -98,6 +99,56 @@ struct DEPLOYAPI Mask {
 };
 
 /**
+ * @brief Represents a key point.
+ */
+struct KeyPoint {
+    float                x;     // x-coordinate of the key point
+    float                y;     // y-coordinate of the key point
+    std::optional<float> conf;  // Optional confidence value of the key point
+
+    // Default constructor
+    KeyPoint() = default;
+
+    /**
+     * @brief Parameterized constructor with boundary checks.
+     *
+     * @param x x-coordinate of the key point.
+     * @param y y-coordinate of the key point.
+     * @param conf Optional confidence value of the key point (default is std::nullopt).
+     */
+    KeyPoint(float x, float y, std::optional<float> conf = std::nullopt)
+        : x(x), y(y), conf(conf) {}
+
+    // Copy constructor
+    KeyPoint(const KeyPoint& other)
+        : x(other.x), y(other.y), conf(other.conf) {}
+
+    // Copy assignment operator
+    KeyPoint& operator=(const KeyPoint& other) {
+        if (this != &other) {  // Check for self-assignment
+            x    = other.x;
+            y    = other.y;
+            conf = other.conf;
+        }
+        return *this;
+    }
+
+    // Move constructor
+    KeyPoint(KeyPoint&& other) noexcept
+        : x(std::move(other.x)), y(std::move(other.y)), conf(std::move(other.conf)) {}
+
+    // Move assignment operator
+    KeyPoint& operator=(KeyPoint&& other) noexcept {
+        if (this != &other) {  // Check for self-assignment
+            x    = std::move(other.x);
+            y    = std::move(other.y);
+            conf = std::move(other.conf);
+        }
+        return *this;
+    }
+};
+
+/**
  * @brief Represents a bounding box.
  */
 struct DEPLOYAPI Box {
@@ -176,6 +227,25 @@ struct DEPLOYAPI SegResult : public DetResult {
     SegResult& operator=(const SegResult& other) {
         DetResult::operator=(static_cast<const DetResult&>(other));
         masks = other.masks;
+        return *this;
+    }
+};
+
+/**
+ * @brief Represents the result of Pose Estimation.
+ */
+struct DEPLOYAPI PoseResult : public DetResult {
+    std::vector<std::vector<KeyPoint>> kpts{}; /**< Container for detected key points. */
+
+    /**
+     * @brief Copy assignment operator.
+     *
+     * @param other The source PoseResult to copy from.
+     * @return PoseResult& Reference to the assigned PoseResult.
+     */
+    PoseResult& operator=(const PoseResult& other) {
+        DetResult::operator=(static_cast<const DetResult&>(other));
+        kpts = other.kpts;
         return *this;
     }
 };
