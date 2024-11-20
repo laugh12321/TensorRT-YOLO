@@ -245,7 +245,7 @@ def torch_export(
     if head_name == "OBB":
         shapes['det_boxes'] = ["batch" if dynamic else batch, max_boxes, 5]
     elif head_name == "Pose":
-        shapes['det_kpts'] = ["batch" if dynamic else batch, max_boxes, preds[-1].shape[-1]]
+        shapes['det_kpts'] = ["batch" if dynamic else batch, max_boxes, preds[-1].shape[-2], preds[-1].shape[-1]]
     elif head_name == "Segment":
         shapes['det_masks'] = [
             "batch" if dynamic else batch,

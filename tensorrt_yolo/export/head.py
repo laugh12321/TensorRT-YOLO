@@ -551,7 +551,13 @@ class UltralyticsPose(Pose):
         det_indices = det_indices.view(-1)
         pred_kpt = self.kpts_decode(bs, kpt)
 
-        return num_dets, det_boxes, det_scores, det_classes, pred_kpt[batch_indices, det_indices].view(bs, self.max_det, self.nk)
+        return (
+            num_dets,
+            det_boxes,
+            det_scores,
+            det_classes,
+            pred_kpt[batch_indices, det_indices].view(bs, self.max_det, self.kpt_shape[0], self.kpt_shape[1]),
+        )
 
     def _inference(self, x):
         """Decode predicted bounding boxes and class probabilities based on multiple-level feature maps."""
