@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   cli.py
-# Version :   4.0
+# Version :   5.0.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/07/05 14:26:53

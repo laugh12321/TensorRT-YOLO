@@ -1,8 +1,8 @@
 [简体中文](README.md) | English
 
-# OBB Detection Model Inference Example
+# Oriented Bounding Boxes Object Detection Inference Example
 
-This example uses the YOLO11n-obb model to demonstrate how to perform OBB Detection model inference using the Command Line Interface (CLI), Python, and C++.
+This example uses the YOLO11n-obb model to demonstrate how to perform Oriented Bounding Boxes Object Detection inference using the Command Line Interface (CLI), Python, and C++.
 
 The required `yolo11n-obb.pt` and test images are provided and saved in the `images` folder and `models` folder, respectively.
 
@@ -46,7 +46,7 @@ trtexec --onnx=models/yolo11n-obb.onnx --saveEngine=models/yolo11n-obb.engine --
 > [!NOTE] 
 > The `--cudaGraph` command added from version 4.0 can further accelerate the inference process, but this feature only supports static models.
 > 
-> From version 4.2, OBB model inference is supported, and the `-m, --mode` command is added to select between Detection and OBB models.
+> From version 4.2, OBB model inference is supported, and the `-m, --mode` command is added to select between Detect and OBB.
 
 1. Use the `trtyolo` command-line tool from the `tensorrt_yolo` library for inference. Run the following command to view help information:
 

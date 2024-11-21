@@ -78,7 +78,7 @@ cd TensorRT-YOLO
 pip install --upgrade build
 python -m build --wheel
 # Install only the inference-related dependencies
-pip install dist/tensorrt_yolo-4.*-py3-none-any.whl
+pip install dist/tensorrt_yolo-5.*-py3-none-any.whl
 # Install both the model export-related dependencies and the inference-related dependencies
-pip install dist/tensorrt_yolo-4.*-py3-none-any.whl[export]
+pip install dist/tensorrt_yolo-5.*-py3-none-any.whl[export]
 ```

@@ -1,8 +1,8 @@
 [简体中文](README.md) | English
 
-# Detection Model Inference Example
+# Object Detection Inference Example
 
-This example uses the YOLO11n model to demonstrate how to perform Detection model inference using the Command Line Interface (CLI), Python, and C++.
+This example uses the yolo11n model to demonstrate how to perform Object Detection inference using the Command Line Interface (CLI), Python, and C++.
 
 [yolo11n.pt](https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt)，[【TestImages】COCO-part.zip](https://www.ilanzou.com/s/N5Oyq8hZ)
 
@@ -44,7 +44,7 @@ trtexec --onnx=models/yolo11n.onnx --saveEngine=models/yolo11n.engine --fp16
 > [!NOTE] 
 > The `--cudaGraph` command added from version 4.0 can further accelerate the inference process, but this feature only supports static models.
 > 
-> From version 4.2, OBB model inference is supported, and the `-m, --mode` command is added to select between Detection and OBB models.
+> From version 4.2, OBB model inference is supported, and the `-m, --mode` command is added to select between Detect and OBB.
 
 1. Use the `trtyolo` command-line tool from the `tensorrt_yolo` library for inference. Run the following command to view help information:
 

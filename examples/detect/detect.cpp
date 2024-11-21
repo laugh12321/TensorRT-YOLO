@@ -55,13 +55,13 @@ std::vector<std::pair<std::string, cv::Scalar>> generateLabelColorPairs(const st
 }
 
 // Visualize inference results
-void visualize(cv::Mat& image, const deploy::DetResult& result, const std::vector<std::pair<std::string, cv::Scalar>>& labelColorPairs) {
+void visualize(cv::Mat& image, deploy::DetResult& result, std::vector<std::pair<std::string, cv::Scalar>>& labelColorPairs) {
     for (size_t i = 0; i < result.num; ++i) {
-        const auto& box       = result.boxes[i];
+        auto&       box       = result.boxes[i];
         int         cls       = result.classes[i];
         float       score     = result.scores[i];
-        const auto& label     = labelColorPairs[cls].first;
-        const auto& color     = labelColorPairs[cls].second;
+        auto&       label     = labelColorPairs[cls].first;
+        auto&       color     = labelColorPairs[cls].second;
         std::string labelText = label + " " + cv::format("%.2f", score);
 
         // Draw rectangle and label

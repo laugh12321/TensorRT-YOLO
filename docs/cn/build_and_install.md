@@ -8,8 +8,7 @@
 
 - Linux: gcc/g++
 - Windows: MSVC
-- CMake
-- Xmake
+- CMake or Xmake
 - CUDA
 - cuDNN
 - TensorRT
@@ -78,7 +77,7 @@ cd TensorRT-YOLO
 pip install --upgrade build
 python -m build --wheel
 # 仅安装推理相关依赖
-pip install dist/tensorrt_yolo-4.*-py3-none-any.whl
+pip install dist/tensorrt_yolo-5.*-py3-none-any.whl
 # 安装模型导出相关依赖以及推理相关依赖
-pip install dist/tensorrt_yolo-4.*-py3-none-any.whl[export]
+pip install dist/tensorrt_yolo-5.*-py3-none-any.whl[export]
 ```

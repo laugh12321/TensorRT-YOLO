@@ -1,6 +1,6 @@
 -- 设置项目信息
 set_project("TensorRT-YOLO")
-set_version("4.3.0")
+set_version("5.0.0")
 set_languages("cxx17")
 set_allowedplats("windows", "linux")
 
@@ -9,7 +9,7 @@ add_requires("python", {system = true})
 add_requires("pybind11")
 
 -- 添加编译规则
-add_rules("plugin.compile_commands.autoupdate", {outputdir = ".vscode"})
+add_rules("plugin.compile_commands.autoupdate", {outputdir = "build"})
 add_rules("mode.release")
 
 -- 定义选项

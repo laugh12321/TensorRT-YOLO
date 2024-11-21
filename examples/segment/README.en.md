@@ -1,8 +1,8 @@
 [简体中文](README.md) | English
 
-# Segmentation Model Inference Example
+# Instance Segmentation Inference Example
 
-This example uses the YOLO11n-seg model to demonstrate how to perform Segmentation model inference using the Command Line Interface (CLI), Python, and C++.
+This example uses the YOLO11n-seg model to demonstrate how to perform Instance Segmentation inference using the Command Line Interface (CLI), Python, and C++.
 
 [yolo11n-seg.pt](https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n-seg.pt)，[【TestImages】COCO-part.zip](https://www.ilanzou.com/s/N5Oyq8hZ)
 
@@ -44,7 +44,7 @@ trtexec --onnx=models/yolo11n-seg.onnx --saveEngine=models/yolo11n-seg.engine --
 > [!NOTE] 
 > The `--cudaGraph` command added from version 4.0 can further accelerate the inference process, but this feature only supports static models.
 > 
-> From version 4.3 and later, support for Segmentation model inference is added. The command `-m 2, --mode 2` is used to select the Segmentation model.
+> From version 4.3 and later, support for Instance Segmentation inference is added. The command `-m 2, --mode 2` is used to select the Instance Segmentation.
 
 1. Use the `trtyolo` command-line tool from the `tensorrt_yolo` library for inference. Run the following command to view help information:
 

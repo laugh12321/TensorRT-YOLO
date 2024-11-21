@@ -1,8 +1,8 @@
 [English](README.en.md) | 简体中文
 
-# Segmentation 模型推理示例
+# 实例分割推理示例
 
-本示例以 YOLO11n-seg 模型为例，展示如何使用命令行界面（CLI）、Python 和 C++ 三种方式进行 Segmentation 模型推理。
+本示例以 YOLO11n-seg 模型为例，展示如何使用命令行界面（CLI）、Python 和 C++ 三种方式进行实例分割推理。
 
 [yolo11n-seg.pt](https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n-seg.pt)，[【测试图片】COCO-part.zip](https://www.ilanzou.com/s/N5Oyq8hZ)
 
@@ -44,7 +44,7 @@ trtexec --onnx=models/yolo11n-seg.onnx --saveEngine=models/yolo11n-seg.engine --
 > [!NOTE] 
 > 从 4.0 版本开始新增的 `--cudaGraph` 指令可以进一步加速推理过程，但该功能仅支持静态模型。
 > 
-> 从 4.3 以后的版本开始，支持 Segmentation 模型推理，指令 `-m 2, --mode 2` 用于选择 Segmentation 模型。
+> 从 4.3 以后的版本开始，支持实例分割推理，指令 `-m 2, --mode 2` 用于选择实例分割。
 
 1. 使用 `tensorrt_yolo` 库的 `trtyolo` 命令行工具进行推理。运行以下命令查看帮助信息：
 
@@ -93,8 +93,5 @@ trtexec --onnx=models/yolo11n-seg.onnx --saveEngine=models/yolo11n-seg.engine --
     cd bin
     ./segment -e ../models/yolo11n-seg.engine -i ../images -o ../output -l ../labels.txt --cudaGraph
     ```
-
-<!-- > [!IMPORTANT]  
-> 在使用 `--fp16` 参数构建的 OBB 模型进行推理时，可能会出现锚框重复的问题。这种情况通常是由于精度下降造成的。因此，不推荐使用 `--fp16` 精度模式构建OBB模型。 -->
 
 通过以上方式，您可以顺利完成模型推理。

@@ -356,7 +356,7 @@ void BindResult(pybind11::module &m) {
 // Bind inference class template
 template <typename ClassType>
 void BindClsTemplate(pybind11::module &m, const std::string &className) {
-    pybind11::class_<ClassType>(m, className.c_str())
+    pybind11::class_<ClassType, std::unique_ptr<ClassType>>(m, className.c_str())
         .def(pybind11::init<const std::string &, bool, int>(),
              pybind11::arg("file"), pybind11::arg("cudaMem") = false, pybind11::arg("device") = 0)
         .def(
