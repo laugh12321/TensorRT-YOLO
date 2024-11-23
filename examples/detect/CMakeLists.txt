@@ -65,10 +65,17 @@ else()
 endif()
 
 # 设置输出目录
-set_target_properties(detect PROPERTIES
-    OUTPUT_NAME "detect"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
-)
+set_target_properties(detect PROPERTIES OUTPUT_NAME "detect")
+if(MSVC)
+    set_target_properties(detect PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin"
+    )
+else()
+    set_target_properties(detect PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
+    )
+endif()
 
 # 编译选项
 if(MSVC)
