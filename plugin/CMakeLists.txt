@@ -23,7 +23,10 @@ configure_cuda_trt(custom_plugins)
 set_compile_options(custom_plugins)
 set_target_properties(custom_plugins PROPERTIES OUTPUT_NAME custom_plugins)
 if(MSVC)
-    set_target_properties(custom_plugins PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/lib/plugin)
+    set_target_properties(custom_plugins PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/lib/plugin) # 设置Release模式下输出目录
+    set_target_properties(custom_plugins PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/lib/plugin)
+    set_target_properties(custom_plugins PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/lib/plugin)   # 设置Debug模式下输出目录
+    set_target_properties(custom_plugins PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/lib/plugin)
 else()
     set_target_properties(custom_plugins PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib/plugin)
 endif()

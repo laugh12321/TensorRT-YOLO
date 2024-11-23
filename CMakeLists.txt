@@ -82,6 +82,9 @@ set_compile_options(deploy)                                                     
 set_target_properties(deploy PROPERTIES OUTPUT_NAME deploy)                                           # 设置输出名称
 if(MSVC)
     set_target_properties(deploy PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/lib) # 设置Release模式下输出目录
+    set_target_properties(deploy PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/lib)
+    set_target_properties(deploy PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/lib)   # 设置Debug模式下输出目录
+    set_target_properties(deploy PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/lib)
 else()
     set_target_properties(deploy PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)         # 设置库文件输出目录
 endif()
@@ -94,6 +97,7 @@ set_compile_options(pydeploy)                                                   
 set_target_properties(pydeploy PROPERTIES OUTPUT_NAME pydeploy)                                       # 设置输出名称
 if(MSVC)
     set_target_properties(pydeploy PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/tensorrt_yolo/libs) # 设置Release模式下输出目录
+    set_target_properties(pydeploy PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/tensorrt_yolo/libs)   # 设置Debug模式下输出目录
 else()
     set_target_properties(pydeploy PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/tensorrt_yolo/libs)         # 设置库文件输出目录
 endif()
