@@ -91,7 +91,7 @@ English | [简体中文](README.md)
 
 ### 🔸 Prerequisites
 
-- Recommended CUDA version >= 11.6
+- Recommended CUDA version >= 11.0.1 (Minimum CUDA version 11.0.1)
 - Recommended TensorRT version >= 8.6.1 (Minimum TensorRT version 8.6.1)
 - OS: Linux x86_64 (Recommended) arm / Windows /
 

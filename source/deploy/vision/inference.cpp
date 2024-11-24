@@ -511,14 +511,14 @@ void DeployCGTemplate<T>::createGraph() {
     if (this->batch > 1) {
         for (int i = 0; i < this->batch; i++) {
             CUDA(cudaEventRecord(this->inputEvents[i * 2], this->inferStream));
-            CUDA(cudaStreamWaitEvent(this->inputStreams[i], this->inputEvents[i * 2]));
+            CUDA(cudaStreamWaitEvent(this->inputStreams[i], this->inputEvents[i * 2], 0));
 
             uint8_t* input  = static_cast<uint8_t*>(this->imageTensor->device()) + i * this->inputSize * sizeof(uint8_t);
             float*   output = static_cast<float*>(this->tensorInfos[0].tensor.device()) + i * this->inputSize;
             cudaWarpAffine(input, this->width, this->height, output, this->width, this->height, this->transforms[i].matrix, this->inputStreams[i]);
 
             CUDA(cudaEventRecord(this->inputEvents[i * 2 + 1], this->inputStreams[i]));
-            CUDA(cudaStreamWaitEvent(this->inferStream, this->inputEvents[i * 2 + 1]));
+            CUDA(cudaStreamWaitEvent(this->inferStream, this->inputEvents[i * 2 + 1], 0));
         }
     } else {
         cudaWarpAffine(static_cast<uint8_t*>(this->imageTensor->device()), this->width, this->height, static_cast<float*>(this->tensorInfos[0].tensor.device()), this->width, this->height, this->transforms[0].matrix, this->inferStream);
