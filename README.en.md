@@ -99,6 +99,9 @@ English | [简体中文](README.md)
 
 - Refer to the [📦 Quick Compilation and Installation](docs/en/build_and_install.md) documentation
 
+> [!IMPORTANT]
+> Before inference, please refer to the [🔧 CLI Model Export](/docs/en/model_export.md) documentation to export the ONNX model suitable for this project's inference and build it into a TensorRT engine.
+
 ### Python SDK Quick Start<div id="quick-start-python"></div>
 
 > [!IMPORTANT]
@@ -134,57 +137,46 @@ English | [简体中文](README.md)
 
 ```python
 import cv2
-from tensorrt_yolo.infer import DeployCGDet, DeployDet, generate_labels_with_colors, visualize
+from tensorrt_yolo.infer import DeployDet, generate_labels_with_colors, visualize
 
-use_cudaGraph = True
-engine_path = "yolo11n-with-plugin.engine"
-model = DeployCGDet(engine_path) if use_cudaGraph else DeployDet(engine_path)
-
+# Initialize the model
+model = DeployDet("yolo11n-with-plugin.engine")
+# Load the image
 im = cv2.imread("test_image.jpg")
-result = model.predict(cv2.cvtColor(im, cv2.COLOR_BGR2RGB)) # The model accepts images in RGB format
+# Model prediction
+result = model.predict(cv2.cvtColor(im, cv2.COLOR_BGR2RGB))
 print(f"==> detect result: {result}")
-
 # Visualization
 labels = generate_labels_with_colors("labels.txt")
-vis_im = visualize(image, result, labels)
+vis_im = visualize(im, result, labels)
 cv2.imwrite("vis_image.jpg", vis_im)
-
 ```
 
 ### C++ SDK Quick Start<div id="quick-start-cpp"></div>
-
-> [!IMPORTANT]
-> Before inference, please refer to the [🔧 CLI Model Export](/docs/en/model_export.md) documentation to export the ONNX model suitable for this project's inference and build it into a TensorRT engine.
 
 > [!NOTE] 
 > `DeployDet`, `DeployOBB`, `DeploySeg`, and `DeployPose` correspond to detection (Detect), oriented bounding box (OBB), segmentation (Segment), and pose estimation (Pose) models, respectively.
 >
 > For these models, the `CG` version utilizes CUDA Graph to further accelerate the inference process, but please note that this feature is limited to static models.
 
-
 ```cpp
 #include <opencv2/opencv.hpp>
-// For ease of use, the module uses standard libraries in addition to CUDA and TensorRT
+// For convenience, the module uses standard libraries except for CUDA and TensorRT
 #include "deploy/vision/inference.hpp"
 #include "deploy/vision/result.hpp"
 
-int main(int argc, char* argv[]) {
-    bool useCudaGraph = true;
-    deploy::DeployBase model;
-    if (useCudaGraph) {
-        model = deploy::DeployCGDet("yolo11n-with-plugin.engine");
-    } else {
-        model = deploy::DeployDet("yolo11n-with-plugin.engine");
-    }
-    auto cvim = cv::imread("test_image.jpg");
-
+int main() {
+    // Initialize the model
+    auto model = deploy::DeployDet("yolo11n-with-plugin.engine");
+    // Load the image
+    cv::Mat cvim = cv::imread("test_image.jpg");
+    // Convert the image from BGR to RGB
     cv::cvtColor(cvim, cvim, cv::COLOR_BGR2RGB);
-    deploy::Image im(cvim.data, cvim.cols, cvim.rows); // The model accepts images in RGB format
+    deploy::Image im(cvim.data, cvim.cols, cvim.rows);
+    // Model prediction
     deploy::DetResult result = model.predict(im);
-
-    // Visualization
+    // Visualization (code omitted)
     // ...
-
     return 0;
 }
 ```

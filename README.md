@@ -101,6 +101,9 @@
 
 - 参考[📦 快速编译安装](docs/cn/build_and_install.md)文档
 
+> [!IMPORTANT]
+> 在进行推理之前，请参考[🔧 CLI 导出模型](/docs/cn/model_export.md)文档，导出适用于该项目推理的ONNX模型并构建为TensorRT引擎。
+
 ### Python SDK快速开始<div id="quick-start-python"></div>
 
 #### Python CLI 推理示例
@@ -133,33 +136,27 @@
 
 ```python
 import cv2
-from tensorrt_yolo.infer import DeployCGDet, DeployDet, generate_labels_with_colors, visualize
+from tensorrt_yolo.infer import DeployDet, generate_labels_with_colors, visualize
 
-use_cudaGraph = True
-engine_path = "yolo11n-with-plugin.engine"
-model = DeployCGDet(engine_path) if use_cudaGraph else DeployDet(engine_path)
-
+# 初始化模型
+model = DeployDet("yolo11n-with-plugin.engine")
+# 加载图片
 im = cv2.imread("test_image.jpg")
-result = model.predict(cv2.cvtColor(im, cv2.COLOR_BGR2RGB)) # model 接收的图片必须是RGB格式
+# 模型预测
+result = model.predict(cv2.cvtColor(im, cv2.COLOR_BGR2RGB))
 print(f"==> detect result: {result}")
-
 # 可视化
 labels = generate_labels_with_colors("labels.txt")
-vis_im = visualize(image, result, labels)
+vis_im = visualize(im, result, labels)
 cv2.imwrite("vis_image.jpg", vis_im)
-
 ```
 
 ### C++ SDK快速开始<div id="quick-start-cpp"></div>
-
-> [!IMPORTANT]
-> 在进行推理之前，请参考[🔧 CLI 导出模型](/docs/cn/model_export.md)文档，导出适用于该项目推理的ONNX模型并构建为TensorRT引擎。
 
 > [!NOTE] 
 > `DeployDet`、`DeployOBB`、`DeploySeg` 和 `DeployPose` 分别对应于检测（Detect）、方向边界框（OBB）、分割（Segment）和姿态估计（Pose）模型。
 >
 > 对于这些模型，`CG` 版本利用 CUDA Graph 来进一步加速推理过程，但请注意，这一功能仅限于静态模型。
-
 
 ```cpp
 #include <opencv2/opencv.hpp>
@@ -167,23 +164,17 @@ cv2.imwrite("vis_image.jpg", vis_im)
 #include "deploy/vision/inference.hpp"
 #include "deploy/vision/result.hpp"
 
-int main(int argc, char* argv[]) {
-    bool useCudaGraph = true;
-    deploy::DeployBase model;
-    if (useCudaGraph) {
-        model = deploy::DeployCGDet("yolo11n-with-plugin.engine");
-    } else {
-        model = deploy::DeployDet("yolo11n-with-plugin.engine");
-    }
-    auto cvim = cv::imread("test_image.jpg");
-
+int main() {
+    // 初始化模型
+    auto model = deploy::DeployDet("yolo11n-with-plugin.engine");
+    // 加载图片
+    cv::Mat cvim = cv::imread("test_image.jpg");
     cv::cvtColor(cvim, cvim, cv::COLOR_BGR2RGB);
-    deploy::Image im(cvim.data, cvim.cols, cvim.rows); // model 接收的图片必须是RGB格式
+    deploy::Image im(cvim.data, cvim.cols, cvim.rows);
+    // 模型预测
     deploy::DetResult result = model.predict(im);
-
-    // 可视化
+    // 可视化（代码省略）
     // ...
-
     return 0;
 }
 ```
