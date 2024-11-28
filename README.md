@@ -336,3 +336,9 @@ TensorRT-YOLO采用 **GPL-3.0许可证**，这个[OSI 批准](https://opensource
 ## <div align="center">📞 联系方式</div>
 
 对于 TensorRT-YOLO 的错误报告和功能请求，请访问 [GitHub Issues](https://github.com/laugh12321/TensorRT-YOLO/issues)！
+
+## <div align="center">🙏 致谢</div>
+
+<center>
+<a href="https://hellogithub.com/repository/942570b550824b1b9397e4291da3d17c" target="_blank"><img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=942570b550824b1b9397e4291da3d17c&claim_uid=2AGzE4dsO8ZUD9R&theme=neutral" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+</center>

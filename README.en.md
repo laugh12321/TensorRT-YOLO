@@ -338,3 +338,9 @@ Thank you for choosing TensorRT-YOLO; we encourage open collaboration and knowle
 ## <div align="center">📞 Contact</div>
 
 For bug reports and feature requests regarding TensorRT-YOLO, please visit [GitHub Issues](https://github.com/laugh12321/TensorRT-YOLO/issues)!
+
+## <div align="center">🙏 Thanks</div>
+
+<center>
+<a href="https://hellogithub.com/repository/942570b550824b1b9397e4291da3d17c" target="_blank"><img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=942570b550824b1b9397e4291da3d17c&claim_uid=2AGzE4dsO8ZUD9R&theme=neutral" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+</center>
