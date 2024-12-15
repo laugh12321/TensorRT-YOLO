@@ -320,9 +320,11 @@ class YOLOSegment(YOLODetect):
         )
 
         # Retrieve the corresponding masks using batch and detection indices.
-        batch_indices = torch.arange(bs, device=det_classes.device, dtype=det_classes.dtype).unsqueeze(1).expand(-1, self.max_det).view(-1)
+        batch_indices = (
+            torch.arange(bs, device=det_classes.device, dtype=det_classes.dtype).unsqueeze(1).expand(-1, self.max_det).reshape(-1)
+        )
         det_indices = det_indices.view(-1)
-        selected_masks = mc[batch_indices, det_indices].view(bs, self.max_det, 1, self.nm)
+        selected_masks = mc[batch_indices, det_indices].view(bs, self.max_det, self.nm)
 
         masks_protos = p.view(bs, self.nm, mask_h * mask_w)
         det_masks = torch.matmul(selected_masks, masks_protos).sigmoid().view(bs, self.max_det, mask_h, mask_w)
@@ -490,9 +492,11 @@ class UltralyticsSegment(Segment):
         )
 
         # Retrieve the corresponding masks using batch and detection indices.
-        batch_indices = torch.arange(bs, device=det_classes.device, dtype=det_classes.dtype).unsqueeze(1).expand(-1, self.max_det).view(-1)
+        batch_indices = (
+            torch.arange(bs, device=det_classes.device, dtype=det_classes.dtype).unsqueeze(1).expand(-1, self.max_det).reshape(-1)
+        )
         det_indices = det_indices.view(-1)
-        selected_masks = mc[batch_indices, det_indices].view(bs, self.max_det, 1, self.nm)
+        selected_masks = mc[batch_indices, det_indices].view(bs, self.max_det, self.nm)
 
         masks_protos = p.view(bs, self.nm, mask_h * mask_w)
         det_masks = torch.matmul(selected_masks, masks_protos).sigmoid().view(bs, self.max_det, mask_h, mask_w)
