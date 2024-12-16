@@ -48,11 +48,8 @@ trtexec --onnx=model.onnx --saveEngine=model.engine --minShapes=images:1x3x640x6
 trtexec --onnx=yolov8n-obb.onnx --saveEngine=yolov8n-obb.engine --fp16 --staticPlugins=./lib/plugin/libcustom_plugins.so --setPluginsToSerialize=./lib/plugin/libcustom_plugins.so
 
 # YOLO11-OBB dynamic batch
-trtexec --onnx=yolov11n-obb.onnx --saveEngine=yolov11n-obb.engine --fp16 --minShapes=images:1x3x640x640 --optShapes=images:4x3x640x640 --maxShapes=images:8x3x640x640 --dynamicPlugins=./lib/plugin/custom_plugins.dll --setPluginsToSerialize=./lib/plugin/custom_plugins.dll
+trtexec --onnx=yolov11n-obb.onnx --saveEngine=yolov11n-obb.engine --fp16 --minShapes=images:1x3x640x640 --optShapes=images:4x3x640x640 --maxShapes=images:8x3x640x640 --staticPlugins=./lib/plugin/custom_plugins.dll --setPluginsToSerialize=./lib/plugin/custom_plugins.dll
 ```
 
 > [!NOTE]  
-> When using the `--dynamicPlugins` and `--setPluginsToSerialize` parameters to build a dynamic model with custom plugins, encountering the error `[E] Error[4]: IRuntime::deserializeCudaEngine: Error Code 4: API Usage Error (Cannot register the library as plugin creator of EfficientRotatedNMS_TRT exists already.)` typically indicates that the engine has been successfully built, but an attempt to load and deserialize the engine detected a duplicate plugin registration. This error can be safely ignored.
-
-> [!IMPORTANT]
-> We strongly recommend using the Linux operating system. After testing, it has been found that when using NVIDIA 20, 30, and 40 series graphics cards in both Windows and Linux systems, a modified 2080Ti 22G graphics card may encounter the error `IPluginRegistry::loadLibrary: Error Code 3: API Usage Error (SymbolAddress for getCreators could not be loaded, check function name against library symbol)` when building dynamic models with custom plugins in the Windows environment. However, this issue does not occur in the Linux system. It is currently unclear whether this problem is due to defects in the Windows system itself or due to the modification of the graphics card's memory. Therefore, to avoid potential compatibility issues, it is strongly advised that you perform related operations in the Linux system.
+> When using the `--staticPlugins` and `--setPluginsToSerialize` parameters to build a dynamic model with custom plugins, encountering the error `[E] Error[4]: IRuntime::deserializeCudaEngine: Error Code 4: API Usage Error (Cannot register the library as plugin creator of EfficientRotatedNMS_TRT exists already.)` typically indicates that the engine has been successfully built, but an attempt to load and deserialize the engine detected a duplicate plugin registration. This error can be safely ignored.
