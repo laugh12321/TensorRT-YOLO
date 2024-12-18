@@ -96,7 +96,4 @@ trtexec --onnx=models/yolo11n-obb.onnx --saveEngine=models/yolo11n-obb.engine --
     ./obb -e ../models/yolo11n-obb.engine -i ../images -o ../output -l ../labels.txt --cudaGraph
     ```
 
-> [!IMPORTANT]  
-> When inferring with an OBB model built using the `--fp16` flag, there may be instances of duplicate anchor boxes. This issue is typically caused by a reduction in precision. Therefore, it is not recommended to build OBB models using the `--fp16` precision mode.
-
 Through the above methods, you can successfully complete model inference.
