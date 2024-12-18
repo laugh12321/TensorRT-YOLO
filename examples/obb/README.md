@@ -94,7 +94,4 @@ trtexec --onnx=models/yolo11n-obb.onnx --saveEngine=models/yolo11n-obb.engine --
     ./obb -e ../models/yolo11n-obb.engine -i ../images -o ../output -l ../labels.txt --cudaGraph
     ```
 
-> [!IMPORTANT]  
-> 在使用 `--fp16` 参数构建的 OBB 模型进行推理时，可能会出现锚框重复的问题。这种情况通常是由于精度下降造成的。因此，不推荐使用 `--fp16` 精度模式构建OBB模型。
-
 通过以上方式，您可以顺利完成模型推理。
