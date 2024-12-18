@@ -296,22 +296,22 @@ struct __align__(1 * sizeof(T)) RotatedBoxCenterSize
         float sub_x1_x2 = a.x - b.x;
         float sub_y1_y2 = a.y - b.y;
         float sub_data = (add_a1_a2 * add_b1_b2) - (add_c1_c2 * add_c1_c2);
-        sub_data = fmaxf(sub_data, 1e-7 f);
+        sub_data = fmaxf(sub_data, 1e-7f);
 
-        float t1 = 0.25 f * (
+        float t1 = 0.25f * (
             (add_a1_a2 * sub_y1_y2 * sub_y1_y2) +
             (add_b1_b2 * sub_x1_x2 * sub_x1_x2)) / sub_data;
 
-        float t2 = 0.25 f *
+        float t2 = 0.25f *
             (add_c1_c2 * sub_x1_x2 * sub_y1_y2) / sub_data;
 
-        float t3 = 0.5 f *
-            logf((sub_data / (4.0 f * (fmaxf(0.0 f, matrix1.a * matrix1.b - matrix1.c * matrix1.c) *
-                fmaxf(0.0 f, matrix2.a * matrix2.b - matrix2.c * matrix2.c))))) / sub_data;
+        float t3 = 0.5f *
+            logf((sub_data / (4.0f * (fmaxf(0.0f, matrix1.a * matrix1.b - matrix1.c * matrix1.c) *
+                fmaxf(0.0f, matrix2.a * matrix2.b - matrix2.c * matrix2.c))))) / sub_data;
 
-        float bd = fmaxf(1e-7 f, fminf(t1 + t2 + t3, 100.0 f));
-        float hd = sqrtf(1.0 f - expf(-bd));
-        return 1.0 f - hd;
+        float bd = fmaxf(1e-7f, fminf(t1 + t2 + t3, 100.0f));
+        float hd = sqrtf(1.0f - expf(-bd));
+        return 1.0f - hd;
     }
 };
 
