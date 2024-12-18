@@ -36,17 +36,7 @@ __device__ float IOU(EfficientRotatedNMSParameters param, RotatedBoxCorner<T> bo
     RotatedBoxCorner<T> b2 = box2;
     b1.reorder();
     b2.reorder();
-    float intersectArea = RotatedBoxCorner<T>::intersect_area(b1, b2);
-    if (intersectArea <= 0.f)
-    {
-        return 0.f;
-    }
-    float unionArea = b1.area() + b2.area() - intersectArea;
-    if (unionArea <= 0.f)
-    {
-        return 0.f;
-    }
-    return intersectArea / unionArea;
+    return RotatedBoxCorner<T>::probiou(b1, b2);
 }
 
 template <typename T, typename Tb>
