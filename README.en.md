@@ -17,7 +17,7 @@ English | [简体中文](README.md)
     <img alt="GitHub forks" src="https://img.shields.io/github/forks/laugh12321/TensorRT-YOLO?style=for-the-badge&color=%2320878f">
 </p>
 
-🚀TensorRT-YOLO is a **user-friendly** and **extremely efficient** inference deployment tool for the **YOLO series**, specifically designed for NVIDIA devices. This project not only integrates TensorRT plugins to enhance post-processing effects but also utilizes CUDA kernels and CUDA graphs to accelerate inference. TensorRT-YOLO provides support for both C++ and Python inference, aiming to offer a **plug-and-play** deployment experience. It includes task scenarios such as [object detection](examples/detect/), [instance segmentation](examples/segment/), [pose recognition](examples/pose/), [oriented bounding box detection](examples/obb/), and [video analysis](examples/VideoPipe), meeting developers' **multi-scenario** deployment needs.
+🚀TensorRT-YOLO is a **user-friendly** and **extremely efficient** inference deployment tool for the **YOLO series**, specifically designed for NVIDIA devices. This project not only integrates TensorRT plugins to enhance post-processing effects but also utilizes CUDA kernels and CUDA graphs to accelerate inference. TensorRT-YOLO provides support for both C++ and Python inference, aiming to offer a **plug-and-play** deployment experience. It includes task scenarios such as [object detection](examples/detect/), [instance segmentation](examples/segment/), [image classification](examples/classify/), [pose recognition](examples/pose/), [oriented bounding box detection](examples/obb/), and [video analysis](examples/VideoPipe), meeting developers' **multi-scenario** deployment needs.
 
 <div align="center">
     <img src="assets/example.gif" width="800">
@@ -51,7 +51,7 @@ English | [简体中文](README.md)
 ## <div align="center">✨ Key Features</div>
 
 - **Diverse YOLO Support**: Fully compatible with YOLOv3 to YOLOv11, as well as PP-YOLOE and PP-YOLOE+, meeting the needs of different versions.
-- **Multi-scenario Applications**: Provides example code for diverse scenarios such as [Detect](examples/detect/), [Segment](examples/segment/), [Pose](examples/pose/), and [OBB](examples/obb/).
+- **Multi-scenario Applications**: Provides example code for diverse scenarios such as [Detect](examples/detect/), [Segment](examples/segment/), [Classify](examples/classify/), [Pose](examples/pose/), and [OBB](examples/obb/).
 - **Model Optimization and Inference Acceleration**:
   - **ONNX Support**: Supports static and dynamic export of ONNX models, including TensorRT custom plugin support, simplifying the model deployment process.
   - **TensorRT Integration**: Integrated TensorRT plugins, including custom plugins, accelerate post-processing for Detect, Segment, Pose, OBB, and other scenarios, enhancing inference efficiency.
@@ -76,6 +76,7 @@ English | [简体中文](README.md)
 - **Usage Examples**
     - [Object Detection Example](examples/detect/README.md)
     - [Instance Segmentation Example](examples/segment/README.md)
+    - [Image Classification Example](examples/classify/README.md)
     - [Pose Recognition Example](examples/pose/README.md)
     - [Oriented Bounding Box Detection Example](examples/obb/README.md)
     - [📹 Video Analysis Example](examples/VideoPipe/README.md)
@@ -269,18 +270,6 @@ Symbol legend: (1)  ✅ : Supported; (2) ❔: In progress; (3) ❎ : Not support
       <td>✅</td>
     </tr>
     <tr>
-      <td>OBB</td>
-      <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td> 
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Pose</td>
-      <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td> 
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
       <td>Segment</td>
       <td><a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a></td> 
       <td>✅</td>
@@ -313,6 +302,36 @@ Symbol legend: (1)  ✅ : Supported; (2) ❔: In progress; (3) ❎ : Not support
     <tr>
       <td>Segment</td>
       <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td> 
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Classify</td>
+      <td><a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a></td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Classify</td>
+      <td><a href="https://github.com/ultralytics/yolov5">ultralytics/yolov5</a></td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Classify</td>
+      <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Pose</td>
+      <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>OBB</td>
+      <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
       <td>✅</td>
       <td>✅</td>
     </tr>

@@ -17,7 +17,7 @@
     <img alt="GitHub forks" src="https://img.shields.io/github/forks/laugh12321/TensorRT-YOLO?style=for-the-badge&color=%2320878f">
 </p>
 
-🚀TensorRT-YOLO 是一款专为 NVIDIA 设备设计的**易用灵活**、**极致高效**的**YOLO系列**推理部署工具。项目不仅集成了 TensorRT 插件以增强后处理效果，还使用了 CUDA 核函数以及 CUDA 图来加速推理。TensorRT-YOLO 提供了 C++ 和 Python 推理的支持，旨在提供📦**开箱即用**的部署体验。包括 [目标检测](examples/detect/)、[实例分割](examples/segment/)、[姿态识别](examples/pose/)、[旋转目标检测](examples/obb/)、[视频分析](examples/VideoPipe)等任务场景，满足开发者**多场景**的部署需求。
+🚀TensorRT-YOLO 是一款专为 NVIDIA 设备设计的**易用灵活**、**极致高效**的**YOLO系列**推理部署工具。项目不仅集成了 TensorRT 插件以增强后处理效果，还使用了 CUDA 核函数以及 CUDA 图来加速推理。TensorRT-YOLO 提供了 C++ 和 Python 推理的支持，旨在提供📦**开箱即用**的部署体验。包括 [目标检测](examples/detect/)、[实例分割](examples/segment/)、[图像分类](examples/classify/)、[姿态识别](examples/pose/)、[旋转目标检测](examples/obb/)、[视频分析](examples/VideoPipe)等任务场景，满足开发者**多场景**的部署需求。
 
 
 <div align="center">
@@ -52,7 +52,7 @@
 ## <div align="center">✨ 主要特性</div>
 
 - **多样化的YOLO支持**：全面兼容YOLOv3至YOLOv11以及PP-YOLOE和PP-YOLOE+，满足不同版本需求。
-- **多场景应用**：提供[Detect](examples/detect/)、[Segment](examples/segment/)、[Pose](examples/pose/)、[OBB](examples/obb/)等多样化场景的示例代码。
+- **多场景应用**：提供[Detect](examples/detect/)、[Segment](examples/segment/)、[Classify](examples/classify/)、[Pose](examples/pose/)、[OBB](examples/obb/)等多样化场景的示例代码。
 - **模型优化与推理加速**：
   - **ONNX支持**：支持ONNX模型的静态和动态导出，包括TensorRT自定义插件支持，简化模型部署流程。
   - **TensorRT集成**：集成TensorRT插件，包括自定义插件，加速Detect, Segment, Pose, OBB等场景的后处理，提升推理效率。
@@ -78,6 +78,7 @@
 - **使用示例**
     - [目标检测 示例](examples/detect/README.md)
     - [实例分割 示例](examples/segment/README.md)
+    - [图像分类 示例](examples/classify/README.md)
     - [姿态识别 示例](examples/pose/README.md)
     - [旋转目标检测 示例](examples/obb/README.md)
     - [📹视频分析 示例](examples/VideoPipe/README.md)
@@ -267,18 +268,6 @@ int main() {
       <td>✅</td>
     </tr>
     <tr>
-      <td>OBB</td>
-      <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Pose</td>
-      <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
       <td>Segment</td>
       <td><a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a></td>
       <td>✅</td>
@@ -310,6 +299,36 @@ int main() {
     </tr>
     <tr>
       <td>Segment</td>
+      <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Classify</td>
+      <td><a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a></td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Classify</td>
+      <td><a href="https://github.com/ultralytics/yolov5">ultralytics/yolov5</a></td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Classify</td>
+      <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Pose</td>
+      <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>OBB</td>
       <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
       <td>✅</td>
       <td>✅</td>
