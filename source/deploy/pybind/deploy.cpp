@@ -116,6 +116,42 @@ void BindResult(pybind11::module &m) {
         oss << ")";
         return oss.str(); });
 
+    // Bind ClsResult structure
+    pybind11::class_<ClsResult>(m, "ClsResult")
+        .def(pybind11::init<>())
+        .def_readonly("num", &ClsResult::num)
+        .def_readwrite("classes", &ClsResult::classes)
+        .def_readwrite("scores", &ClsResult::scores)
+        .def("__copy__", [](const ClsResult &self) {
+            return ClsResult(self);
+        })
+        .def("__deepcopy__", [](const ClsResult &self, pybind11::dict) {
+            return ClsResult(self);
+        })
+        .def("__str__", [](const ClsResult &dr) {
+            std::ostringstream oss;
+            oss << "ClsResult(\n    classes=[";
+            for (size_t i = 0; i < dr.classes.size(); ++i) {
+                oss << dr.classes[i];
+                if (i != dr.classes.size() - 1) oss << ", ";
+            }
+            oss << "],\n    scores=[";
+            for (size_t i = 0; i < dr.scores.size(); ++i) {
+                oss << dr.scores[i];
+                if (i != dr.scores.size() - 1) oss << ", ";
+            }
+            oss << "]\n)";
+            return oss.str();
+        })
+        .def(pybind11::pickle([](const ClsResult &dr) { return pybind11::make_tuple(dr.classes, dr.scores); }, [](pybind11::tuple t) {
+            if (t.size() != 2)
+                throw std::runtime_error("Invalid state!");
+
+            ClsResult dr;
+            dr.classes = t[0].cast<std::vector<int>>();
+            dr.scores = t[1].cast<std::vector<float>>();
+            return dr; }));
+
     // Bind DetResult structure
     pybind11::class_<DetResult>(m, "DetResult")
         .def(pybind11::init<>())
@@ -376,7 +412,7 @@ void BindClsTemplate(pybind11::module &m, const std::string &className) {
 
 // Bind inference classes
 void BindInference(pybind11::module &m) {
-    m.doc() = "Bindings for inference classes, including DeployDet, DeployCGDet, DeployOBB, DeployCGOBB, DeploySeg, DeployCGSeg, DeployPose, and DeployCGPose.";
+    m.doc() = "Bindings for inference classes, including DeployDet, DeployCGDet, DeployOBB, DeployCGOBB, DeploySeg, DeployCGSeg, DeployPose, DeployCGPose, DeployCls, and DeployCGCls.";
 
     // bind DeployDet
     BindClsTemplate<DeployDet>(m, "DeployDet");
@@ -401,6 +437,12 @@ void BindInference(pybind11::module &m) {
 
     // bind DeployCGSeg
     BindClsTemplate<DeployCGPose>(m, "DeployCGPose");
+
+    // bind DeployCls
+    BindClsTemplate<DeployCls>(m, "DeployCls");
+
+    // bind DeployCGCls
+    BindClsTemplate<DeployCGCls>(m, "DeployCGCls");
 }
 
 // Define the pydeploy module

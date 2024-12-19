@@ -23,13 +23,14 @@ namespace deploy {
 template <typename T>
 class DEPLOYAPI BaseTemplate {
 public:
-    // Use static_assert to ensure that T is either DetResult, OBBResult, SegResult, or PoseResult..
+    // Use static_assert to ensure that T is either DetResult, OBBResult, SegResult, PoseResult, or ClsResult.
     static_assert(
         std::is_same<T, DetResult>::value ||
             std::is_same<T, OBBResult>::value ||
             std::is_same<T, SegResult>::value ||
-            std::is_same<T, PoseResult>::value,
-        "T must be either DetResult, OBBResult, SegResult, or PoseResult.");
+            std::is_same<T, PoseResult>::value ||
+            std::is_same<T, ClsResult>::value,
+        "T must be either DetResult, OBBResult, SegResult, PoseResult, or ClsResult.");
 
     /**
      * @brief Constructor to initialize BaseTemplate with a model file, optional CUDA memory flag, and device index.
@@ -137,13 +138,14 @@ protected:
 template <typename T>
 class DEPLOYAPI DeployTemplate : public BaseTemplate<T> {
 public:
-    // Use static_assert to ensure that T is either DetResult, OBBResult, SegResult, or PoseResult..
+    // Use static_assert to ensure that T is either DetResult, OBBResult, SegResult, PoseResult, or ClsResult.
     static_assert(
         std::is_same<T, DetResult>::value ||
             std::is_same<T, OBBResult>::value ||
             std::is_same<T, SegResult>::value ||
-            std::is_same<T, PoseResult>::value,
-        "T must be either DetResult, OBBResult, SegResult, or PoseResult.");
+            std::is_same<T, PoseResult>::value ||
+            std::is_same<T, ClsResult>::value,
+        "T must be either DetResult, OBBResult, SegResult, PoseResult, or ClsResult.");
 
     /**
      * @brief Constructor to initialize DeployTemplate with a model file, optional CUDA memory flag, and device index.
@@ -222,13 +224,14 @@ private:
 template <typename T>
 class DEPLOYAPI DeployCGTemplate : public BaseTemplate<T> {
 public:
-    // Use static_assert to ensure that T is either DetResult, OBBResult, SegResult, or PoseResult..
+    // Use static_assert to ensure that T is either DetResult, OBBResult, SegResult, PoseResult, or ClsResult..
     static_assert(
         std::is_same<T, DetResult>::value ||
             std::is_same<T, OBBResult>::value ||
             std::is_same<T, SegResult>::value ||
-            std::is_same<T, PoseResult>::value,
-        "T must be either DetResult, OBBResult, SegResult, or PoseResult.");
+            std::is_same<T, PoseResult>::value ||
+            std::is_same<T, ClsResult>::value,
+        "T must be either DetResult, OBBResult, SegResult, PoseResult, or ClsResult.");
 
     /**
      * @brief Constructor to initialize DeployCGTemplate with a model file, optional CUDA memory flag, and device index.
@@ -345,6 +348,9 @@ template class DeployCGTemplate<SegResult>;
 template class BaseTemplate<PoseResult>;
 template class DeployTemplate<PoseResult>;
 template class DeployCGTemplate<PoseResult>;
+template class BaseTemplate<ClsResult>;
+template class DeployTemplate<ClsResult>;
+template class DeployCGTemplate<ClsResult>;
 
 // Use the template class to create concrete deployment classes
 typedef BaseTemplate<DetResult>      BaseDet;
@@ -359,5 +365,8 @@ typedef DeployCGTemplate<SegResult>  DeployCGSeg;
 typedef BaseTemplate<PoseResult>     BasePose;
 typedef DeployTemplate<PoseResult>   DeployPose;
 typedef DeployCGTemplate<PoseResult> DeployCGPose;
+typedef BaseTemplate<ClsResult>      BaseCls;
+typedef DeployTemplate<ClsResult>    DeployCls;
+typedef DeployCGTemplate<ClsResult>  DeployCGCls;
 
 }  // namespace deploy

@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   head.py
-# Version :   5.0.0
+# Version :   5.1.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/04/22 09:45:11
@@ -29,11 +29,22 @@ from typing import Tuple
 import torch
 import torch.nn.functional as F
 from torch import Tensor, Value, nn
-from ultralytics.nn.modules import OBB, Conv, Detect, Pose, Proto, Segment
+from ultralytics.nn.modules import OBB, Classify, Conv, Detect, Pose, Proto, Segment
+from ultralytics.nn.modules.conv import autopad
 from ultralytics.utils.checks import check_version
 from ultralytics.utils.tal import make_anchors
 
-__all__ = ["YOLODetect", "YOLOSegment", "V10Detect", "UltralyticsDetect", "UltralyticsOBB", "UltralyticsSegment", "UltralyticsPose"]  # noqa: F822
+__all__ = [
+    "YOLODetect",
+    "YOLOSegment",
+    "YOLOClassify",
+    "V10Detect",  # noqa: F822
+    "UltralyticsDetect",
+    "UltralyticsOBB",
+    "UltralyticsSegment",
+    "UltralyticsPose",
+    "UltralyticsClassify",
+]
 
 
 class EfficientNMS_TRT(torch.autograd.Function):
@@ -204,7 +215,7 @@ class EfficientIdxNMS_TRT(torch.autograd.Function):
 
 """
 ===============================================================================
-        YOLOv3 and YOLOv5 Model head for detection and segmentation models
+                         YOLOv3 and YOLOv5 Model heads
 ===============================================================================
 """
 
@@ -338,9 +349,32 @@ class YOLOSegment(YOLODetect):
         )
 
 
+class YOLOClassify(nn.Module):
+    """YOLOv3 and YOLOv5 classification head with convolution, pooling, and dropout layers for channel transformation."""
+
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, dropout_p=0.0):  # ch_in, ch_out, kernel, stride, padding, groups, dropout probability
+        """Initializes YOLOv3 and YOLOv5 classification head with convolution, pooling, and dropout layers for input to output
+        channel transformation.
+        """
+        super().__init__()
+        c_ = 1280  # efficientnet_b0 size
+        self.conv = Conv(c1, c_, k, s, autopad(k, p), g)
+        self.pool = nn.AdaptiveAvgPool2d(1)  # to x(b,c_,1,1)
+        self.drop = nn.Dropout(p=dropout_p, inplace=True)
+        self.linear = nn.Linear(c_, c2)  # to x(b,c2)
+
+    def forward(self, x):
+        """Processes input through conv, pool, drop, and linear layers; supports list concatenation input."""
+        if isinstance(x, list):
+            x = torch.cat(x, 1)
+
+        x = self.linear(self.drop(self.pool(self.conv(x)).flatten(1)))
+        return torch.stack(x.softmax(1).topk(5, largest=True, sorted=True), dim=-1)
+
+
 """
 ===============================================================================
-        Ultralytics Model head for detection and segmentation models
+                            Ultralytics Model heads
 ===============================================================================
 """
 
@@ -586,6 +620,18 @@ class UltralyticsPose(Pose):
         if ndim == 3:
             a = torch.cat((a, y[:, :, 2:3].sigmoid()), 2)
         return a.view(bs, self.nk, -1).transpose(1, 2)
+
+
+class UltralyticsClassify(Classify):
+    """Ultralytics classification head, i.e. x(b,c1,20,20) to x(b,top5)."""
+
+    def forward(self, x):
+        """Performs a forward pass of the Ultralytics model on input image data."""
+        if isinstance(x, list):
+            x = torch.cat(x, 1)
+
+        x = self.linear(self.drop(self.pool(self.conv(x)).flatten(1)))
+        return torch.stack(x.softmax(1).topk(5, largest=True, sorted=True), dim=-1)
 
 
 class v10Detect(UltralyticsDetect):

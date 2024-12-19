@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   utils.py
-# Version :   5.0.0
+# Version :   5.1.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/07/05 14:06:46
@@ -32,7 +32,7 @@ import cv2
 import numpy as np
 from loguru import logger
 
-from .result import DetResult, OBBResult, PoseResult, RotatedBox, SegResult
+from .result import ClsResult, DetResult, OBBResult, PoseResult, RotatedBox, SegResult
 
 __all__ = ["generate_labels_with_colors", "visualize", "image_batches"]
 
@@ -152,7 +152,7 @@ def xyxyr2xyxyxyxy(box: RotatedBox) -> List[Tuple[float, float]]:  # type: ignor
 
 def visualize(
     image: np.ndarray,
-    result: Union[DetResult, OBBResult, SegResult, PoseResult],  # type: ignore
+    result: Union[DetResult, OBBResult, SegResult, PoseResult, ClsResult],  # type: ignore
     labels: List[Tuple[str, Tuple[int, int, int]]],
 ) -> np.ndarray:
     """
@@ -200,84 +200,88 @@ def visualize(
     img = image.copy()
     for i in range(result.num):
         color = labels[result.classes[i]][1]
-
-        # bounding box
-        if isinstance(result.boxes[i], RotatedBox):
-            box = xyxyr2xyxyxyxy(result.boxes[i])
-            p1 = [int(b) for b in box[0]]
-            cv2.polylines(img, [np.asarray(box, dtype=int)], True, color, lw)  # cv2 requires nparray box
-        else:
-            box = list(map(int, [result.boxes[i].left, result.boxes[i].top, result.boxes[i].right, result.boxes[i].bottom]))
-            p1, p2 = (int(box[0]), int(box[1])), (int(box[2]), int(box[3]))
-            cv2.rectangle(img, p1, p2, color, thickness=lw, lineType=cv2.LINE_AA)
-
-        # mask
-        if isinstance(result, SegResult):
-            # Resize the segmentation mask to match the image dimensions and convert to a boolean mask
-            mask = cv2.resize(result.masks[i], (width, height)) > 0
-
-            # Create a boolean mask for the bounding box area
-            box_mask = np.zeros_like(mask, dtype=bool)
-            box_mask[box[1] : box[3], box[0] : box[2]] = True
-
-            # Combine the segmentation mask with the bounding box mask
-            mask &= box_mask
-
-            # Blend the mask color with the image only within the masked area
-            img[mask] = img[mask] * 0.5 + np.array(color) * 0.5
-
-            # Clip the values to valid range and ensure the result is an unsigned 8-bit integer
-            img = np.clip(img, 0, 255).astype(np.uint8)
-
-        # keypoint
-        if isinstance(result, PoseResult):
-            nkpt = len(result.kpts[i])
-            is_pose = nkpt == 17
-            kpt_line = is_pose  # `kpt_line=True` for now only supports human pose plotting
-            for kpt in result.kpts[i]:
-                if kpt.x % width != 0 and kpt.y % height != 0:
-                    if kpt.conf is not None and kpt.conf < conf_thres:
-                        continue
-                    cv2.circle(img, (int(kpt.x), int(kpt.y)), radius, color, -1, lineType=cv2.LINE_AA)
-
-            if kpt_line:
-                for sk in skeleton:
-                    kpt1 = result.kpts[i][sk[0] - 1]
-                    kpt2 = result.kpts[i][sk[1] - 1]
-
-                    if kpt1.conf < conf_thres or kpt2.conf < conf_thres:
-                        continue
-                    if kpt1.x % width == 0 or kpt1.y % height == 0 or kpt1.x < 0 or kpt1.y < 0:
-                        continue
-                    if kpt2.x % width == 0 or kpt2.y % height == 0 or kpt2.x < 0 or kpt2.y < 0:
-                        continue
-                    cv2.line(
-                        img,
-                        (int(kpt1.x), int(kpt1.y)),
-                        (int(kpt2.x), int(kpt2.y)),
-                        color,
-                        thickness=int(np.ceil(lw / 2)),
-                        lineType=cv2.LINE_AA,
-                    )
-
         # label
         label = f"{labels[result.classes[i]][0]} {result.scores[i]:.2f}"
-        w, h = cv2.getTextSize(label, 0, fontScale=sf, thickness=tf)[0]  # text width, height
-        h += 3  # add pixels to pad text
-        outside = p1[1] >= h  # label fits outside box
-        if p1[0] > width - w:  # shape is (h, w), check if label extend beyond right side of image
-            p1 = width - w, p1[1]
-        p2 = p1[0] + w, p1[1] - h if outside else p1[1] + h
-        cv2.rectangle(img, p1, p2, color, -1, cv2.LINE_AA)  # filled
-        cv2.putText(
-            img,
-            label,
-            (p1[0], p1[1] - 2 if outside else p1[1] + h - 1),
-            0,
-            sf,
-            (255, 255, 255),
-            thickness=tf,
-            lineType=cv2.LINE_AA,
-        )
+
+        if isinstance(result, ClsResult):
+            # Classify
+            cv2.putText(img, label, [5, 32 + i * 32], 0, sf, color, thickness=tf, lineType=cv2.LINE_AA)
+        else:
+            # bounding box
+            if isinstance(result.boxes[i], RotatedBox):
+                box = xyxyr2xyxyxyxy(result.boxes[i])
+                p1 = [int(b) for b in box[0]]
+                cv2.polylines(img, [np.asarray(box, dtype=int)], True, color, lw)  # cv2 requires nparray box
+            else:
+                box = list(map(int, [result.boxes[i].left, result.boxes[i].top, result.boxes[i].right, result.boxes[i].bottom]))
+                p1, p2 = (int(box[0]), int(box[1])), (int(box[2]), int(box[3]))
+                cv2.rectangle(img, p1, p2, color, thickness=lw, lineType=cv2.LINE_AA)
+
+            # mask
+            if isinstance(result, SegResult):
+                # Resize the segmentation mask to match the image dimensions and convert to a boolean mask
+                mask = cv2.resize(result.masks[i], (width, height)) > 0
+
+                # Create a boolean mask for the bounding box area
+                box_mask = np.zeros_like(mask, dtype=bool)
+                box_mask[box[1] : box[3], box[0] : box[2]] = True
+
+                # Combine the segmentation mask with the bounding box mask
+                mask &= box_mask
+
+                # Blend the mask color with the image only within the masked area
+                img[mask] = img[mask] * 0.5 + np.array(color) * 0.5
+
+                # Clip the values to valid range and ensure the result is an unsigned 8-bit integer
+                img = np.clip(img, 0, 255).astype(np.uint8)
+
+            # keypoint
+            if isinstance(result, PoseResult):
+                nkpt = len(result.kpts[i])
+                is_pose = nkpt == 17
+                kpt_line = is_pose  # `kpt_line=True` for now only supports human pose plotting
+                for kpt in result.kpts[i]:
+                    if kpt.x % width != 0 and kpt.y % height != 0:
+                        if kpt.conf is not None and kpt.conf < conf_thres:
+                            continue
+                        cv2.circle(img, (int(kpt.x), int(kpt.y)), radius, color, -1, lineType=cv2.LINE_AA)
+
+                if kpt_line:
+                    for sk in skeleton:
+                        kpt1 = result.kpts[i][sk[0] - 1]
+                        kpt2 = result.kpts[i][sk[1] - 1]
+
+                        if kpt1.conf < conf_thres or kpt2.conf < conf_thres:
+                            continue
+                        if kpt1.x % width == 0 or kpt1.y % height == 0 or kpt1.x < 0 or kpt1.y < 0:
+                            continue
+                        if kpt2.x % width == 0 or kpt2.y % height == 0 or kpt2.x < 0 or kpt2.y < 0:
+                            continue
+                        cv2.line(
+                            img,
+                            (int(kpt1.x), int(kpt1.y)),
+                            (int(kpt2.x), int(kpt2.y)),
+                            color,
+                            thickness=int(np.ceil(lw / 2)),
+                            lineType=cv2.LINE_AA,
+                        )
+
+            w, h = cv2.getTextSize(label, 0, fontScale=sf, thickness=tf)[0]  # text width, height
+            h += 3  # add pixels to pad text
+            outside = p1[1] >= h  # label fits outside box
+            if p1[0] > width - w:  # shape is (h, w), check if label extend beyond right side of image
+                p1 = width - w, p1[1]
+            p2 = p1[0] + w, p1[1] - h if outside else p1[1] + h
+            cv2.rectangle(img, p1, p2, color, -1, cv2.LINE_AA)  # filled
+            cv2.putText(
+                img,
+                label,
+                (p1[0], p1[1] - 2 if outside else p1[1] + h - 1),
+                0,
+                sf,
+                (255, 255, 255),
+                thickness=tf,
+                lineType=cv2.LINE_AA,
+            )
 
     return img

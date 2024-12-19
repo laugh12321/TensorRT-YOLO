@@ -250,4 +250,25 @@ struct DEPLOYAPI PoseResult : public DetResult {
     }
 };
 
+/**
+ * @brief Represents the result of Classification.
+ */
+struct DEPLOYAPI ClsResult {
+    const int          num = 5; /**< The number of top classification results to store, which is set to 5. */
+    std::vector<int>   classes; /**< Classification top5 classes */
+    std::vector<float> scores;  /**< Classification top5 scores */
+
+    /**
+     * @brief Copy assignment operator.
+     *
+     * @param other The source ClsResult to copy from.
+     * @return ClsResult& Reference to the assigned ClsResult.
+     */
+    ClsResult& operator=(const ClsResult& other) {
+        classes = other.classes;
+        scores  = other.scores;
+        return *this;
+    }
+};
+
 }  // namespace deploy

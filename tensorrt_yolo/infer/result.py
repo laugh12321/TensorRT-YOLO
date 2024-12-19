@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   result.py
-# Version :   5.0.0
+# Version :   5.1.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/08/04 12:39:02
@@ -24,7 +24,7 @@
 # ==============================================================================
 from .. import c_lib_wrap as C
 
-__all__ = ["Box", "RotatedBox", "KeyPoint", "DetResult", "SegResult", "PoseResult"]
+__all__ = ["Box", "RotatedBox", "KeyPoint", "DetResult", "SegResult", "PoseResult", "ClsResult"]
 
 Box = C.result.Box
 RotatedBox = C.result.RotatedBox
@@ -33,3 +33,4 @@ DetResult = C.result.DetResult
 OBBResult = C.result.OBBResult
 SegResult = C.result.SegResult
 PoseResult = C.result.PoseResult
+ClsResult = C.result.ClsResult

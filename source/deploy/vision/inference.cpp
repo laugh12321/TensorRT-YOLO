@@ -171,6 +171,22 @@ PoseResult BaseTemplate<PoseResult>::postProcess(const int idx) {
     return result;
 }
 
+template <>
+ClsResult BaseTemplate<ClsResult>::postProcess(const int idx) {
+    float* top5 = static_cast<float*>(this->tensorInfos[1].tensor.host()) + idx * this->tensorInfos[1].dims.d[1] * this->tensorInfos[1].dims.d[2];
+
+    ClsResult result;
+    for (int i = 0; i < this->tensorInfos[1].dims.d[1]; ++i) {
+        float score = top5[i * this->tensorInfos[1].dims.d[2]];
+        int   label = top5[i * this->tensorInfos[1].dims.d[2] + 1];
+
+        result.scores.emplace_back(top5[i * this->tensorInfos[1].dims.d[2]]);
+        result.classes.emplace_back(top5[i * this->tensorInfos[1].dims.d[2] + 1]);
+    }
+
+    return result;
+}
+
 // Constructor to initialize DeployTemplate with a model file, optional CUDA memory flag, and device index.
 template <typename T>
 DeployTemplate<T>::DeployTemplate(const std::string& file, bool cudaMem, int device) : BaseTemplate<T>(file, cudaMem, device) {

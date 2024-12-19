@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   cli.py
-# Version :   5.0.0
+# Version :   5.1.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/07/05 14:26:53
@@ -108,7 +108,9 @@ def export(
 
 @trtyolo.command(help="Perform inference with TensorRT-YOLO.")
 @click.option('-e', '--engine', help='Engine file for inference.', type=str, required=True)
-@click.option('-m', '--mode', help='Mode for inference: 0 for Detect, 1 for OBB, 2 for Segment, 3 for Pose.', type=int, required=True)
+@click.option(
+    '-m', '--mode', help='Mode for inference: 0 for Detect, 1 for OBB, 2 for Segment, 3 for Pose, 4 for Classify.', type=int, required=True
+)
 @click.option('-i', '--input', help='Input directory or file for inference.', type=str, required=True)
 @click.option('-o', '--output', help='Output directory for inference results.', type=str)
 @click.option('-l', '--labels', help='Labels file for inference.', type=str)
@@ -118,8 +120,8 @@ def infer(engine, mode, input, output, labels, cudagraph):
 
     This command performs inference using TensorRT-YOLO with the specified engine file and input source.
     """
-    if mode not in (0, 1, 2, 3):
-        logger.error(f"Invalid mode: {mode}. Please use 0 for Detect, 1 for OBB, 2 for Segment, 3 for Pose.")
+    if mode not in (0, 1, 2, 3, 4):
+        logger.error(f"Invalid mode: {mode}. Please use 0 for Detect, 1 for OBB, 2 for Segment, 3 for Pose, 4 for Classify.")
         sys.exit(1)
 
     if output and not labels:
@@ -138,10 +140,12 @@ def infer(engine, mode, input, output, labels, cudagraph):
 
     from .infer import (
         CpuTimer,
+        DeployCGCls,
         DeployCGDet,
         DeployCGOBB,
         DeployCGPose,
         DeployCGSeg,
+        DeployCls,
         DeployDet,
         DeployOBB,
         DeployPose,
@@ -158,6 +162,8 @@ def infer(engine, mode, input, output, labels, cudagraph):
         if cudagraph and mode == 2
         else DeployCGPose(engine)
         if cudagraph and mode == 3
+        else DeployCGCls(engine)
+        if cudagraph and mode == 4
         else DeployCGDet(engine)
         if cudagraph
         else DeployOBB(engine)
@@ -166,6 +172,8 @@ def infer(engine, mode, input, output, labels, cudagraph):
         if mode == 2
         else DeployPose(engine)
         if mode == 3
+        else DeployCls(engine)
+        if mode == 4
         else DeployDet(engine)
     )
 

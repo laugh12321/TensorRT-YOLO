@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.15.0)                  # 设置CMake的最低版本要求
 cmake_policy(SET CMP0091 NEW)                           # 允许在CMake 3.10+中自动设置项目名作为二进制目录名
 cmake_policy(SET CMP0146 OLD)                           # 忽略对find_package的过时警告
-project(TensorRT-YOLO VERSION 5.0.3 LANGUAGES CXX CUDA) # 定义项目名称、版本和使用的编程语言（C++和CUDA）
+project(TensorRT-YOLO VERSION 5.1.0 LANGUAGES CXX CUDA) # 定义项目名称、版本和使用的编程语言（C++和CUDA）
 
 # 设置 C++ 标准
 set(CMAKE_CXX_STANDARD 17)                              # 设置C++标准为17

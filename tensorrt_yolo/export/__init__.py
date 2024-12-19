@@ -20,7 +20,17 @@ except ImportError:
     logger.error('Ultralytics not found, plaese install Ultralytics.' 'for example: `pip install ultralytics`.')
     sys.exit(1)
 
-from .head import UltralyticsDetect, UltralyticsOBB, UltralyticsPose, UltralyticsSegment, YOLODetect, YOLOSegment, v10Detect
+from .head import (
+    UltralyticsClassify,
+    UltralyticsDetect,
+    UltralyticsOBB,
+    UltralyticsPose,
+    UltralyticsSegment,
+    YOLOClassify,
+    YOLODetect,
+    YOLOSegment,
+    v10Detect,
+)
 from .ppyoloe import PPYOLOEGraphSurgeon
 
 __all__ = ['torch_export', 'paddle_export']
@@ -53,6 +63,13 @@ HEADS = {
         "yolo11": UltralyticsPose,
         "ultralytics": UltralyticsPose,
     },
+    "Classify": {
+        "yolov3": YOLOClassify,
+        "yolov5": YOLOClassify,
+        "yolov8": UltralyticsClassify,
+        "yolo11": UltralyticsClassify,
+        "ultralytics": UltralyticsClassify,
+    },
 }
 
 DEFAULT_OUTPUT_NAMES = ["num_dets", "det_boxes", "det_scores", "det_classes"]
@@ -70,6 +87,7 @@ OUTPUT_NAMES = {
     "OBB": DEFAULT_OUTPUT_NAMES,
     "Segment": DEFAULT_OUTPUT_NAMES + ["det_masks"],
     "Pose": DEFAULT_OUTPUT_NAMES + ["det_kpts"],
+    "Classify": ["top5"],
 }
 
 DYNAMIC_AXES = {
@@ -78,6 +96,7 @@ DYNAMIC_AXES = {
     "OBB": DEFAULT_DYNAMIC_AXES,
     "Segment": {**DEFAULT_DYNAMIC_AXES, "det_masks": {0: "batch", 2: "height", 3: "width"}},
     "Pose": {**DEFAULT_DYNAMIC_AXES, "det_kpts": {0: "batch"}},
+    "Classify": {"images": {0: "batch", 2: "height", 3: "width"}, "top5": {0: "batch"}},
 }
 
 YOLO_EXPORT_INFO = {
@@ -154,10 +173,11 @@ def update_model(
             detect_head = HEADS[class_name].get(version)
             if detect_head:
                 supported = True
-                detect_head.dynamic = dynamic
-                detect_head.max_det = max_boxes
-                detect_head.iou_thres = iou_thres
-                detect_head.conf_thres = conf_thres
+                if class_name != "Classify":
+                    detect_head.dynamic = dynamic
+                    detect_head.max_det = max_boxes
+                    detect_head.iou_thres = iou_thres
+                    detect_head.conf_thres = conf_thres
                 m.__class__ = detect_head
             break
 
@@ -253,6 +273,8 @@ def torch_export(
             "height" if dynamic else imgsz[0],
             "width" if dynamic else imgsz[1],
         ]
+    elif head_name == "Classify":
+        shapes = {'top5': ["batch" if dynamic else batch, 5, 2]}
 
     for node in model_onnx.graph.output:
         for idx, dim in enumerate(node.type.tensor_type.shape.dim):
