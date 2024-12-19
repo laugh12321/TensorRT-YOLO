@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   inference.py
-# Version :   5.0.0
+# Version :   5.1.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/07/03 14:06:55
@@ -26,9 +26,33 @@
 from typing import Any, List, Union
 
 from .. import c_lib_wrap as C
-from .result import DetResult, OBBResult, PoseResult, SegResult
+from .result import ClsResult, DetResult, OBBResult, PoseResult, SegResult
 
-__all__ = ["DeployDet", "DeployCGDet", "DeployOBB", "DeployCGOBB", "DeploySeg", "DeployCGSeg", "DeployPose", "DeployCGPose"]
+__all__ = [
+    "DeployDet",
+    "DeployCGDet",
+    "DeployOBB",
+    "DeployCGOBB",
+    "DeploySeg",
+    "DeployCGSeg",
+    "DeployPose",
+    "DeployCGPose",
+    "DeployCls",
+    "DeployCGCls",
+]
+
+ResultType = Union[
+    DetResult,
+    List[DetResult],
+    OBBResult,
+    List[OBBResult],
+    SegResult,
+    List[SegResult],
+    PoseResult,
+    List[PoseResult],
+    ClsResult,
+    List[ClsResult],
+]
 
 
 class BaseDeploy:
@@ -54,9 +78,7 @@ class BaseDeploy:
         """
         return self._model.batch
 
-    def predict(
-        self, images: Union[Any, List[Any]]
-    ) -> Union[DetResult, List[DetResult], OBBResult, List[OBBResult], SegResult, List[SegResult], PoseResult, List[PoseResult]]:  # type: ignore
+    def predict(self, images: Union[Any, List[Any]]) -> ResultType:
         """
         Predict the detection results for the given images.
 
@@ -64,8 +86,7 @@ class BaseDeploy:
             images (Union[Any, List[Any]]): A single image or a list of images for which to predict object detections.
 
         Returns:
-            Union[DetResult, List[DetResult], OBBResult, List[OBBResult], SegResult, List[SegResult], PoseResult, List[PoseResult]]:
-            The detection result for the image or a list of detection results for multiple images.
+            ResultType: The detection result for the image or a list of detection results for multiple images.
         """
         return self._model.predict(images)
 
@@ -172,3 +193,29 @@ class DeployCGPose(BaseDeploy):
             device (int, optional): Device index for the inference. Defaults to 0.
         """
         super().__init__(engine_file, C.inference.DeployCGPose, cuda_memory, device)
+
+
+class DeployCls(BaseDeploy):
+    def __init__(self, engine_file: str, cuda_memory: bool = False, device: int = 0) -> None:
+        """
+        Initialize the DeployCls class with the given engine file.
+
+        Args:
+            engine_file (str): Path to the engine file.
+            cuda_memory (bool, optional): Flag indicating whether input data resides in GPU memory (true) or CPU memory (false). Defaults to false.
+            device (int, optional): Device index for the inference. Defaults to 0.
+        """
+        super().__init__(engine_file, C.inference.DeployCls, cuda_memory, device)
+
+
+class DeployCGCls(BaseDeploy):
+    def __init__(self, engine_file: str, cuda_memory: bool = False, device: int = 0) -> None:
+        """
+        Initialize the DeployCGCls class with the given engine file.
+
+        Args:
+            engine_file (str): Path to the engine file.
+            cuda_memory (bool, optional): Flag indicating whether input data resides in GPU memory (true) or CPU memory (false). Defaults to false.
+            device (int, optional): Device index for the inference. Defaults to 0.
+        """
+        super().__init__(engine_file, C.inference.DeployCGCls, cuda_memory, device)
