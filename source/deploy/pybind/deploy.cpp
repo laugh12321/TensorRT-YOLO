@@ -432,10 +432,10 @@ void BindInference(pybind11::module &m) {
     // bind DeployCGSeg
     BindClsTemplate<DeployCGSeg>(m, "DeployCGSeg");
 
-    // bind DeploySeg
+    // bind DeployPose
     BindClsTemplate<DeployPose>(m, "DeployPose");
 
-    // bind DeployCGSeg
+    // bind DeployCGPose
     BindClsTemplate<DeployCGPose>(m, "DeployCGPose");
 
     // bind DeployCls

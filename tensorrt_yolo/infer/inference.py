@@ -172,7 +172,7 @@ class DeployCGSeg(BaseDeploy):
 class DeployPose(BaseDeploy):
     def __init__(self, engine_file: str, cuda_memory: bool = False, device: int = 0) -> None:
         """
-        Initialize the DeploySeg class with the given engine file.
+        Initialize the DeployPose class with the given engine file.
 
         Args:
             engine_file (str): Path to the engine file.
@@ -185,7 +185,7 @@ class DeployPose(BaseDeploy):
 class DeployCGPose(BaseDeploy):
     def __init__(self, engine_file: str, cuda_memory: bool = False, device: int = 0) -> None:
         """
-        Initialize the DeployCGSeg class with the given engine file.
+        Initialize the DeployCGPose class with the given engine file.
 
         Args:
             engine_file (str): Path to the engine file.
