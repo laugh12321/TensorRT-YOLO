@@ -28,7 +28,7 @@ trtyolo export -w yolov8s.pt -v ultralytics -o output --max_boxes 100 --iou_thre
 trtyolo export -w yolov10s.pt -v yolov10 -o output
 
 # 导出 YOLO11 OBB 模型
-trtyolo export -w yolov11n-obb.pt -v yolo11 -o output
+trtyolo export -w yolo11n-obb.pt -v yolo11 -o output
 
 # 导出 PP-YOLOE, PP-YOLOE+ 模型
 trtyolo export --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output
@@ -49,7 +49,7 @@ trtexec --onnx=model.onnx --saveEngine=model.engine --minShapes=images:1x3x640x6
 trtexec --onnx=yolov8n-obb.onnx --saveEngine=yolov8n-obb.engine --fp16 --staticPlugins=./lib/plugin/libcustom_plugins.so --setPluginsToSerialize=./lib/plugin/libcustom_plugins.so
 
 # YOLO11-OBB 动态 batch
-trtexec --onnx=yolov11n-obb.onnx --saveEngine=yolov11n-obb.engine --fp16 --minShapes=images:1x3x640x640 --optShapes=images:4x3x640x640 --maxShapes=images:8x3x640x640 --staticPlugins=./lib/plugin/custom_plugins.dll --setPluginsToSerialize=./lib/plugin/custom_plugins.dll
+trtexec --onnx=yolo11n-obb.onnx --saveEngine=yolo11n-obb.engine --fp16 --minShapes=images:1x3x640x640 --optShapes=images:4x3x640x640 --maxShapes=images:8x3x640x640 --staticPlugins=./lib/plugin/custom_plugins.dll --setPluginsToSerialize=./lib/plugin/custom_plugins.dll
 ```
 
 > [!NOTE]  
