@@ -74,12 +74,12 @@ English | [简体中文](README.md)
     - [✴️ Python SDK Quick Start](#quick-start-python)  
     - [✴️ C++ SDK Quick Start](#quick-start-cpp)
 - **Usage Examples**
-    - [Object Detection Example](examples/detect/README.md)
-    - [Instance Segmentation Example](examples/segment/README.md)
-    - [Image Classification Example](examples/classify/README.md)
-    - [Pose Recognition Example](examples/pose/README.md)
-    - [Oriented Bounding Box Detection Example](examples/obb/README.md)
-    - [📹 Video Analysis Example](examples/VideoPipe/README.md)
+    - [Object Detection Example](examples/detect/README.en.md)
+    - [Instance Segmentation Example](examples/segment/README.en.md)
+    - [Image Classification Example](examples/classify/README.en.md)
+    - [Pose Recognition Example](examples/pose/README.en.md)
+    - [Oriented Bounding Box Detection Example](examples/obb/README.en.md)
+    - [📹 Video Analysis Example](examples/VideoPipe/README.en.md)
 - **API Documentation**
     - Python API Documentation (⚠️ Not Implemented)
     - C++ API Documentation (⚠️ Not Implemented)
@@ -113,7 +113,7 @@ English | [简体中文](README.md)
 > [!NOTE] 
 > Using the `--cudaGraph` option can significantly improve inference speed, but note that this feature is only available for static models.
 > 
-> The `-m, --mode` parameter can be used to select different model types, where `0` represents detection (Detect), `1` represents oriented bounding box (OBB), `2` represents segmentation (Segment), and `3` represents pose estimation (Pose).
+> The `-m, --mode` parameter can be used to select different model types, where `0` represents detection (Detect), `1` represents oriented bounding box (OBB), `2` represents segmentation (Segment), `3` represents pose estimation (Pose), and `4` represents image classification (Classify).
 
 1. Use the `tensorrt_yolo` library's `trtyolo` command-line tool for inference. Run the following command to view help information:
 

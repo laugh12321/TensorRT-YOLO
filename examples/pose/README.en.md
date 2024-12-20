@@ -44,7 +44,7 @@ trtexec --onnx=models/yolo11n-pose.onnx --saveEngine=models/yolo11n-pose.engine 
 > [!NOTE] 
 > The `--cudaGraph` command added from version 4.0 can further accelerate the inference process, but this feature only supports static models.
 > 
-> From version 4.3 and later, support for pose estimation inference is added. The command `-m 2, --mode 2` is used to select the pose estimation.
+> From version 4.3 and later, support for pose estimation inference is added. The command `-m 3, --mode 3` is used to select the pose estimation.
 
 1. Use the `trtyolo` command-line tool from the `tensorrt_yolo` library for inference. Run the following command to view help information:
 
