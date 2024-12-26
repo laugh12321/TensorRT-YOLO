@@ -131,13 +131,13 @@
 #### Python 推理示例
 
 > [!NOTE] 
-> `DeployDet`、`DeployOBB`、`DeploySeg` 和 `DeployPose` 分别对应于检测（Detect）、方向边界框（OBB）、分割（Segment）和姿态估计（Pose）模型。
+> `DeployDet`、`DeployOBB`、`DeploySeg`、`DeployPose` 和 `DeployCls` 分别对应于检测（Detect）、方向边界框（OBB）、分割（Segment）、姿态估计（Pose）和图像分类（Classify）模型。
 >
 > 对于这些模型，`CG` 版本利用 CUDA Graph 来进一步加速推理过程，但请注意，这一功能仅限于静态模型。
 
 ```python
 import cv2
-from tensorrt_yolo.infer import DeployDet, generate_labels_with_colors, visualize
+from tensorrt_yolo.infer import DeployDet, generate_labels, visualize
 
 # 初始化模型
 model = DeployDet("yolo11n-with-plugin.engine")
@@ -147,7 +147,7 @@ im = cv2.imread("test_image.jpg")
 result = model.predict(cv2.cvtColor(im, cv2.COLOR_BGR2RGB))
 print(f"==> detect result: {result}")
 # 可视化
-labels = generate_labels_with_colors("labels.txt")
+labels = generate_labels("labels.txt")
 vis_im = visualize(im, result, labels)
 cv2.imwrite("vis_image.jpg", vis_im)
 ```
@@ -155,7 +155,7 @@ cv2.imwrite("vis_image.jpg", vis_im)
 ### C++ SDK快速开始<div id="quick-start-cpp"></div>
 
 > [!NOTE] 
-> `DeployDet`、`DeployOBB`、`DeploySeg` 和 `DeployPose` 分别对应于检测（Detect）、方向边界框（OBB）、分割（Segment）和姿态估计（Pose）模型。
+> `DeployDet`、`DeployOBB`、`DeploySeg`、`DeployPose` 和 `DeployCls` 分别对应于检测（Detect）、方向边界框（OBB）、分割（Segment）、姿态估计（Pose）和图像分类（Classify）模型。
 >
 > 对于这些模型，`CG` 版本利用 CUDA Graph 来进一步加速推理过程，但请注意，这一功能仅限于静态模型。
 

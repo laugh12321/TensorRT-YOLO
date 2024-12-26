@@ -132,13 +132,13 @@ English | [简体中文](README.md)
 #### Python Inference Example
 
 > [!NOTE] 
-> `DeployDet`, `DeployOBB`, `DeploySeg`, and `DeployPose` correspond to detection (Detect), oriented bounding box (OBB), segmentation (Segment), and pose estimation (Pose) models, respectively.
+> `DeployDet`, `DeployOBB`, `DeploySeg`, `DeployPose` and `DeployCls` correspond to detection (Detect), oriented bounding box (OBB), segmentation (Segment), pose estimation (Pose) and image classification (Classify) models, respectively.
 >
 > For these models, the `CG` version utilizes CUDA Graph to further accelerate the inference process, but please note that this feature is limited to static models.
 
 ```python
 import cv2
-from tensorrt_yolo.infer import DeployDet, generate_labels_with_colors, visualize
+from tensorrt_yolo.infer import DeployDet, generate_labels, visualize
 
 # Initialize the model
 model = DeployDet("yolo11n-with-plugin.engine")
@@ -148,7 +148,7 @@ im = cv2.imread("test_image.jpg")
 result = model.predict(cv2.cvtColor(im, cv2.COLOR_BGR2RGB))
 print(f"==> detect result: {result}")
 # Visualization
-labels = generate_labels_with_colors("labels.txt")
+labels = generate_labels("labels.txt")
 vis_im = visualize(im, result, labels)
 cv2.imwrite("vis_image.jpg", vis_im)
 ```
@@ -156,7 +156,7 @@ cv2.imwrite("vis_image.jpg", vis_im)
 ### C++ SDK Quick Start<div id="quick-start-cpp"></div>
 
 > [!NOTE] 
-> `DeployDet`, `DeployOBB`, `DeploySeg`, and `DeployPose` correspond to detection (Detect), oriented bounding box (OBB), segmentation (Segment), and pose estimation (Pose) models, respectively.
+> `DeployDet`, `DeployOBB`, `DeploySeg`, `DeployPose` and `DeployCls` correspond to detection (Detect), oriented bounding box (OBB), segmentation (Segment), pose estimation (Pose) and image classification (Classify) models, respectively.
 >
 > For these models, the `CG` version utilizes CUDA Graph to further accelerate the inference process, but please note that this feature is limited to static models.
 
