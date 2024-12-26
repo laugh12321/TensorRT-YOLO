@@ -2,7 +2,7 @@ import sys
 import warnings
 from copy import deepcopy
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional
 
 import onnx
 from loguru import logger
@@ -145,7 +145,7 @@ def load_model(version: str, weights: str, repo_dir: Optional[str] = None) -> Op
 
 def update_model(
     model: torch.nn.Module, version: str, dynamic: bool, max_boxes: int, iou_thres: float, conf_thres: float
-) -> Tuple[Optional[torch.nn.Module], str]:
+) -> tuple[Optional[torch.nn.Module], str]:
     """
     Update YOLO model with dynamic settings.
 
@@ -158,7 +158,7 @@ def update_model(
         conf_thres (float): Confidence threshold for object detection.
 
     Returns:
-        Tuple[Optional[torch.nn.Module], str]:
+        tuple[Optional[torch.nn.Module], str]:
             - Updated YOLO model or None if the version is not supported.
             - The name of the detection head.
     """

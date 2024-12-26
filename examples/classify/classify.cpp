@@ -3,7 +3,6 @@
 #include <iostream>
 #include <memory>
 #include <opencv2/opencv.hpp>
-#include <random>
 
 #include "deploy/utils/utils.hpp"
 #include "deploy/vision/inference.hpp"
@@ -32,39 +31,31 @@ void createOutputDirectory(const std::string& outputPath) {
     }
 }
 
-// Generate label and color pairs
-std::vector<std::pair<std::string, cv::Scalar>> generateLabelColorPairs(const std::string& labelFile) {
-    std::ifstream                                   file(labelFile);
-    std::vector<std::pair<std::string, cv::Scalar>> labelColorPairs;
+// Generate label
+std::vector<std::string> generateLabels(const std::string& labelFile) {
+    std::ifstream            file(labelFile);
+    std::vector<std::string> labels;
     if (!file.is_open()) {
         throw std::runtime_error("Failed to open labels file: " + labelFile);
     }
 
-    auto generateRandomColor = []() {
-        std::random_device                 rd;
-        std::mt19937                       gen(rd());
-        std::uniform_int_distribution<int> dis(0, 255);
-        return cv::Scalar(dis(gen), dis(gen), dis(gen));
-    };
-
     std::string label;
     while (std::getline(file, label)) {
-        labelColorPairs.emplace_back(label, generateRandomColor());
+        labels.emplace_back(label);
     }
-    return labelColorPairs;
+    return labels;
 }
 
 // Visualize inference results
-void visualize(cv::Mat& image, deploy::ClsResult& result, std::vector<std::pair<std::string, cv::Scalar>>& labelColorPairs) {
+void visualize(cv::Mat& image, deploy::ClsResult& result, std::vector<std::string>& labels) {
     for (size_t i = 0; i < result.num; ++i) {
         int         cls       = result.classes[i];
         float       score     = result.scores[i];
-        auto&       label     = labelColorPairs[cls].first;
-        auto&       color     = labelColorPairs[cls].second;
-        std::string labelText = label + " " + cv::format("%.2f", score);
+        auto&       label     = labels[cls];
+        std::string labelText = label + " " + cv::format("%.3f", score);
 
         // Draw rectangle and label
-        cv::putText(image, labelText, cv::Point(5, 32 + i * 32), cv::FONT_HERSHEY_SIMPLEX, 0.6, color, 1);
+        cv::putText(image, labelText, cv::Point(5, 32 + i * 32), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(251, 81, 163), 1);
     }
 }
 
@@ -119,7 +110,7 @@ int main(int argc, char** argv) {
             throw std::runtime_error("Input path does not exist or is not a regular file/directory: " + inputPath);
         }
 
-        std::vector<std::pair<std::string, cv::Scalar>> labels;
+        std::vector<std::string> labels;
         if (!outputPath.empty()) {
             if (labelPath.empty()) {
                 throw std::runtime_error("Please provide a labels file using -l or --labels.");
@@ -128,7 +119,7 @@ int main(int argc, char** argv) {
                 throw std::runtime_error("Label path does not exist: " + labelPath);
             }
 
-            labels = generateLabelColorPairs(labelPath);
+            labels = generateLabels(labelPath);
             createOutputDirectory(outputPath);
         }
 

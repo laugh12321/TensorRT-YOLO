@@ -1,41 +1,4 @@
-from .inference import (
-    DeployCGCls,
-    DeployCGDet,
-    DeployCGOBB,
-    DeployCGPose,
-    DeployCGSeg,
-    DeployCls,
-    DeployDet,
-    DeployOBB,
-    DeployPose,
-    DeploySeg,
-)
-from .result import Box, ClsResult, DetResult, KeyPoint, OBBResult, PoseResult, RotatedBox, SegResult
-from .timer import CpuTimer, GpuTimer
-from .utils import generate_labels_with_colors, image_batches, visualize
-
-__all__ = [
-    "DeployCGCls",
-    "DeployCGDet",
-    "DeployCGOBB",
-    "DeployCGPose",
-    "DeployCGSeg",
-    "DeployCls",
-    "DeployDet",
-    "DeployOBB",
-    "DeployPose",
-    "DeploySeg",
-    "Box",
-    "ClsResult",
-    "DetResult",
-    "KeyPoint",
-    "OBBResult",
-    "PoseResult",
-    "RotatedBox",
-    "SegResult",
-    "CpuTimer",
-    "GpuTimer",
-    "generate_labels_with_colors",
-    "image_batches",
-    "visualize",
-]
+from .inference import *  # noqa: F403
+from .result import *  # noqa: F403
+from .timer import *  # noqa: F403
+from .utils import *  # noqa: F403
