@@ -4,7 +4,6 @@
 #include <iostream>
 #include <memory>
 #include <opencv2/opencv.hpp>
-#include <random>
 
 #include "deploy/utils/utils.hpp"
 #include "deploy/vision/inference.hpp"
@@ -33,30 +32,23 @@ void createOutputDirectory(const std::string& outputPath) {
     }
 }
 
-// Generate label and color pairs
-std::vector<std::pair<std::string, cv::Scalar>> generateLabelColorPairs(const std::string& labelFile) {
-    std::ifstream                                   file(labelFile);
-    std::vector<std::pair<std::string, cv::Scalar>> labelColorPairs;
+// Generate label
+std::vector<std::string> generateLabels(const std::string& labelFile) {
+    std::ifstream            file(labelFile);
+    std::vector<std::string> labels;
     if (!file.is_open()) {
         throw std::runtime_error("Failed to open labels file: " + labelFile);
     }
 
-    auto generateRandomColor = []() {
-        std::random_device                 rd;
-        std::mt19937                       gen(rd());
-        std::uniform_int_distribution<int> dis(0, 255);
-        return cv::Scalar(dis(gen), dis(gen), dis(gen));
-    };
-
     std::string label;
     while (std::getline(file, label)) {
-        labelColorPairs.emplace_back(label, generateRandomColor());
+        labels.emplace_back(label);
     }
-    return labelColorPairs;
+    return labels;
 }
 
 // Visualize inference results
-void visualize(cv::Mat& image, deploy::PoseResult& result, std::vector<std::pair<std::string, cv::Scalar>>& labelColorPairs) {
+void visualize(cv::Mat& image, deploy::PoseResult& result, std::vector<std::string>& labels) {
     std::vector<std::pair<int, int>> skeleton = {
         {16, 14},
         {14, 12},
@@ -83,16 +75,15 @@ void visualize(cv::Mat& image, deploy::PoseResult& result, std::vector<std::pair
         auto&       box       = result.boxes[i];
         int         cls       = result.classes[i];
         float       score     = result.scores[i];
-        auto&       label     = labelColorPairs[cls].first;
-        auto&       color     = labelColorPairs[cls].second;
-        std::string labelText = label + " " + cv::format("%.2f", score);
+        auto&       label     = labels[cls];
+        std::string labelText = label + " " + cv::format("%.3f", score);
 
         // Draw rectangle and label
         int      baseLine;
         cv::Size labelSize = cv::getTextSize(labelText, cv::FONT_HERSHEY_SIMPLEX, 0.6, 1, &baseLine);
-        cv::rectangle(image, cv::Point(box.left, box.top), cv::Point(box.right, box.bottom), color, 2, cv::LINE_AA);
-        cv::rectangle(image, cv::Point(box.left, box.top - labelSize.height), cv::Point(box.left + labelSize.width, box.top), color, -1);
-        cv::putText(image, labelText, cv::Point(box.left, box.top), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 255, 255), 1);
+        cv::rectangle(image, cv::Point(box.left, box.top), cv::Point(box.right, box.bottom), cv::Scalar(251, 81, 163), 2, cv::LINE_AA);
+        cv::rectangle(image, cv::Point(box.left, box.top - labelSize.height), cv::Point(box.left + labelSize.width, box.top), cv::Scalar(125, 40, 81), -1);
+        cv::putText(image, labelText, cv::Point(box.left, box.top), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(253, 168, 208), 1);
 
         int  nkpt = result.kpts[i].size();
         bool pose = nkpt == 17;
@@ -101,7 +92,7 @@ void visualize(cv::Mat& image, deploy::PoseResult& result, std::vector<std::pair
                 if (result.kpts[i][j].conf.has_value() && result.kpts[i][j].conf.value() < 0.25) {
                     continue;
                 }
-                cv::circle(image, cv::Point(result.kpts[i][j].x, result.kpts[i][j].y), 3, color, -1, cv::LINE_AA);
+                cv::circle(image, cv::Point(result.kpts[i][j].x, result.kpts[i][j].y), 3, cv::Scalar(125, 40, 81), -1, cv::LINE_AA);
             }
         }
         if (pose) {
@@ -118,7 +109,7 @@ void visualize(cv::Mat& image, deploy::PoseResult& result, std::vector<std::pair
                 if (int(kpt2.x) % image.cols == 0 || int(kpt2.y) % image.rows == 0 || int(kpt2.x) < 0 || kpt2.y < 0) {
                     continue;
                 }
-                cv::line(image, cv::Point(kpt1.x, kpt1.y), cv::Point(kpt2.x, kpt2.y), color, 2, cv::LINE_AA);
+                cv::line(image, cv::Point(kpt1.x, kpt1.y), cv::Point(kpt2.x, kpt2.y), cv::Scalar(253, 168, 208), 2, cv::LINE_AA);
             }
         }
     }
@@ -175,7 +166,7 @@ int main(int argc, char** argv) {
             throw std::runtime_error("Input path does not exist or is not a regular file/directory: " + inputPath);
         }
 
-        std::vector<std::pair<std::string, cv::Scalar>> labels;
+        std::vector<std::string> labels;
         if (!outputPath.empty()) {
             if (labelPath.empty()) {
                 throw std::runtime_error("Please provide a labels file using -l or --labels.");
@@ -184,7 +175,7 @@ int main(int argc, char** argv) {
                 throw std::runtime_error("Label path does not exist: " + labelPath);
             }
 
-            labels = generateLabelColorPairs(labelPath);
+            labels = generateLabels(labelPath);
             createOutputDirectory(outputPath);
         }
 

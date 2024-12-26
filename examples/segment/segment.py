@@ -30,7 +30,7 @@ import cv2
 from loguru import logger
 from rich.progress import track
 
-from tensorrt_yolo.infer import CpuTimer, DeployCGSeg, DeploySeg, GpuTimer, generate_labels_with_colors, image_batches, visualize
+from tensorrt_yolo.infer import CpuTimer, DeployCGSeg, DeploySeg, GpuTimer, generate_labels, image_batches, visualize
 
 
 def main():
@@ -54,7 +54,7 @@ def main():
     if args.output:
         output_dir = Path(args.output)
         output_dir.mkdir(parents=True, exist_ok=True)
-        args.labels = generate_labels_with_colors(args.labels)
+        args.labels = generate_labels(args.labels)
 
     model = DeployCGSeg(args.engine) if args.cudaGraph else DeploySeg(args.engine)
 
