@@ -16,21 +16,26 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   result.py
-# Version :   5.1.0
+# Version :   5.1.1
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/08/04 12:39:02
 # Desc    :   Wrapper for result classes from the C library.
 # ==============================================================================
+from typing import Union
+
 from .. import c_lib_wrap as C
 
-__all__ = ["Box", "RotatedBox", "KeyPoint", "DetResult", "SegResult", "PoseResult", "ClsResult"]
+__all__ = ['Box', 'RotatedBox', 'KeyPoint', 'ClsResult', 'DetResult', 'OBBResult', 'PoseResult', 'SegResult', 'ResultType']
 
-Box = C.result.Box
-RotatedBox = C.result.RotatedBox
-KeyPoint = C.result.KeyPoint
-DetResult = C.result.DetResult
-OBBResult = C.result.OBBResult
-SegResult = C.result.SegResult
-PoseResult = C.result.PoseResult
-ClsResult = C.result.ClsResult
+
+Box: type[C.result.Box] = C.result.Box
+RotatedBox: type[C.result.RotatedBox] = C.result.RotatedBox
+KeyPoint: type[C.result.KeyPoint] = C.result.KeyPoint
+ClsResult: type[C.result.ClsResult] = C.result.ClsResult
+DetResult: type[C.result.DetResult] = C.result.DetResult
+OBBResult: type[C.result.OBBResult] = C.result.OBBResult
+PoseResult: type[C.result.PoseResult] = C.result.PoseResult
+SegResult: type[C.result.SegResult] = C.result.SegResult
+
+ResultType = Union[ClsResult, DetResult, OBBResult, PoseResult, SegResult]

@@ -129,11 +129,11 @@ def infer(engine, mode, input, output, labels, cudagraph):
         sys.exit(1)
 
     if output:
-        from .infer import generate_labels_with_colors
+        from .infer import generate_labels
 
         output_dir = Path(output)
         output_dir.mkdir(parents=True, exist_ok=True)
-        labels = generate_labels_with_colors(labels)
+        labels = generate_labels(labels)
 
     import cv2
     from rich.progress import track

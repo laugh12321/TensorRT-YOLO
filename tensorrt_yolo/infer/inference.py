@@ -16,57 +16,47 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   inference.py
-# Version :   5.1.0
+# Version :   5.1.1
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/07/03 14:06:55
 # Desc    :   Classes for deploying YOLO models, including
 #             detection, OBB, segmentation and pose estimation.
 # ==============================================================================
-from typing import Any, List, Union
+from collections.abc import Sequence
+from typing import Union
+
+from cv2.typing import MatLike
 
 from .. import c_lib_wrap as C
-from .result import ClsResult, DetResult, OBBResult, PoseResult, SegResult
+from .result import ResultType
 
 __all__ = [
-    "DeployDet",
-    "DeployCGDet",
-    "DeployOBB",
-    "DeployCGOBB",
-    "DeploySeg",
-    "DeployCGSeg",
-    "DeployPose",
-    "DeployCGPose",
-    "DeployCls",
-    "DeployCGCls",
-]
-
-ResultType = Union[
-    DetResult,
-    List[DetResult],
-    OBBResult,
-    List[OBBResult],
-    SegResult,
-    List[SegResult],
-    PoseResult,
-    List[PoseResult],
-    ClsResult,
-    List[ClsResult],
+    'DeployCGCls',
+    'DeployCGDet',
+    'DeployCGOBB',
+    'DeployCGPose',
+    'DeployCGSeg',
+    'DeployCls',
+    'DeployDet',
+    'DeployOBB',
+    'DeployPose',
+    'DeploySeg',
 ]
 
 
 class BaseDeploy:
-    def __init__(self, engine_file: str, model_class: Any, cuda_memory: bool = False, device: int = 0) -> None:
+    def __init__(self, engine_file: str, deploy_class: type, cuda_memory: bool = False, device: int = 0) -> None:
         """
         Base class for model deployment with common functionality.
 
         Args:
             engine_file (str): Path to the engine file.
-            model_class (Any): The model class for the specific type (e.g., DeployDet, DeployCGDet, etc.).
+            deploy_class (type): The deploy class for the specific type (e.g., DeployDet, DeployCGDet, etc.).
             cuda_memory (bool, optional): Flag indicating whether input data resides in GPU memory (true) or CPU memory (false). Defaults to false.
             device (int, optional): Device index for the inference. Defaults to 0.
         """
-        self._model = model_class(engine_file, cuda_memory, device)
+        self._model = deploy_class(engine_file, cuda_memory, device)
 
     @property
     def batch(self) -> int:
@@ -78,144 +68,44 @@ class BaseDeploy:
         """
         return self._model.batch
 
-    def predict(self, images: Union[Any, List[Any]]) -> ResultType:
+    def predict(self, images: Union[MatLike, Sequence[MatLike]]) -> Union[ResultType, Sequence[ResultType]]:  # type: ignore
         """
-        Predict the detection results for the given images.
+        Predict the inference results for the given images.
 
         Args:
-            images (Union[Any, List[Any]]): A single image or a list of images for which to predict object detections.
+            images (Union[MatLike, Sequence[MatLike]]): A single image or a list of images for which to predict inference.
 
         Returns:
-            ResultType: The detection result for the image or a list of detection results for multiple images.
+            Union[ResultType, Sequence[ResultType]]: The inference result for the image or a list of inference results for multiple images.
         """
         return self._model.predict(images)
 
 
-class DeployDet(BaseDeploy):
-    def __init__(self, engine_file: str, cuda_memory: bool = False, device: int = 0) -> None:
-        """
-        Initialize the DeployDet class with the given engine file.
+def create_deploy_class(deploy_class: type) -> type[BaseDeploy]:
+    """
+    Factory function to create a specific deployment class.
 
-        Args:
-            engine_file (str): Path to the engine file.
-            cuda_memory (bool, optional): Flag indicating whether input data resides in GPU memory (true) or CPU memory (false). Defaults to false.
-            device (int, optional): Device index for the inference. Defaults to 0.
-        """
-        super().__init__(engine_file, C.inference.DeployDet, cuda_memory, device)
+    Args:
+        deploy_class (type): The deploy class for the specific type.
 
+    Returns:
+        type[BaseDeploy]: A new deployment class.
+    """
 
-class DeployCGDet(BaseDeploy):
-    def __init__(self, engine_file: str, cuda_memory: bool = False, device: int = 0) -> None:
-        """
-        Initialize the DeployCGDet class with the given engine file.
+    class Deploy(BaseDeploy):
+        def __init__(self, engine_file: str, cuda_memory: bool = False, device: int = 0) -> None:
+            super().__init__(engine_file, deploy_class, cuda_memory, device)
 
-        Args:
-            engine_file (str): Path to the engine file.
-            cuda_memory (bool, optional): Flag indicating whether input data resides in GPU memory (true) or CPU memory (false). Defaults to false.
-            device (int, optional): Device index for the inference. Defaults to 0.
-        """
-        super().__init__(engine_file, C.inference.DeployCGDet, cuda_memory, device)
+    return Deploy
 
 
-class DeployOBB(BaseDeploy):
-    def __init__(self, engine_file: str, cuda_memory: bool = False, device: int = 0) -> None:
-        """
-        Initialize the DeployOBB class with the given engine file.
-
-        Args:
-            engine_file (str): Path to the engine file.
-            cuda_memory (bool, optional): Flag indicating whether input data resides in GPU memory (true) or CPU memory (false). Defaults to false.
-            device (int, optional): Device index for the inference. Defaults to 0.
-        """
-        super().__init__(engine_file, C.inference.DeployOBB, cuda_memory, device)
-
-
-class DeployCGOBB(BaseDeploy):
-    def __init__(self, engine_file: str, cuda_memory: bool = False, device: int = 0) -> None:
-        """
-        Initialize the DeployCGOBB class with the given engine file.
-
-        Args:
-            engine_file (str): Path to the engine file.
-            cuda_memory (bool, optional): Flag indicating whether input data resides in GPU memory (true) or CPU memory (false). Defaults to false.
-            device (int, optional): Device index for the inference. Defaults to 0.
-        """
-        super().__init__(engine_file, C.inference.DeployCGOBB, cuda_memory, device)
-
-
-class DeploySeg(BaseDeploy):
-    def __init__(self, engine_file: str, cuda_memory: bool = False, device: int = 0) -> None:
-        """
-        Initialize the DeploySeg class with the given engine file.
-
-        Args:
-            engine_file (str): Path to the engine file.
-            cuda_memory (bool, optional): Flag indicating whether input data resides in GPU memory (true) or CPU memory (false). Defaults to false.
-            device (int, optional): Device index for the inference. Defaults to 0.
-        """
-        super().__init__(engine_file, C.inference.DeploySeg, cuda_memory, device)
-
-
-class DeployCGSeg(BaseDeploy):
-    def __init__(self, engine_file: str, cuda_memory: bool = False, device: int = 0) -> None:
-        """
-        Initialize the DeployCGSeg class with the given engine file.
-
-        Args:
-            engine_file (str): Path to the engine file.
-            cuda_memory (bool, optional): Flag indicating whether input data resides in GPU memory (true) or CPU memory (false). Defaults to false.
-            device (int, optional): Device index for the inference. Defaults to 0.
-        """
-        super().__init__(engine_file, C.inference.DeployCGSeg, cuda_memory, device)
-
-
-class DeployPose(BaseDeploy):
-    def __init__(self, engine_file: str, cuda_memory: bool = False, device: int = 0) -> None:
-        """
-        Initialize the DeployPose class with the given engine file.
-
-        Args:
-            engine_file (str): Path to the engine file.
-            cuda_memory (bool, optional): Flag indicating whether input data resides in GPU memory (true) or CPU memory (false). Defaults to false.
-            device (int, optional): Device index for the inference. Defaults to 0.
-        """
-        super().__init__(engine_file, C.inference.DeployPose, cuda_memory, device)
-
-
-class DeployCGPose(BaseDeploy):
-    def __init__(self, engine_file: str, cuda_memory: bool = False, device: int = 0) -> None:
-        """
-        Initialize the DeployCGPose class with the given engine file.
-
-        Args:
-            engine_file (str): Path to the engine file.
-            cuda_memory (bool, optional): Flag indicating whether input data resides in GPU memory (true) or CPU memory (false). Defaults to false.
-            device (int, optional): Device index for the inference. Defaults to 0.
-        """
-        super().__init__(engine_file, C.inference.DeployCGPose, cuda_memory, device)
-
-
-class DeployCls(BaseDeploy):
-    def __init__(self, engine_file: str, cuda_memory: bool = False, device: int = 0) -> None:
-        """
-        Initialize the DeployCls class with the given engine file.
-
-        Args:
-            engine_file (str): Path to the engine file.
-            cuda_memory (bool, optional): Flag indicating whether input data resides in GPU memory (true) or CPU memory (false). Defaults to false.
-            device (int, optional): Device index for the inference. Defaults to 0.
-        """
-        super().__init__(engine_file, C.inference.DeployCls, cuda_memory, device)
-
-
-class DeployCGCls(BaseDeploy):
-    def __init__(self, engine_file: str, cuda_memory: bool = False, device: int = 0) -> None:
-        """
-        Initialize the DeployCGCls class with the given engine file.
-
-        Args:
-            engine_file (str): Path to the engine file.
-            cuda_memory (bool, optional): Flag indicating whether input data resides in GPU memory (true) or CPU memory (false). Defaults to false.
-            device (int, optional): Device index for the inference. Defaults to 0.
-        """
-        super().__init__(engine_file, C.inference.DeployCGCls, cuda_memory, device)
+DeployCls = create_deploy_class(C.inference.DeployCls)
+DeployCGCls = create_deploy_class(C.inference.DeployCGCls)
+DeployDet = create_deploy_class(C.inference.DeployDet)
+DeployCGDet = create_deploy_class(C.inference.DeployCGDet)
+DeployOBB = create_deploy_class(C.inference.DeployOBB)
+DeployCGOBB = create_deploy_class(C.inference.DeployCGOBB)
+DeployPose = create_deploy_class(C.inference.DeployPose)
+DeployCGPose = create_deploy_class(C.inference.DeployCGPose)
+DeploySeg = create_deploy_class(C.inference.DeploySeg)
+DeployCGSeg = create_deploy_class(C.inference.DeployCGSeg)

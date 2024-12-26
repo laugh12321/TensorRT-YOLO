@@ -25,8 +25,9 @@
 import os
 import re
 import sys
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Optional
 
 from loguru import logger
 
@@ -67,12 +68,12 @@ def find_library(base_path: Path, lib_name: str) -> Optional[Path]:
     return None
 
 
-def check_libs(libs_dir: Dict[str, Path]) -> bool:
+def check_libs(libs_dir: Mapping[str, Path]) -> bool:
     """
     Check if all necessary libraries are found.
 
     Args:
-        libs_dir (Dict[str, Path]): A dictionary containing library paths.
+        libs_dir (Mapping[str, Path]): A dictionary containing library paths.
 
     Returns:
         bool: True if all libraries are found, False otherwise.
@@ -88,13 +89,13 @@ def check_libs(libs_dir: Dict[str, Path]) -> bool:
     return False
 
 
-def update_libs(user_specified_dir: Path, libs_dir: Dict[str, Path]) -> bool:
+def update_libs(user_specified_dir: Path, libs_dir: Mapping[str, Path]) -> bool:
     """
     Update library directories and check if all libraries are found.
 
     Args:
         user_specified_dir (Path): The directory to check.
-        libs_dir (Dict[str, Path]): A dictionary to store library paths.
+        libs_dir (Mapping[str, Path]): A dictionary to store library paths.
 
     Returns:
         bool: True if all libraries are found, False otherwise.
@@ -122,7 +123,7 @@ def add_dll_search_dir(dir_path: Path) -> None:
 
 
 if os.name == "nt":
-    libs_dir: Dict[str, Path] = {}
+    libs_dir: dict[str, Path] = {}
     need_lib_dirs = [Path(r"${CUDA_PATH}"), Path(r"${TENSORRT_PATH}")]
     sys_paths = [Path(p) for p in os.environ["PATH"].strip().split(";")]
 
