@@ -6,8 +6,8 @@ namespace deploy {
 
 void Tensor::reallocHost(int64_t bytes) {
     if (hostCap < bytes) {
-        CUDA(cudaFreeHost(hostPtr));
-        CUDA(cudaMallocHost(&hostPtr, bytes));
+        CHECK(cudaFreeHost(hostPtr));
+        CHECK(cudaMallocHost(&hostPtr, bytes));
         hostCap = bytes;
     }
     hostBytes = bytes;
@@ -15,8 +15,8 @@ void Tensor::reallocHost(int64_t bytes) {
 
 void Tensor::reallocDevice(int64_t bytes) {
     if (deviceCap < bytes) {
-        CUDA(cudaFree(devicePtr));
-        CUDA(cudaMalloc(&devicePtr, bytes));
+        CHECK(cudaFree(devicePtr));
+        CHECK(cudaMalloc(&devicePtr, bytes));
         deviceCap = bytes;
     }
     deviceBytes = bytes;
@@ -24,10 +24,10 @@ void Tensor::reallocDevice(int64_t bytes) {
 
 Tensor::~Tensor() {
     if (hostPtr != nullptr) {
-        CUDA(cudaFreeHost(hostPtr));
+        CHECK(cudaFreeHost(hostPtr));
     }
     if (devicePtr != nullptr) {
-        CUDA(cudaFree(devicePtr));
+        CHECK(cudaFree(devicePtr));
     }
 }
 

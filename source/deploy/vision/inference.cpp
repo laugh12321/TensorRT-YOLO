@@ -12,7 +12,7 @@ namespace deploy {
 template <typename T>
 BaseTemplate<T>::BaseTemplate(const std::string& file, bool cudaMem, int device) : cudaMem(cudaMem) {
     // Set the CUDA device
-    CUDA(cudaSetDevice(device));
+    CHECK(cudaSetDevice(device));
 
     // Load the engine data from file
     auto data = loadFile(file);
@@ -207,12 +207,12 @@ DeployTemplate<T>::~DeployTemplate() {
 template <typename T>
 void DeployTemplate<T>::allocate() {
     // Create infer stream
-    CUDA(cudaStreamCreate(&this->inferStream));
+    CHECK(cudaStreamCreate(&this->inferStream));
 
     // Create input streams
     this->inputStreams.resize(this->batch);
     for (auto& stream : this->inputStreams) {
-        CUDA(cudaStreamCreate(&stream));
+        CHECK(cudaStreamCreate(&stream));
     }
 
     // Allocate transforms and image tensors
@@ -225,14 +225,14 @@ template <typename T>
 void DeployTemplate<T>::release() {
     // Release infer stream
     if (this->inferStream != nullptr) {
-        CUDA(cudaStreamDestroy(this->inferStream));
+        CHECK(cudaStreamDestroy(this->inferStream));
         this->inferStream = nullptr;
     }
 
     // Release input streams
     for (auto& stream : this->inputStreams) {
         if (stream != nullptr) {
-            CUDA(cudaStreamDestroy(stream));
+            CHECK(cudaStreamDestroy(stream));
         }
     }
     this->inputStreams.clear();
@@ -288,7 +288,7 @@ void DeployTemplate<T>::preProcess(const int idx, const Image& image, cudaStream
         void* imageHost   = this->imageTensors[idx].host(imageSize);
 
         std::memcpy(imageHost, image.rgbPtr, imageSize * sizeof(uint8_t));
-        CUDA(cudaMemcpyAsync(imageDevice, imageHost, imageSize * sizeof(uint8_t), cudaMemcpyHostToDevice, stream));
+        CHECK(cudaMemcpyAsync(imageDevice, imageHost, imageSize * sizeof(uint8_t), cudaMemcpyHostToDevice, stream));
     }
 
     cudaWarpAffine(static_cast<uint8_t*>(imageDevice), image.width, image.height, inputDevice, this->width, this->height, this->transforms[idx].matrix, stream);
@@ -331,7 +331,7 @@ std::vector<T> DeployTemplate<T>::predict(const std::vector<Image>& images) {
         }
 
         for (auto& stream : this->inputStreams) {
-            CUDA(cudaStreamSynchronize(stream));
+            CHECK(cudaStreamSynchronize(stream));
         }
     } else {
         this->preProcess(0, images[0], this->inferStream);
@@ -341,11 +341,11 @@ std::vector<T> DeployTemplate<T>::predict(const std::vector<Image>& images) {
 
     for (auto& tensorInfo : this->tensorInfos) {
         if (!tensorInfo.input) {
-            CUDA(cudaMemcpyAsync(tensorInfo.tensor.host(), tensorInfo.tensor.device(), tensorInfo.bytes, cudaMemcpyDeviceToHost, this->inferStream));
+            CHECK(cudaMemcpyAsync(tensorInfo.tensor.host(), tensorInfo.tensor.device(), tensorInfo.bytes, cudaMemcpyDeviceToHost, this->inferStream));
         }
     }
 
-    CUDA(cudaStreamSynchronize(this->inferStream));
+    CHECK(cudaStreamSynchronize(this->inferStream));
 
     results.reserve(numImages);
     for (int i = 0; i < numImages; ++i) {
@@ -386,21 +386,21 @@ DeployCGTemplate<T>::~DeployCGTemplate() {
 template <typename T>
 void DeployCGTemplate<T>::allocate() {
     // Create the main inference stream
-    CUDA(cudaStreamCreate(&this->inferStream));
+    CHECK(cudaStreamCreate(&this->inferStream));
 
     // Create resources for batched inputs
     if (this->batch > 1) {
         this->inputStreams.reserve(this->batch);
         for (int i = 0; i < this->batch; i++) {
             cudaStream_t stream;
-            CUDA(cudaStreamCreate(&stream));
+            CHECK(cudaStreamCreate(&stream));
             this->inputStreams.push_back(stream);
         }
 
         this->inputEvents.reserve(this->batch * 2);
         for (int i = 0; i < this->batch * 2; i++) {
             cudaEvent_t event;
-            CUDA(cudaEventCreate(&event));
+            CHECK(cudaEventCreate(&event));
             this->inputEvents.push_back(event);
         }
     }
@@ -426,19 +426,19 @@ template <typename T>
 void DeployCGTemplate<T>::release() {
     // Release CUDA graph execution
     if (this->inferGraphExec != nullptr) {
-        CUDA(cudaGraphExecDestroy(this->inferGraphExec));
+        CHECK(cudaGraphExecDestroy(this->inferGraphExec));
         this->inferGraphExec = nullptr;
     }
 
     // Release CUDA graph
     if (this->inferGraph != nullptr) {
-        CUDA(cudaGraphDestroy(this->inferGraph));
+        CHECK(cudaGraphDestroy(this->inferGraph));
         this->inferGraph = nullptr;
     }
 
     // Release CUDA stream
     if (this->inferStream != nullptr) {
-        CUDA(cudaStreamDestroy(this->inferStream));
+        CHECK(cudaStreamDestroy(this->inferStream));
         this->inferStream = nullptr;
     }
 
@@ -447,7 +447,7 @@ void DeployCGTemplate<T>::release() {
         // Release input streams
         for (auto& stream : this->inputStreams) {
             if (stream != nullptr) {
-                CUDA(cudaStreamDestroy(stream));
+                CHECK(cudaStreamDestroy(stream));
             }
         }
         this->inputStreams.clear();
@@ -455,7 +455,7 @@ void DeployCGTemplate<T>::release() {
         // Release input events
         for (auto& event : this->inputEvents) {
             if (event != nullptr) {
-                CUDA(cudaEventDestroy(event));
+                CHECK(cudaEventDestroy(event));
             }
         }
         this->inputEvents.clear();
@@ -513,28 +513,28 @@ void DeployCGTemplate<T>::createGraph() {
     if (!this->engineCtx->mContext->enqueueV3(this->inferStream)) {
         throw std::runtime_error("Failed to enqueueV3 before graph creation");
     }
-    CUDA(cudaStreamSynchronize(this->inferStream));
+    CHECK(cudaStreamSynchronize(this->inferStream));
 
     // Begin capturing the CUDA graph
-    CUDA(cudaStreamBeginCapture(this->inferStream, cudaStreamCaptureModeGlobal));
+    CHECK(cudaStreamBeginCapture(this->inferStream, cudaStreamCaptureModeGlobal));
 
     // Copy image data to device memory if CUDA memory optimization is not enabled
     if (!this->cudaMem) {
-        CUDA(cudaMemcpyAsync(this->imageTensor->device(), this->imageTensor->host(), this->inputSize * sizeof(uint8_t) * this->batch, cudaMemcpyHostToDevice, this->inferStream));
+        CHECK(cudaMemcpyAsync(this->imageTensor->device(), this->imageTensor->host(), this->inputSize * sizeof(uint8_t) * this->batch, cudaMemcpyHostToDevice, this->inferStream));
     }
 
     // Warp affine transformations for batched inputs
     if (this->batch > 1) {
         for (int i = 0; i < this->batch; i++) {
-            CUDA(cudaEventRecord(this->inputEvents[i * 2], this->inferStream));
-            CUDA(cudaStreamWaitEvent(this->inputStreams[i], this->inputEvents[i * 2], 0));
+            CHECK(cudaEventRecord(this->inputEvents[i * 2], this->inferStream));
+            CHECK(cudaStreamWaitEvent(this->inputStreams[i], this->inputEvents[i * 2], 0));
 
             uint8_t* input  = static_cast<uint8_t*>(this->imageTensor->device()) + i * this->inputSize * sizeof(uint8_t);
             float*   output = static_cast<float*>(this->tensorInfos[0].tensor.device()) + i * this->inputSize;
             cudaWarpAffine(input, this->width, this->height, output, this->width, this->height, this->transforms[i].matrix, this->inputStreams[i]);
 
-            CUDA(cudaEventRecord(this->inputEvents[i * 2 + 1], this->inputStreams[i]));
-            CUDA(cudaStreamWaitEvent(this->inferStream, this->inputEvents[i * 2 + 1], 0));
+            CHECK(cudaEventRecord(this->inputEvents[i * 2 + 1], this->inputStreams[i]));
+            CHECK(cudaStreamWaitEvent(this->inferStream, this->inputEvents[i * 2 + 1], 0));
         }
     } else {
         cudaWarpAffine(static_cast<uint8_t*>(this->imageTensor->device()), this->width, this->height, static_cast<float*>(this->tensorInfos[0].tensor.device()), this->width, this->height, this->transforms[0].matrix, this->inferStream);
@@ -548,15 +548,15 @@ void DeployCGTemplate<T>::createGraph() {
     // Copy the output data from device to host
     for (auto& tensorInfo : this->tensorInfos) {
         if (!tensorInfo.input) {
-            CUDA(cudaMemcpyAsync(tensorInfo.tensor.host(), tensorInfo.tensor.device(), tensorInfo.bytes, cudaMemcpyDeviceToHost, this->inferStream));
+            CHECK(cudaMemcpyAsync(tensorInfo.tensor.host(), tensorInfo.tensor.device(), tensorInfo.bytes, cudaMemcpyDeviceToHost, this->inferStream));
         }
     }
 
     // End capturing the CUDA graph
-    CUDA(cudaStreamEndCapture(this->inferStream, &this->inferGraph));
+    CHECK(cudaStreamEndCapture(this->inferStream, &this->inferGraph));
 
     // Instantiate the CUDA graph
-    CUDA(cudaGraphInstantiate(&this->inferGraphExec, this->inferGraph, nullptr, nullptr, 0));
+    CHECK(cudaGraphInstantiate(&this->inferGraphExec, this->inferGraph, nullptr, nullptr, 0));
 }
 
 // Retrieves and stores nodes in the CUDA graph.
@@ -564,17 +564,17 @@ template <typename T>
 void DeployCGTemplate<T>::getGraphNodes() {
     size_t numNodes  = this->cudaMem ? this->batch : this->batch + 1;
     this->graphNodes = std::make_unique<cudaGraphNode_t[]>(numNodes);
-    CUDA(cudaGraphGetNodes(this->inferGraph, this->graphNodes.get(), &numNodes));
+    CHECK(cudaGraphGetNodes(this->inferGraph, this->graphNodes.get(), &numNodes));
 
     int idx = 0;
     for (size_t i = 0; i < numNodes; i++) {
         cudaGraphNodeType nodeType;
         cudaGraphNodeGetType(this->graphNodes[i], &nodeType);
         if (nodeType == cudaGraphNodeTypeKernel) {
-            CUDA(cudaGraphKernelNodeGetParams(this->graphNodes[i], &this->kernelsParams[idx]));
+            CHECK(cudaGraphKernelNodeGetParams(this->graphNodes[i], &this->kernelsParams[idx]));
             idx++;
         } else if (nodeType == cudaGraphNodeTypeMemcpy) {
-            CUDA(cudaGraphMemcpyNodeGetParams(this->graphNodes[i], &this->memcpyParams));
+            CHECK(cudaGraphMemcpyNodeGetParams(this->graphNodes[i], &this->memcpyParams));
         }
     }
 }
@@ -608,7 +608,7 @@ std::vector<T> DeployCGTemplate<T>::predict(const std::vector<Image>& images) {
             this->kernelsParams[i].kernelParams[2] = (void*)&images[i].height;
             this->kernelsParams[i].kernelParams[6] = (void*)&this->transforms[i].matrix[0];
             this->kernelsParams[i].kernelParams[7] = (void*)&this->transforms[i].matrix[1];
-            CUDA(cudaGraphExecKernelNodeSetParams(this->inferGraphExec, this->graphNodes[i], &this->kernelsParams[i]));
+            CHECK(cudaGraphExecKernelNodeSetParams(this->inferGraphExec, this->graphNodes[i], &this->kernelsParams[i]));
         }
     } else {
         int totalSize = 0;
@@ -631,7 +631,7 @@ std::vector<T> DeployCGTemplate<T>::predict(const std::vector<Image>& images) {
         this->memcpyParams.srcPtr = make_cudaPitchedPtr(this->imageTensor->host(), totalSize * sizeof(uint8_t), totalSize * sizeof(uint8_t), 1);
         this->memcpyParams.dstPtr = make_cudaPitchedPtr(this->imageTensor->device(), totalSize * sizeof(uint8_t), totalSize * sizeof(uint8_t), 1);
         this->memcpyParams.extent = make_cudaExtent(totalSize * sizeof(uint8_t), 1, 1);
-        CUDA(cudaGraphExecMemcpyNodeSetParams(this->inferGraphExec, this->graphNodes[0], &this->memcpyParams));
+        CHECK(cudaGraphExecMemcpyNodeSetParams(this->inferGraphExec, this->graphNodes[0], &this->memcpyParams));
 
         uint8_t* devicePtr = static_cast<uint8_t*>(device);
         for (int i = 0; i < this->batch; i++) {
@@ -640,16 +640,16 @@ std::vector<T> DeployCGTemplate<T>::predict(const std::vector<Image>& images) {
             this->kernelsParams[i].kernelParams[2] = (void*)&images[i].height;
             this->kernelsParams[i].kernelParams[6] = (void*)&this->transforms[i].matrix[0];
             this->kernelsParams[i].kernelParams[7] = (void*)&this->transforms[i].matrix[1];
-            CUDA(cudaGraphExecKernelNodeSetParams(this->inferGraphExec, this->graphNodes[i + 1], &this->kernelsParams[i]));
+            CHECK(cudaGraphExecKernelNodeSetParams(this->inferGraphExec, this->graphNodes[i + 1], &this->kernelsParams[i]));
             devicePtr += this->imageSize[i];
         }
     }
 
     // Launch the CUDA graph
-    CUDA(cudaGraphLaunch(this->inferGraphExec, this->inferStream));
+    CHECK(cudaGraphLaunch(this->inferGraphExec, this->inferStream));
 
     // Synchronize the stream to ensure all operations are completed
-    CUDA(cudaStreamSynchronize(this->inferStream));
+    CHECK(cudaStreamSynchronize(this->inferStream));
 
     results.reserve(this->batch);
     for (int i = 0; i < this->batch; ++i) {

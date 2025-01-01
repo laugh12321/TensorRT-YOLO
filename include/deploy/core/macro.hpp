@@ -13,39 +13,33 @@
 namespace deploy {
 
 /**
- * @brief Checks for CUDA errors and prints error information if an error occurs.
+ * @brief Checks for CUDA errors and handles them by printing an error message.
  *
- * This function checks the CUDA error code returned by CUDA API calls. If the code
- * indicates an error, it prints out information about the error, including the file
- * and line number where the error occurred, the error code itself, and a textual
- * description of the error.
+ * This function verifies the result of CUDA API calls. If an error occurs, it outputs
+ * the error details, including the file name, line number, and a description of the error.
+ * The program will terminate if a CUDA error is detected.
  *
- * @param code The CUDA error code to check.
- * @param file The file where the error occurred.
+ * @param code The CUDA error code returned by a CUDA API call.
+ * @param file The name of the file where the error occurred.
  * @param line The line number where the error occurred.
- * @return bool Returns true if no CUDA error occurred, false otherwise.
  */
-inline bool cudaError(cudaError_t code, const char* file, int line) {
+inline void checkCudaError(cudaError_t code, const char* file, int line) {
     if (code != cudaSuccess) {
-        std::cerr << "CUDA Error:\n";
-        std::cerr << "    File:       " << file << "\n";
-        std::cerr << "    Line:       " << line << "\n";
-        std::cerr << "    Error code: " << code << "\n";
-        std::cerr << "    Error text: " << cudaGetErrorString(code) << "\n";
-        return false;
+        std::cerr << "CUDA Failure at " << file << ":" << line << ": "
+                  << cudaGetErrorString(code) << std::endl;
+        exit(EXIT_FAILURE);
     }
-    return true;
 }
 
 /**
- * @brief Macro for simplified CUDA error checking.
+ * @brief Macro to simplify CUDA error checking.
  *
- * This macro wraps the `cudaError` function, allowing easy and concise checking
- * of CUDA API calls. It evaluates the given CUDA API call `code`, and if it returns
- * an error, the `cudaError` function is called to print error information.
+ * This macro wraps around the `checkCudaError` function, making it easier to check
+ * CUDA API calls for errors. If the CUDA call returns an error, the macro captures the
+ * file and line where the error occurred and outputs the error message.
  *
- * @param code The CUDA API call to be executed and checked for errors.
+ * @param code The CUDA API call to check for errors.
  */
-#define CUDA(code) cudaError((code), __FILE__, __LINE__)
+#define CHECK(code) checkCudaError((code), __FILE__, __LINE__)
 
 }  // namespace deploy

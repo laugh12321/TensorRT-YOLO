@@ -37,24 +37,24 @@ std::vector<char> loadFile(const std::string& filePath) {
 
 GpuTimer::GpuTimer(cudaStream_t stream)
     : mStream(stream) {
-    CUDA(cudaEventCreate(&mStart));
-    CUDA(cudaEventCreate(&mStop));
+    CHECK(cudaEventCreate(&mStart));
+    CHECK(cudaEventCreate(&mStop));
 }
 
 GpuTimer::~GpuTimer() {
-    CUDA(cudaEventDestroy(mStart));
-    CUDA(cudaEventDestroy(mStop));
+    CHECK(cudaEventDestroy(mStart));
+    CHECK(cudaEventDestroy(mStop));
 }
 
 void GpuTimer::start() {
-    CUDA(cudaEventRecord(mStart, mStream));
+    CHECK(cudaEventRecord(mStart, mStream));
 }
 
 void GpuTimer::stop() {
-    CUDA(cudaEventRecord(mStop, mStream));
-    CUDA(cudaEventSynchronize(mStop));
+    CHECK(cudaEventRecord(mStop, mStream));
+    CHECK(cudaEventSynchronize(mStop));
     float milliseconds = 0.0F;
-    CUDA(cudaEventElapsedTime(&milliseconds, mStart, mStop));
+    CHECK(cudaEventElapsedTime(&milliseconds, mStart, mStop));
     setMilliseconds(getMilliseconds() + milliseconds);
 }
 
