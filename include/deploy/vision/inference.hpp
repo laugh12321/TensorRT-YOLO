@@ -7,6 +7,7 @@
 
 #include "deploy/core/core.hpp"
 #include "deploy/core/macro.hpp"
+#include "deploy/core/memory.hpp"
 #include "deploy/core/tensor.hpp"
 #include "deploy/vision/cudaWarp.hpp"
 #include "deploy/vision/result.hpp"
@@ -184,9 +185,9 @@ private:
     bool dynamic{false};
 
     /**
-     * @brief Vector of input tensors for holding preprocessed image data.
+     * @brief Vector of input buffers for holding preprocessed image data.
      */
-    std::vector<Tensor> imageTensors{};
+    std::vector<MemoryManager<PinnedMemory>> imageBuffers{};
 
     /**
      * @brief Allocates required resources for inference execution.
@@ -300,9 +301,9 @@ private:
     std::vector<cudaEvent_t> inputEvents{};
 
     /**
-     * @brief Tensor for storing batched input images.
+     * @brief Buffer for storing batched input images.
      */
-    std::shared_ptr<Tensor> imageTensor{};
+    MemoryManager<PinnedMemory> imageBuffer{};
 
     /**
      * @brief Stores the number of elements for each input image in the batch.

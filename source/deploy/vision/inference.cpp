@@ -2,6 +2,7 @@
 #include <cstring>
 #include <stdexcept>
 
+#include "deploy/core/memory.hpp"
 #include "deploy/core/types.hpp"
 #include "deploy/utils/utils.hpp"
 #include "deploy/vision/inference.hpp"
@@ -27,10 +28,10 @@ BaseTemplate<T>::BaseTemplate(const std::string& file, bool cudaMem, int device)
 // Processes the inference results for a specific index.
 template <>
 DetResult BaseTemplate<DetResult>::postProcess(const int idx) {
-    int    num     = static_cast<int*>(this->tensorInfos[1].tensor.host())[idx];
-    float* boxes   = static_cast<float*>(this->tensorInfos[2].tensor.host()) + idx * this->tensorInfos[2].dims.d[1] * this->tensorInfos[2].dims.d[2];
-    float* scores  = static_cast<float*>(this->tensorInfos[3].tensor.host()) + idx * this->tensorInfos[3].dims.d[1];
-    int*   classes = static_cast<int*>(this->tensorInfos[4].tensor.host()) + idx * this->tensorInfos[4].dims.d[1];
+    int    num     = static_cast<int*>(this->tensorInfos[1].buffer.host())[idx];
+    float* boxes   = static_cast<float*>(this->tensorInfos[2].buffer.host()) + idx * this->tensorInfos[2].dims.d[1] * this->tensorInfos[2].dims.d[2];
+    float* scores  = static_cast<float*>(this->tensorInfos[3].buffer.host()) + idx * this->tensorInfos[3].dims.d[1];
+    int*   classes = static_cast<int*>(this->tensorInfos[4].buffer.host()) + idx * this->tensorInfos[4].dims.d[1];
 
     DetResult result;
     result.num = num;
@@ -56,10 +57,10 @@ DetResult BaseTemplate<DetResult>::postProcess(const int idx) {
 
 template <>
 OBBResult BaseTemplate<OBBResult>::postProcess(const int idx) {
-    int    num     = static_cast<int*>(this->tensorInfos[1].tensor.host())[idx];
-    float* boxes   = static_cast<float*>(this->tensorInfos[2].tensor.host()) + idx * this->tensorInfos[2].dims.d[1] * this->tensorInfos[2].dims.d[2];
-    float* scores  = static_cast<float*>(this->tensorInfos[3].tensor.host()) + idx * this->tensorInfos[3].dims.d[1];
-    int*   classes = static_cast<int*>(this->tensorInfos[4].tensor.host()) + idx * this->tensorInfos[4].dims.d[1];
+    int    num     = static_cast<int*>(this->tensorInfos[1].buffer.host())[idx];
+    float* boxes   = static_cast<float*>(this->tensorInfos[2].buffer.host()) + idx * this->tensorInfos[2].dims.d[1] * this->tensorInfos[2].dims.d[2];
+    float* scores  = static_cast<float*>(this->tensorInfos[3].buffer.host()) + idx * this->tensorInfos[3].dims.d[1];
+    int*   classes = static_cast<int*>(this->tensorInfos[4].buffer.host()) + idx * this->tensorInfos[4].dims.d[1];
 
     OBBResult result;
     result.num = num;
@@ -89,11 +90,11 @@ SegResult BaseTemplate<SegResult>::postProcess(const int idx) {
     int maskHeight = this->tensorInfos[5].dims.d[2];
     int maskWidth  = this->tensorInfos[5].dims.d[3];
 
-    int      num     = static_cast<int*>(this->tensorInfos[1].tensor.host())[idx];
-    float*   boxes   = static_cast<float*>(this->tensorInfos[2].tensor.host()) + idx * this->tensorInfos[2].dims.d[1] * this->tensorInfos[2].dims.d[2];
-    float*   scores  = static_cast<float*>(this->tensorInfos[3].tensor.host()) + idx * this->tensorInfos[3].dims.d[1];
-    int*     classes = static_cast<int*>(this->tensorInfos[4].tensor.host()) + idx * this->tensorInfos[4].dims.d[1];
-    uint8_t* masks   = static_cast<uint8_t*>(this->tensorInfos[5].tensor.host()) + idx * this->tensorInfos[5].dims.d[1] * maskHeight * maskWidth;
+    int      num     = static_cast<int*>(this->tensorInfos[1].buffer.host())[idx];
+    float*   boxes   = static_cast<float*>(this->tensorInfos[2].buffer.host()) + idx * this->tensorInfos[2].dims.d[1] * this->tensorInfos[2].dims.d[2];
+    float*   scores  = static_cast<float*>(this->tensorInfos[3].buffer.host()) + idx * this->tensorInfos[3].dims.d[1];
+    int*     classes = static_cast<int*>(this->tensorInfos[4].buffer.host()) + idx * this->tensorInfos[4].dims.d[1];
+    uint8_t* masks   = static_cast<uint8_t*>(this->tensorInfos[5].buffer.host()) + idx * this->tensorInfos[5].dims.d[1] * maskHeight * maskWidth;
 
     SegResult result;
     result.num = num;
@@ -134,11 +135,11 @@ PoseResult BaseTemplate<PoseResult>::postProcess(const int idx) {
     int nkpt = this->tensorInfos[5].dims.d[2];
     int ndim = this->tensorInfos[5].dims.d[3];
 
-    int    num     = *(static_cast<int*>(this->tensorInfos[1].tensor.host()) + idx);
-    float* boxes   = static_cast<float*>(this->tensorInfos[2].tensor.host()) + idx * this->tensorInfos[2].dims.d[1] * this->tensorInfos[2].dims.d[2];
-    float* scores  = static_cast<float*>(this->tensorInfos[3].tensor.host()) + idx * this->tensorInfos[3].dims.d[1];
-    int*   classes = static_cast<int*>(this->tensorInfos[4].tensor.host()) + idx * this->tensorInfos[4].dims.d[1];
-    float* kpts    = static_cast<float*>(this->tensorInfos[5].tensor.host()) + idx * this->tensorInfos[5].dims.d[1] * nkpt * ndim;
+    int    num     = *(static_cast<int*>(this->tensorInfos[1].buffer.host()) + idx);
+    float* boxes   = static_cast<float*>(this->tensorInfos[2].buffer.host()) + idx * this->tensorInfos[2].dims.d[1] * this->tensorInfos[2].dims.d[2];
+    float* scores  = static_cast<float*>(this->tensorInfos[3].buffer.host()) + idx * this->tensorInfos[3].dims.d[1];
+    int*   classes = static_cast<int*>(this->tensorInfos[4].buffer.host()) + idx * this->tensorInfos[4].dims.d[1];
+    float* kpts    = static_cast<float*>(this->tensorInfos[5].buffer.host()) + idx * this->tensorInfos[5].dims.d[1] * nkpt * ndim;
 
     PoseResult result;
     result.num = num;
@@ -173,7 +174,7 @@ PoseResult BaseTemplate<PoseResult>::postProcess(const int idx) {
 
 template <>
 ClsResult BaseTemplate<ClsResult>::postProcess(const int idx) {
-    float* top5 = static_cast<float*>(this->tensorInfos[1].tensor.host()) + idx * this->tensorInfos[1].dims.d[1] * this->tensorInfos[1].dims.d[2];
+    float* top5 = static_cast<float*>(this->tensorInfos[1].buffer.host()) + idx * this->tensorInfos[1].dims.d[1] * this->tensorInfos[1].dims.d[2];
 
     ClsResult result;
     for (int i = 0; i < this->tensorInfos[1].dims.d[1]; ++i) {
@@ -215,9 +216,9 @@ void DeployTemplate<T>::allocate() {
         CHECK(cudaStreamCreate(&stream));
     }
 
-    // Allocate transforms and image tensors
+    // Allocate transforms and image buffers
     this->transforms.resize(this->batch, TransformMatrix());
-    if (!this->cudaMem) this->imageTensors.resize(this->batch, Tensor());
+    if (!this->cudaMem) this->imageBuffers.resize(this->batch);
 }
 
 // Releases resources that were allocated for inference.
@@ -241,7 +242,7 @@ void DeployTemplate<T>::release() {
     this->transforms.clear();
     this->tensorInfos.clear();
     this->engineCtx.reset();
-    if (!this->cudaMem) this->imageTensors.clear();
+    if (!this->cudaMem) this->imageBuffers.clear();
 }
 
 // Configures input and output tensors for model inference.
@@ -277,15 +278,16 @@ void DeployTemplate<T>::preProcess(const int idx, const Image& image, cudaStream
     this->transforms[idx].update(image.width, image.height, this->width, this->height);
 
     int64_t inputSize   = 3 * this->height * this->width;
-    float*  inputDevice = static_cast<float*>(this->tensorInfos[0].tensor.device()) + idx * inputSize;
+    float*  inputDevice = static_cast<float*>(this->tensorInfos[0].buffer.device()) + idx * inputSize;
 
     void* imageDevice = nullptr;
     if (this->cudaMem) {
         imageDevice = image.rgbPtr;
     } else {
         int64_t imageSize = 3 * image.width * image.height;
-        imageDevice       = this->imageTensors[idx].device(imageSize);
-        void* imageHost   = this->imageTensors[idx].host(imageSize);
+        this->imageBuffers[idx].allocate(imageSize);
+        imageDevice     = this->imageBuffers[idx].device();
+        void* imageHost = this->imageBuffers[idx].host();
 
         std::memcpy(imageHost, image.rgbPtr, imageSize * sizeof(uint8_t));
         CHECK(cudaMemcpyAsync(imageDevice, imageHost, imageSize * sizeof(uint8_t), cudaMemcpyHostToDevice, stream));
@@ -317,9 +319,9 @@ std::vector<T> DeployTemplate<T>::predict(const std::vector<Image>& images) {
     for (auto& tensorInfo : this->tensorInfos) {
         tensorInfo.dims.d[0] = numImages;
         if (this->dynamic) tensorInfo.update();
-        if (!tensorInfo.input) tensorInfo.tensor.host(tensorInfo.bytes);
+        tensorInfo.buffer.allocate(tensorInfo.bytes);
 
-        this->engineCtx->mContext->setTensorAddress(tensorInfo.name.data(), tensorInfo.tensor.device(tensorInfo.bytes));
+        this->engineCtx->mContext->setTensorAddress(tensorInfo.name.data(), tensorInfo.buffer.device());
         if (tensorInfo.input && this->dynamic) {
             this->engineCtx->mContext->setInputShape(tensorInfo.name.data(), tensorInfo.dims);
         }
@@ -341,7 +343,7 @@ std::vector<T> DeployTemplate<T>::predict(const std::vector<Image>& images) {
 
     for (auto& tensorInfo : this->tensorInfos) {
         if (!tensorInfo.input) {
-            CHECK(cudaMemcpyAsync(tensorInfo.tensor.host(), tensorInfo.tensor.device(), tensorInfo.bytes, cudaMemcpyDeviceToHost, this->inferStream));
+            CHECK(cudaMemcpyAsync(tensorInfo.buffer.host(), tensorInfo.buffer.device(), tensorInfo.bytes, cudaMemcpyDeviceToHost, this->inferStream));
         }
     }
 
@@ -372,7 +374,7 @@ DeployCGTemplate<T>::DeployCGTemplate(const std::string& file, bool cudaMem, int
 
     // If CUDA memory optimization is enabled, reset the image tensor
     if (this->cudaMem) {
-        this->imageTensor.reset();
+        this->imageBuffer.free();
     }
 }
 
@@ -409,11 +411,10 @@ void DeployCGTemplate<T>::allocate() {
     this->kernelsParams.reserve(this->batch);
     this->imageSize.reserve(this->batch);
     this->transforms.reserve(this->batch);
-    this->imageTensor = std::make_shared<Tensor>();
+    this->imageBuffer = MemoryManager<PinnedMemory>();
 
     this->inputSize = this->width * this->height * 3;
-    this->imageTensor->device(this->inputSize * sizeof(uint8_t) * this->batch);
-    this->imageTensor->host(this->inputSize * sizeof(uint8_t) * this->batch);
+    this->imageBuffer.allocate(this->inputSize * sizeof(uint8_t) * this->batch);
 
     // Update transform matrices for each batch
     for (size_t i = 0; i < this->batch; i++) {
@@ -467,7 +468,7 @@ void DeployCGTemplate<T>::release() {
     this->tensorInfos.clear();
     this->transforms.clear();
     this->engineCtx.reset();
-    this->imageTensor.reset();
+    this->imageBuffer.free();
 }
 
 // Configures input and output tensors for model inference.
@@ -503,10 +504,8 @@ template <typename T>
 void DeployCGTemplate<T>::createGraph() {
     // Set tensor addresses for the engine context
     for (auto& tensorInfo : this->tensorInfos) {
-        this->engineCtx->mContext->setTensorAddress(tensorInfo.name.data(), tensorInfo.tensor.device(tensorInfo.bytes));
-        if (!tensorInfo.input) {
-            tensorInfo.tensor.host(tensorInfo.bytes);
-        }
+        tensorInfo.buffer.allocate(tensorInfo.bytes);
+        this->engineCtx->mContext->setTensorAddress(tensorInfo.name.data(), tensorInfo.buffer.device());
     }
 
     // Perform an initial inference to ensure everything is set up correctly
@@ -520,7 +519,7 @@ void DeployCGTemplate<T>::createGraph() {
 
     // Copy image data to device memory if CUDA memory optimization is not enabled
     if (!this->cudaMem) {
-        CHECK(cudaMemcpyAsync(this->imageTensor->device(), this->imageTensor->host(), this->inputSize * sizeof(uint8_t) * this->batch, cudaMemcpyHostToDevice, this->inferStream));
+        CHECK(cudaMemcpyAsync(this->imageBuffer.device(), this->imageBuffer.host(), this->inputSize * sizeof(uint8_t) * this->batch, cudaMemcpyHostToDevice, this->inferStream));
     }
 
     // Warp affine transformations for batched inputs
@@ -529,15 +528,15 @@ void DeployCGTemplate<T>::createGraph() {
             CHECK(cudaEventRecord(this->inputEvents[i * 2], this->inferStream));
             CHECK(cudaStreamWaitEvent(this->inputStreams[i], this->inputEvents[i * 2], 0));
 
-            uint8_t* input  = static_cast<uint8_t*>(this->imageTensor->device()) + i * this->inputSize * sizeof(uint8_t);
-            float*   output = static_cast<float*>(this->tensorInfos[0].tensor.device()) + i * this->inputSize;
+            uint8_t* input  = static_cast<uint8_t*>(this->imageBuffer.device()) + i * this->inputSize * sizeof(uint8_t);
+            float*   output = static_cast<float*>(this->tensorInfos[0].buffer.device()) + i * this->inputSize;
             cudaWarpAffine(input, this->width, this->height, output, this->width, this->height, this->transforms[i].matrix, this->inputStreams[i]);
 
             CHECK(cudaEventRecord(this->inputEvents[i * 2 + 1], this->inputStreams[i]));
             CHECK(cudaStreamWaitEvent(this->inferStream, this->inputEvents[i * 2 + 1], 0));
         }
     } else {
-        cudaWarpAffine(static_cast<uint8_t*>(this->imageTensor->device()), this->width, this->height, static_cast<float*>(this->tensorInfos[0].tensor.device()), this->width, this->height, this->transforms[0].matrix, this->inferStream);
+        cudaWarpAffine(static_cast<uint8_t*>(this->imageBuffer.device()), this->width, this->height, static_cast<float*>(this->tensorInfos[0].buffer.device()), this->width, this->height, this->transforms[0].matrix, this->inferStream);
     }
 
     // Enqueue the inference operation
@@ -548,7 +547,7 @@ void DeployCGTemplate<T>::createGraph() {
     // Copy the output data from device to host
     for (auto& tensorInfo : this->tensorInfos) {
         if (!tensorInfo.input) {
-            CHECK(cudaMemcpyAsync(tensorInfo.tensor.host(), tensorInfo.tensor.device(), tensorInfo.bytes, cudaMemcpyDeviceToHost, this->inferStream));
+            CHECK(cudaMemcpyAsync(tensorInfo.buffer.host(), tensorInfo.buffer.device(), tensorInfo.bytes, cudaMemcpyDeviceToHost, this->inferStream));
         }
     }
 
@@ -618,8 +617,9 @@ std::vector<T> DeployCGTemplate<T>::predict(const std::vector<Image>& images) {
             totalSize          += this->imageSize[i];
         }
 
-        void* host   = this->imageTensor->host(totalSize * sizeof(uint8_t));
-        void* device = this->imageTensor->device(totalSize * sizeof(uint8_t));
+        this->imageBuffer.allocate(totalSize * sizeof(uint8_t));
+        void* host   = this->imageBuffer.host();
+        void* device = this->imageBuffer.device();
 
         // Copy each image data to a contiguous region in host memory
         void* hostPtr = host;
@@ -628,8 +628,8 @@ std::vector<T> DeployCGTemplate<T>::predict(const std::vector<Image>& images) {
             hostPtr = static_cast<void*>(static_cast<uint8_t*>(hostPtr) + this->imageSize[i]);
         }
 
-        this->memcpyParams.srcPtr = make_cudaPitchedPtr(this->imageTensor->host(), totalSize * sizeof(uint8_t), totalSize * sizeof(uint8_t), 1);
-        this->memcpyParams.dstPtr = make_cudaPitchedPtr(this->imageTensor->device(), totalSize * sizeof(uint8_t), totalSize * sizeof(uint8_t), 1);
+        this->memcpyParams.srcPtr = make_cudaPitchedPtr(this->imageBuffer.host(), totalSize * sizeof(uint8_t), totalSize * sizeof(uint8_t), 1);
+        this->memcpyParams.dstPtr = make_cudaPitchedPtr(this->imageBuffer.device(), totalSize * sizeof(uint8_t), totalSize * sizeof(uint8_t), 1);
         this->memcpyParams.extent = make_cudaExtent(totalSize * sizeof(uint8_t), 1, 1);
         CHECK(cudaGraphExecMemcpyNodeSetParams(this->inferGraphExec, this->graphNodes[0], &this->memcpyParams));
 
