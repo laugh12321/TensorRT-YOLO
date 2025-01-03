@@ -271,29 +271,9 @@ private:
     int64_t inputSize{0};
 
     /**
-     * @brief CUDA graph used for executing the inference workflow.
+     * @brief CUDA graph object for capturing and executing CUDA operations.
      */
-    cudaGraph_t inferGraph{};
-
-    /**
-     * @brief Executable instance of the CUDA graph, created from inferGraph.
-     */
-    cudaGraphExec_t inferGraphExec{};
-
-    /**
-     * @brief Array of nodes in the CUDA graph.
-     */
-    std::unique_ptr<cudaGraphNode_t[]> graphNodes{};
-
-    /**
-     * @brief Parameters for CUDA kernel node in the graph.
-     */
-    std::vector<cudaKernelNodeParams> kernelsParams{};
-
-    /**
-     * @brief Parameters for memory copy operations within the graph.
-     */
-    cudaMemcpy3DParms memcpyParams;
+    CudaGraph graph{};
 
     /**
      * @brief CUDA events used to synchronize input operations.
