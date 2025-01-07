@@ -1,5 +1,3 @@
-#include <algorithm>
-
 #include "deploy/vision/cudaWarp.hpp"
 
 namespace deploy {
@@ -8,64 +6,93 @@ inline __device__ __host__ int iDivUp(int a, int b) {
     return (a % b != 0) ? (a / b + 1) : (a / b);
 }
 
-__global__ void gpuBilinearWarpAffine(uint8_t* input, int inputWidth, int inputHeight,
-                                      float* output, int outputWidth, int outputHeight,
-                                      float3 m0, float3 m1) {
-    const int x             = blockDim.x * blockIdx.x + threadIdx.x;
-    const int y             = blockDim.y * blockIdx.y + threadIdx.y;
-    const int inputLineSize = inputWidth * 3;
-    const int outputArea    = outputWidth * outputHeight;
+__device__ float3 operator*(float value0, float3 value1) {
+    float3 result;
+    result.x = value0 * value1.x;
+    result.y = value0 * value1.y;
+    result.z = value0 * value1.z;
 
-    if (x >= outputWidth || y >= outputHeight)
+    return result;
+}
+
+__device__ float3 operator+(float3& value0, float3& value1) {
+    float3 result;
+    result.x = value0.x + value1.x;
+    result.y = value0.y + value1.y;
+    result.z = value0.z + value1.z;
+
+    return result;
+}
+
+__device__ void operator+=(float3& result, float3& value) {
+    result.x += value.x;
+    result.y += value.y;
+    result.z += value.z;
+}
+
+__device__ float3 operator+=(float3& value0, const float3& value1) {
+    value0.x += value1.x;
+    value0.y += value1.y;
+    value0.z += value1.z;
+    return value0;
+}
+
+__device__ float3 uchar3_to_float3(uchar3 v) {
+    return make_float3(v.x, v.y, v.z);
+}
+
+__device__ bool inBounds(int x, int y, int cols, int rows) {
+    return (x >= 0 && x < cols && y >= 0 && y < rows);
+}
+
+__global__ void gpuBilinearWarpAffine(const uint8_t* src, const int src_cols, const int src_rows,
+                                      float* dst, const int dst_cols, const int dst_rows,
+                                      const float3 m0, const float3 m1) {
+    int element_x = blockDim.x * blockIdx.x + threadIdx.x;
+    int element_y = blockDim.y * blockIdx.y + threadIdx.y;
+    if (element_x >= dst_cols || element_y >= dst_rows) {
         return;
-
-    float inputX = m0.x * x + m0.y * y + m0.z;
-    float inputY = m1.x * x + m1.y * y + m1.z;
-
-    // Initialize to constant value for out of range
-    float c0 = 0.0f, c1 = 0.0f, c2 = 0.0f;
-
-    // Precompute interpolation coefficients and boundary checks
-    if (inputX > -1 && inputX < inputWidth && inputY > -1 && inputY < inputHeight) {
-        int lowX  = __float2int_rd(inputX);
-        int lowY  = __float2int_rd(inputY);
-        int highX = lowX + 1;
-        int highY = lowY + 1;
-
-        // Clamp coordinates within image boundaries
-        lowX  = max(0, min(lowX, inputWidth - 1));
-        highX = max(0, min(highX, inputWidth - 1));
-        lowY  = max(0, min(lowY, inputHeight - 1));
-        highY = max(0, min(highY, inputHeight - 1));
-
-        // Calculate interpolation weights
-        float lx = inputX - lowX;
-        float ly = inputY - lowY;
-        float hx = 1.0f - lx;
-        float hy = 1.0f - ly;
-
-        // Calculate pixel pointers
-        uint8_t* v1 = input + lowY * inputLineSize + lowX * 3;
-        uint8_t* v2 = input + lowY * inputLineSize + highX * 3;
-        uint8_t* v3 = input + highY * inputLineSize + lowX * 3;
-        uint8_t* v4 = input + highY * inputLineSize + highX * 3;
-
-        // Perform bilinear interpolation for each channel
-        c0 = hy * (hx * v1[0] + lx * v2[0]) + ly * (hx * v3[0] + lx * v4[0]);
-        c1 = hy * (hx * v1[1] + lx * v2[1]) + ly * (hx * v3[1] + lx * v4[1]);
-        c2 = hy * (hx * v1[2] + lx * v2[2]) + ly * (hx * v3[2] + lx * v4[2]);
     }
 
-    // Normalize values to range [0, 1]
-    c0 *= 0.00392156862f;  // Equivalent to c0 /= 255.0f;
-    c1 *= 0.00392156862f;
-    c2 *= 0.00392156862f;
+    float2 src_xy = make_float2(
+        m0.x * element_x + m0.y * element_y + m0.z,
+        m1.x * element_x + m1.y * element_y + m1.z);
 
-    // Reorder RGB to RRRGGGBBB
-    int index                      = y * outputWidth + x;
-    output[index]                  = c0;
-    output[index + outputArea]     = c1;
-    output[index + 2 * outputArea] = c2;
+    int src_x0 = __float2int_rd(src_xy.x);
+    int src_y0 = __float2int_rd(src_xy.y);
+    int src_x1 = src_x0 + 1;
+    int src_y1 = src_y0 + 1;
+
+    float wx0 = src_x1 - src_xy.x;
+    float wx1 = src_xy.x - src_x0;
+    float wy0 = src_y1 - src_xy.y;
+    float wy1 = src_xy.y - src_y0;
+
+    float3 src_value0, src_value1, value0, value1;
+    bool   flag0 = inBounds(src_x0, src_y0, src_cols, src_rows);
+    bool   flag1 = inBounds(src_x1, src_y0, src_cols, src_rows);
+    bool   flag2 = inBounds(src_x0, src_y1, src_cols, src_rows);
+    bool   flag3 = inBounds(src_x1, src_y1, src_cols, src_rows);
+
+    float3  border_value = make_float3(114.0f, 114.0f, 114.0f);
+    uchar3* input        = (uchar3*)((uint8_t*)src + src_y0 * src_cols * 3);
+    src_value0           = flag0 ? uchar3_to_float3(input[src_x0]) : border_value;
+    src_value1           = flag1 ? uchar3_to_float3(input[src_x1]) : border_value;
+    value0               = wx0 * wy0 * src_value0;
+    value1               = wx1 * wy0 * src_value1;
+    float3 sum           = value0 + value1;
+
+    input       = (uchar3*)((uint8_t*)src + src_y1 * src_cols * 3);
+    src_value0  = flag2 ? uchar3_to_float3(input[src_x0]) : border_value;
+    src_value1  = flag3 ? uchar3_to_float3(input[src_x1]) : border_value;
+    value0      = wx0 * wy1 * src_value0;
+    value1      = wx1 * wy1 * src_value1;
+    sum        += value0 + value1;
+
+    float* output                   = (float*)dst + element_y * dst_cols + element_x;
+    output[0]                       = sum.x * 0.00392156862f;
+    output[dst_cols * dst_rows]     = sum.y * 0.00392156862f;
+    output[2 * dst_cols * dst_rows] = sum.z * 0.00392156862f;
 }
 
 void TransformMatrix::update(int fromWidth, int fromHeight, int toWidth, int toHeight) {
@@ -96,13 +123,13 @@ void TransformMatrix::transform(float x, float y, float* ox, float* oy) const {
     *oy = matrix[1].x * x + matrix[1].y * y + matrix[1].z;
 }
 
-void cudaWarpAffine(uint8_t* input, uint32_t inputWidth, uint32_t inputHeight,
-                    float* output, uint32_t outputWidth, uint32_t outputHeight,
-                    float3 matrix[2], cudaStream_t stream) {
+void cudaWarpAffine(const uint8_t* src, const int src_cols, const int src_rows,
+                    float* dst, const int dst_cols, const int dst_rows,
+                    const float3 matrix[2], cudaStream_t stream) {
     // launch kernel
-    const dim3 blockDim(8, 8);
-    const dim3 gridDim(iDivUp(outputWidth, blockDim.x), iDivUp(outputHeight, blockDim.y));
-    gpuBilinearWarpAffine<<<gridDim, blockDim, 0, stream>>>(input, inputWidth, inputHeight, output, outputWidth, outputHeight, matrix[0], matrix[1]);
+    const dim3 blockDim(16, 16);
+    const dim3 gridDim(iDivUp(dst_cols, blockDim.x), iDivUp(dst_rows, blockDim.y));
+    gpuBilinearWarpAffine<<<gridDim, blockDim, 0, stream>>>(src, src_cols, src_rows, dst, dst_cols, dst_rows, matrix[0], matrix[1]);
 }
 
 }  // namespace deploy

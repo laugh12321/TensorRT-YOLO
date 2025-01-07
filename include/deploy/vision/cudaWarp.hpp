@@ -40,17 +40,17 @@ struct TransformMatrix {
 /**
  * @brief Applies an affine warp transformation using CUDA.
  *
- * @param input Pointer to the input image data.
- * @param inputWidth Width of the input image.
- * @param inputHeight Height of the input image.
- * @param output Pointer to the output image data.
- * @param outputWidth Width of the output image.
- * @param outputHeight Height of the output image.
+ * @param src Pointer to the input image data.
+ * @param src_cols Width of the input image.
+ * @param src_rows Height of the input image.
+ * @param dst Pointer to the output image data.
+ * @param dst_cols Width of the output image.
+ * @param dst_rows Height of the output image.
  * @param matrix Affine transformation matrix.
- * @param stream CUDA stream for asynchronous execution (optional).
+ * @param stream CUDA stream for asynchronous execution.
  */
-void cudaWarpAffine(
-    uint8_t* input, uint32_t inputWidth, uint32_t inputHeight,
-    float* output, uint32_t outputWidth, uint32_t outputHeight, float3 matrix[2], cudaStream_t stream);
+void cudaWarpAffine(const uint8_t* src, const int src_cols, const int src_rows,
+                    float* dst, const int dst_cols, const int dst_rows,
+                    const float3 matrix[2], cudaStream_t stream);
 
 }  // namespace deploy
