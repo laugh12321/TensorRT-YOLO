@@ -5,10 +5,9 @@
 #include <type_traits>
 #include <vector>
 
+#include "deploy/core/buffer.hpp"
 #include "deploy/core/core.hpp"
 #include "deploy/core/macro.hpp"
-#include "deploy/core/memory.hpp"
-#include "deploy/core/tensor.hpp"
 #include "deploy/vision/cudaWarp.hpp"
 #include "deploy/vision/result.hpp"
 
@@ -187,7 +186,7 @@ private:
     /**
      * @brief Vector of input buffers for holding preprocessed image data.
      */
-    std::vector<MemoryManager<PinnedMemory>> imageBuffers{};
+    std::vector<std::unique_ptr<BaseBuffer>> imageBuffers{};
 
     /**
      * @brief Allocates required resources for inference execution.
@@ -283,7 +282,7 @@ private:
     /**
      * @brief Buffer for storing batched input images.
      */
-    MemoryManager<PinnedMemory> imageBuffer{};
+    std::unique_ptr<BaseBuffer> imageBuffer{};
 
     /**
      * @brief Stores the number of elements for each input image in the batch.
