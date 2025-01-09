@@ -1,3 +1,13 @@
+/**
+ * @file buffer.hpp
+ * @author laugh12321 (laugh12321@vip.qq.com)
+ * @brief 定义了用于管理内存操作的抽象基类 Buffer 和几种具体的 Buffer 类型
+ * @date 2025-01-08
+ *
+ * @copyright Copyright (c) 2025 laugh12321. All Rights Reserved.
+ *
+ */
+
 #pragma once
 
 #include <NvInferRuntime.h>

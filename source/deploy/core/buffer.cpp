@@ -1,3 +1,13 @@
+/**
+ * @file buffer.cpp
+ * @author laugh12321 (laugh12321@vip.qq.com)
+ * @brief 实现了用于管理内存操作的 Buffer 类的具体方法
+ * @date 2025-01-08
+ *
+ * @copyright Copyright (c) 2025 laugh12321. All Rights Reserved.
+ *
+ */
+
 #include "deploy/core/buffer.hpp"
 #include "deploy/core/macro.hpp"
 
