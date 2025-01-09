@@ -8,8 +8,9 @@
 #include "deploy/core/buffer.hpp"
 #include "deploy/core/core.hpp"
 #include "deploy/core/macro.hpp"
-#include "deploy/vision/cudaWarp.hpp"
+#include "deploy/core/option.hpp"
 #include "deploy/vision/result.hpp"
+#include "deploy/vision/warpaffine.hpp"
 
 namespace deploy {
 
@@ -84,9 +85,14 @@ protected:
     std::shared_ptr<EngineContext> engineCtx{};
 
     /**
+     * @brief Configuration parameters that define the settings for image preprocessing.
+     */
+    ProcessConfig config;
+
+    /**
      * @brief Transformation matrices applied to images during preprocessing.
      */
-    std::vector<TransformMatrix> transforms{};
+    std::vector<AffineTransform> transforms{};
 
     /**
      * @brief Tensor information detailing the input and output tensors used by the model.

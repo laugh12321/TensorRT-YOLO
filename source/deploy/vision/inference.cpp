@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cstdint>
 #include <cstring>
 #include <stdexcept>
 
@@ -42,8 +43,8 @@ DetResult BaseTemplate<DetResult>::postProcess(const int idx) {
         float bottom = boxes[i * boxSize + 3];
 
         // Apply affine transformation
-        transforms[idx].transform(left, top, &left, &top);
-        transforms[idx].transform(right, bottom, &right, &bottom);
+        transforms[idx].applyTransform(left, top, &left, &top);
+        transforms[idx].applyTransform(right, bottom, &right, &bottom);
 
         result.boxes.emplace_back(Box{left, top, right, bottom});
         result.scores.emplace_back(scores[i]);
@@ -72,8 +73,8 @@ OBBResult BaseTemplate<OBBResult>::postProcess(const int idx) {
         float theta  = boxes[i * boxSize + 4];
 
         // Apply affine transformation
-        transforms[idx].transform(left, top, &left, &top);
-        transforms[idx].transform(right, bottom, &right, &bottom);
+        transforms[idx].applyTransform(left, top, &left, &top);
+        transforms[idx].applyTransform(right, bottom, &right, &bottom);
 
         result.boxes.emplace_back(RotatedBox{left, top, right, bottom, theta});
         result.scores.emplace_back(scores[i]);
@@ -105,18 +106,18 @@ SegResult BaseTemplate<SegResult>::postProcess(const int idx) {
         float right  = boxes[i * boxSize + 2];
         float bottom = boxes[i * boxSize + 3];
 
-        transforms[idx].transform(left, top, &left, &top);
-        transforms[idx].transform(right, bottom, &right, &bottom);
+        transforms[idx].applyTransform(left, top, &left, &top);
+        transforms[idx].applyTransform(right, bottom, &right, &bottom);
 
         result.boxes.emplace_back(Box{left, top, right, bottom});
         result.scores.emplace_back(scores[i]);
         result.classes.emplace_back(classes[i]);
 
-        Mask mask(maskWidth - 2 * transforms[idx].dw, maskHeight - 2 * transforms[idx].dh);
+        Mask mask(maskWidth - 2 * transforms[idx].dst_offset_x, maskHeight - 2 * transforms[idx].dst_offset_y);
 
         // Crop the mask's edge area, applying offset to adjust the position
         int startIdx = i * maskHeight * maskWidth;
-        int srcIndex = startIdx + transforms[idx].dh * maskWidth + transforms[idx].dw;
+        int srcIndex = startIdx + transforms[idx].dst_offset_y * maskWidth + transforms[idx].dst_offset_x;
         for (int y = 0; y < mask.height; ++y) {
             std::memcpy(&mask.data[y * mask.width], masks + srcIndex, mask.width);
             srcIndex += maskWidth;
@@ -150,8 +151,8 @@ PoseResult BaseTemplate<PoseResult>::postProcess(const int idx) {
         float right  = boxes[i * boxSize + 2];
         float bottom = boxes[i * boxSize + 3];
 
-        transforms[idx].transform(left, top, &left, &top);
-        transforms[idx].transform(right, bottom, &right, &bottom);
+        transforms[idx].applyTransform(left, top, &left, &top);
+        transforms[idx].applyTransform(right, bottom, &right, &bottom);
 
         result.boxes.emplace_back(Box{left, top, right, bottom});
         result.scores.emplace_back(scores[i]);
@@ -161,7 +162,7 @@ PoseResult BaseTemplate<PoseResult>::postProcess(const int idx) {
         for (int j = 0; j < nkpt; ++j) {
             float x = kpts[i * nkpt * ndim + j * ndim];
             float y = kpts[i * nkpt * ndim + j * ndim + 1];
-            transforms[idx].transform(x, y, &x, &y);
+            transforms[idx].applyTransform(x, y, &x, &y);
             keypoints.emplace_back((ndim == 2) ? KeyPoint(x, y) : KeyPoint(x, y, kpts[i * nkpt * ndim + j * ndim + 2]));
         }
         result.kpts.emplace_back(std::move(keypoints));
@@ -205,6 +206,7 @@ DeployTemplate<T>::~DeployTemplate() {
 // Allocates required resources for inference execution.
 template <typename T>
 void DeployTemplate<T>::allocate() {
+    this->config = ProcessConfig();
     // Create infer stream
     CHECK(cudaStreamCreate(&this->inferStream));
 
@@ -215,7 +217,7 @@ void DeployTemplate<T>::allocate() {
     }
 
     // Allocate transforms and image buffers
-    this->transforms.resize(this->batch, TransformMatrix());
+    this->transforms.resize(this->batch, AffineTransform());
     if (!this->cudaMem) {
         this->imageBuffers.resize(this->batch);
         std::generate_n(this->imageBuffers.begin(), this->batch,
@@ -275,10 +277,10 @@ void DeployTemplate<T>::setupTensors() {
 // Preprocesses a single image in the batch before inference.
 template <typename T>
 void DeployTemplate<T>::preProcess(const int idx, const Image& image, cudaStream_t stream) {
-    this->transforms[idx].update(image.width, image.height, this->width, this->height);
+    this->transforms[idx].updateMatrix(image.width, image.height, this->width, this->height);
 
     int64_t inputSize   = 3 * this->height * this->width;
-    float*  inputDevice = static_cast<float*>(this->tensorInfos[0].buffer->device()) + idx * inputSize;
+    void*   inputDevice = static_cast<float*>(this->tensorInfos[0].buffer->device()) + idx * inputSize;
 
     void* imageDevice = nullptr;
     if (this->cudaMem) {
@@ -293,7 +295,7 @@ void DeployTemplate<T>::preProcess(const int idx, const Image& image, cudaStream
         this->imageBuffers[idx]->hostToDevice(stream);
     }
 
-    cudaWarpAffine(static_cast<uint8_t*>(imageDevice), image.width, image.height, inputDevice, this->width, this->height, this->transforms[idx].matrix, stream);
+    cudaWarpAffine(imageDevice, image.width, image.height, inputDevice, this->width, this->height, this->transforms[idx].matrix, this->config, stream);
 }
 
 // Performs inference on a single input image.
@@ -388,6 +390,7 @@ DeployCGTemplate<T>::~DeployCGTemplate() {
 // Allocates required resources for inference execution.
 template <typename T>
 void DeployCGTemplate<T>::allocate() {
+    this->config = ProcessConfig();
     // Create the main inference stream
     CHECK(cudaStreamCreate(&this->inferStream));
 
@@ -418,7 +421,7 @@ void DeployCGTemplate<T>::allocate() {
 
     // Update transform matrices for each batch
     for (size_t i = 0; i < this->batch; i++) {
-        this->transforms[i].update(this->width, this->height, this->width, this->height);
+        this->transforms[i].updateMatrix(this->width, this->height, this->width, this->height);
     }
 }
 
@@ -513,15 +516,15 @@ void DeployCGTemplate<T>::createGraph() {
             CHECK(cudaEventRecord(this->inputEvents[i * 2], this->inferStream));
             CHECK(cudaStreamWaitEvent(this->inputStreams[i], this->inputEvents[i * 2], 0));
 
-            uint8_t* input  = static_cast<uint8_t*>(this->imageBuffer->device()) + i * this->inputSize * sizeof(uint8_t);
-            float*   output = static_cast<float*>(this->tensorInfos[0].buffer->device()) + i * this->inputSize;
-            cudaWarpAffine(input, this->width, this->height, output, this->width, this->height, this->transforms[i].matrix, this->inputStreams[i]);
+            void* input  = static_cast<uint8_t*>(this->imageBuffer->device()) + i * this->inputSize * sizeof(uint8_t);
+            void* output = static_cast<float*>(this->tensorInfos[0].buffer->device()) + i * this->inputSize;
+            cudaWarpAffine(input, this->width, this->height, output, this->width, this->height, this->transforms[i].matrix, this->config, this->inputStreams[i]);
 
             CHECK(cudaEventRecord(this->inputEvents[i * 2 + 1], this->inputStreams[i]));
             CHECK(cudaStreamWaitEvent(this->inferStream, this->inputEvents[i * 2 + 1], 0));
         }
     } else {
-        cudaWarpAffine(static_cast<uint8_t*>(this->imageBuffer->device()), this->width, this->height, static_cast<float*>(this->tensorInfos[0].buffer->device()), this->width, this->height, this->transforms[0].matrix, this->inferStream);
+        cudaWarpAffine(this->imageBuffer->device(), this->width, this->height, this->tensorInfos[0].buffer->device(), this->width, this->height, this->transforms[0].matrix, this->config, this->inferStream);
     }
 
     // Enqueue the inference operation
@@ -568,9 +571,9 @@ std::vector<T> DeployCGTemplate<T>::predict(const std::vector<Image>& images) {
     // Update graph nodes for each image in the batch
     if (this->cudaMem) {
         for (int i = 0; i < this->batch; i++) {
-            this->transforms[i].update(images[i].width, images[i].height, this->width, this->height);
-            float* output         = static_cast<float*>(this->tensorInfos[0].buffer->device()) + i * this->inputSize;
-            void*  kernelParams[] = {
+            this->transforms[i].updateMatrix(images[i].width, images[i].height, this->width, this->height);
+            void* output         = static_cast<float*>(this->tensorInfos[0].buffer->device()) + i * this->inputSize;
+            void* kernelParams[] = {
                 (void*)&images[i].rgbPtr,
                 (void*)&images[i].width,
                 (void*)&images[i].height,
@@ -578,13 +581,14 @@ std::vector<T> DeployCGTemplate<T>::predict(const std::vector<Image>& images) {
                 (void*)&this->width,
                 (void*)&this->height,
                 (void*)&this->transforms[i].matrix[0],
-                (void*)&this->transforms[i].matrix[1]};
+                (void*)&this->transforms[i].matrix[1],
+                (void*)&this->config};
             graph.updateKernelNodeParams(i, kernelParams);
         }
     } else {
         int totalSize = 0;
         for (int i = 0; i < this->batch; i++) {
-            this->transforms[i].update(images[i].width, images[i].height, this->width, this->height);
+            this->transforms[i].updateMatrix(images[i].width, images[i].height, this->width, this->height);
             this->imageSize[i]  = images[i].width * images[i].height * 3;
             totalSize          += this->imageSize[i];
         }
@@ -604,9 +608,9 @@ std::vector<T> DeployCGTemplate<T>::predict(const std::vector<Image>& images) {
 
         uint8_t* devicePtr = static_cast<uint8_t*>(device);
         for (int i = 0; i < this->batch; i++) {
-            this->transforms[i].update(images[i].width, images[i].height, this->width, this->height);
-            float* output         = static_cast<float*>(this->tensorInfos[0].buffer->device()) + i * this->inputSize;
-            void*  kernelParams[] = {
+            this->transforms[i].updateMatrix(images[i].width, images[i].height, this->width, this->height);
+            void* output         = static_cast<float*>(this->tensorInfos[0].buffer->device()) + i * this->inputSize;
+            void* kernelParams[] = {
                 (void*)&devicePtr,
                 (void*)&images[i].width,
                 (void*)&images[i].height,
@@ -614,7 +618,8 @@ std::vector<T> DeployCGTemplate<T>::predict(const std::vector<Image>& images) {
                 (void*)&this->width,
                 (void*)&this->height,
                 (void*)&this->transforms[i].matrix[0],
-                (void*)&this->transforms[i].matrix[1]};
+                (void*)&this->transforms[i].matrix[1],
+                (void*)&this->config};
             graph.updateKernelNodeParams(i + 1, kernelParams);
             devicePtr += this->imageSize[i];
         }
