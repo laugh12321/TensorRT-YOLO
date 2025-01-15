@@ -1,170 +1,42 @@
+/**
+ * @file utils.hpp
+ * @author laugh12321 (laugh12321@vip.qq.com)
+ * @brief 提供一些实用的工具函数
+ * @date 2025-01-15
+ *
+ * @copyright Copyright (c) 2025 laugh12321. All Rights Reserved.
+ *
+ */
+
 #pragma once
 
 #include <cuda_runtime_api.h>
 
-#include <chrono>
 #include <string>
-#include <vector>
-
-#include "deploy/core/macro.hpp"
 
 namespace deploy {
 
 /**
- * @brief Load the contents of a binary file into a vector of characters.
+ * @brief 从文件中读取二进制数据并存储到指定的字符串中
  *
- * @param filePath The path to the file to be loaded.
- * @return std::vector<char> A vector containing the contents of the file.
- * @throw std::runtime_error If there is an error opening or reading the file.
+ * 该函数打开指定路径的文件，读取其中的二进制数据，并将数据存储到 `contents` 字符串中。
+ * 如果打开文件失败，将抛出异常。
+ *
+ * @param file 文件路径
+ * @param contents 用于存储读取到的二进制数据的字符串
  */
-std::vector<char> loadFile(const std::string& filePath);
+void ReadBinaryFromFile(const std::string& file, std::string* contents);
 
 /**
- * @brief Base class for timers.
+ * @brief 检查指定的 GPU 是否支持集成零拷贝内存
+ *
+ * 该函数查询 GPU 的属性，判断该 GPU 是否为集成显卡并且是否支持将主机内存映射到设备内存（零拷贝内存）。
+ * 如果支持零拷贝，返回 `true`，否则返回 `false`。
+ *
+ * @param gpu_id GPU 的设备 ID
+ * @return true 如果 GPU 支持集成零拷贝内存
+ * @return false 如果 GPU 不支持集成零拷贝内存
  */
-class TimerBase {
-public:
-    TimerBase()                            = default;
-    TimerBase(const TimerBase&)            = default;
-    TimerBase(TimerBase&&)                 = delete;
-    TimerBase& operator=(const TimerBase&) = default;
-    TimerBase& operator=(TimerBase&&)      = delete;
-    virtual ~TimerBase()                   = default;
-
-    /**
-     * @brief Starts the timer.
-     */
-    virtual void start() {
-    }
-
-    /**
-     * @brief Stops the timer.
-     */
-    virtual void stop() {
-    }
-
-    /**
-     * @brief Get the elapsed time in microseconds.
-     *
-     * @return float Elapsed time in microseconds.
-     */
-    [[nodiscard]] float microseconds() const noexcept {
-        return getMilliseconds() * microsecondsPerMillisecond;
-    }
-
-    /**
-     * @brief Get the elapsed time in milliseconds.
-     *
-     * @return float Elapsed time in milliseconds.
-     */
-    [[nodiscard]] float milliseconds() const noexcept {
-        return getMilliseconds();
-    }
-
-    /**
-     * @brief Get the elapsed time in seconds.
-     *
-     * @return float Elapsed time in seconds.
-     */
-    [[nodiscard]] float seconds() const noexcept {
-        return getMilliseconds() / millisecondsPerSecond;
-    }
-
-    /**
-     * @brief Resets the timer.
-     */
-    void reset() noexcept {
-        setMilliseconds(0.0F);
-    }
-
-protected:
-    /**
-     * @brief Get the elapsed time in milliseconds.
-     *
-     * @return float Elapsed time in milliseconds.
-     */
-    [[nodiscard]] float getMilliseconds() const noexcept {
-        return mMilliseconds;
-    }
-
-    /**
-     * @brief Set the elapsed time in milliseconds.
-     *
-     * @param value Elapsed time in milliseconds.
-     */
-    void setMilliseconds(float value) noexcept {
-        mMilliseconds = value;
-    }
-
-private:
-    static constexpr float microsecondsPerMillisecond = 1000.0F; /**< Conversion factor for microseconds to milliseconds */
-    static constexpr float millisecondsPerSecond      = 1000.0F; /**< Conversion factor for milliseconds to seconds */
-    float                  mMilliseconds{0.0F};                  /**< Elapsed time in milliseconds */
-};
-
-/**
- * @brief Class for GPU timer.
- */
-class DEPLOYAPI GpuTimer : public TimerBase {
-public:
-    /**
-     * @brief Constructor.
-     *
-     * @param stream CUDA stream to associate with the timer.
-     */
-    explicit GpuTimer(cudaStream_t stream = nullptr);
-
-    GpuTimer(const GpuTimer&)            = default;
-    GpuTimer(GpuTimer&&)                 = delete;
-    GpuTimer& operator=(const GpuTimer&) = default;
-    GpuTimer& operator=(GpuTimer&&)      = delete;
-
-    /**
-     * @brief Destructor.
-     */
-    ~GpuTimer() override;
-
-    /**
-     * @brief Starts the GPU timer.
-     */
-    void start() override;
-
-    /**
-     * @brief Stops the GPU timer.
-     */
-    void stop() override;
-
-private:
-    cudaEvent_t  mStart{}; /**< CUDA event for start */
-    cudaEvent_t  mStop{};  /**< CUDA event for stop */
-    cudaStream_t mStream;  /**< CUDA stream */
-};
-
-/**
- * @brief Class for CPU timer using high resolution clock.
- */
-class DEPLOYAPI CpuTimer : public TimerBase {
-public:
-    /**
-     * @brief Starts the CPU timer.
-     */
-    void start() override {
-        mStart = Clock::now();
-    }
-
-    /**
-     * @brief Stops the CPU timer and calculates the elapsed time.
-     */
-    void stop() override {
-        mStop                                             = Clock::now();
-        std::chrono::duration<float, std::milli> duration = mStop - mStart;
-        setMilliseconds(getMilliseconds() + duration.count());
-    }
-
-private:
-    using Clock = std::chrono::high_resolution_clock;
-    typename Clock::time_point mStart; /**< Start time */
-    typename Clock::time_point mStop;  /**< Stop time */
-};
+bool SupportsIntegratedZeroCopy(const int gpu_id);
 
 }  // namespace deploy

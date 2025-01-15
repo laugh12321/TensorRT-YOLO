@@ -1,3 +1,13 @@
+/**
+ * @file utils.cpp
+ * @author laugh12321 (laugh12321@vip.qq.com)
+ * @brief 提供一些实用的工具函数
+ * @date 2025-01-15
+ *
+ * @copyright Copyright (c) 2025 laugh12321. All Rights Reserved.
+ *
+ */
+
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -7,55 +17,30 @@
 
 namespace deploy {
 
-std::vector<char> loadFile(const std::string& filePath) {
-    std::ifstream file(filePath, std::ios::binary);  // Open file in binary mode
-    if (!file.is_open()) {
-        throw std::runtime_error("Error opening file: " + filePath);
+void ReadBinaryFromFile(const std::string& file, std::string* contents) {
+    std::ifstream fin(file, std::ios::in | std::ios::binary);
+    if (!fin.is_open()) {
+        throw std::runtime_error("Failed to open file: " + file + " to read.");
     }
+    fin.seekg(0, std::ios::end);
+    contents->clear();
+    contents->resize(fin.tellg());
+    fin.seekg(0, std::ios::beg);
+    fin.read(&(contents->at(0)), contents->size());
+    fin.close();
+}
 
-    // Get file size
-    file.seekg(0, std::ios::end);
-    std::streampos fileSize = file.tellg();
-    file.seekg(0, std::ios::beg);
+bool SupportsIntegratedZeroCopy(const int gpu_id) {
+    // 查询设备属性，检查是否为集成显卡
+    cudaDeviceProp cuprops;
+    CHECK(cudaGetDeviceProperties(&cuprops, gpu_id));
 
-    // If file is empty, return an empty vector
-    if (fileSize <= 0) {
-        return {};
+    // 只有在集成显卡且支持映射主机内存时，才支持零拷贝
+    if (cuprops.integrated && cuprops.canMapHostMemory) {
+        return true;
+    } else {
+        return false;
     }
-
-    // Read file content into vector
-    std::vector<char> fileContent(fileSize);
-    file.read(fileContent.data(), fileSize);
-
-    // Check for read errors
-    if (!file) {
-        throw std::runtime_error("Error reading file: " + filePath);
-    }
-
-    return fileContent;
-}
-
-GpuTimer::GpuTimer(cudaStream_t stream)
-    : mStream(stream) {
-    CHECK(cudaEventCreate(&mStart));
-    CHECK(cudaEventCreate(&mStop));
-}
-
-GpuTimer::~GpuTimer() {
-    CHECK(cudaEventDestroy(mStart));
-    CHECK(cudaEventDestroy(mStop));
-}
-
-void GpuTimer::start() {
-    CHECK(cudaEventRecord(mStart, mStream));
-}
-
-void GpuTimer::stop() {
-    CHECK(cudaEventRecord(mStop, mStream));
-    CHECK(cudaEventSynchronize(mStop));
-    float milliseconds = 0.0F;
-    CHECK(cudaEventElapsedTime(&milliseconds, mStart, mStop));
-    setMilliseconds(getMilliseconds() + milliseconds);
 }
 
 }  // namespace deploy
