@@ -1,3 +1,13 @@
+/**
+ * @file result.hpp
+ * @author laugh12321 (laugh12321@vip.qq.com)
+ * @brief 定义数据类型
+ * @date 2025-01-13
+ *
+ * @copyright Copyright (c) 2025 laugh12321. All Rights Reserved.
+ *
+ */
+
 #pragma once
 
 #include <cstdint>
@@ -10,265 +20,292 @@
 namespace deploy {
 
 /**
- * @brief Represents an image.
+ * @brief 图像结构体，用于存储图像数据及其尺寸信息
  */
 struct DEPLOYAPI Image {
-    void* rgbPtr = nullptr; /**< Pointer to image data (uint8, RGB format) */
-    int   width  = 0;       /**< Width of the image */
-    int   height = 0;       /**< Height of the image */
-
-    // Default constructor
-    // constexpr Image() : rgbPtr(nullptr), width(0), height(0) {}
-    Image() = default;
+    void* ptr;         // < 图像数据指针
+    int   width  = 0;  // < 图像宽度
+    int   height = 0;  // < 图像高度
 
     /**
-     * @brief Parameterized constructor with boundary checks.
+     * @brief 构造函数，初始化图像数据和尺寸
      *
-     * @param rgbPtr Pointer to image data.
-     * @param width Width of the image.
-     * @param height Height of the image.
-     * @throws std::invalid_argument If width or height is negative.
+     * @param data 图像数据指针
+     * @param width 图像宽度
+     * @param height 图像高度
      */
-    Image(void* rgbPtr, int width, int height)
-        : rgbPtr(rgbPtr), width(width), height(height) {
-        if (width < 0 || height < 0) {
-            throw std::invalid_argument("Width and height must be non-negative");
+    Image(void* data, int width, int height) : ptr(data), width(width), height(height) {
+        if (width <= 0 || height <= 0) {
+            throw std::invalid_argument(MAKE_ERROR_MESSAGE("Image: width and height must be positive"));
         }
     }
 };
 
 /**
- * @brief Represents a mask image.
+ * @brief 掩码结构体，用于存储掩码数据及其尺寸信息
  */
 struct DEPLOYAPI Mask {
-    std::vector<uint8_t> data;       /**< Pointer to image data (uint8, grayscale format) */
-    int                  width  = 0; /**< Width of the image */
-    int                  height = 0; /**< Height of the image */
+    std::vector<uint8_t> data;        // < 掩码数据
+    int                  width  = 0;  // < 掩码宽度
+    int                  height = 0;  // < 掩码高度
 
-    // Default constructor
+    /**
+     * @brief 默认构造函数
+     *
+     */
     Mask() = default;
 
     /**
-     * @brief Parameterized constructor with boundary checks.
+     * @brief 构造函数，初始化掩码尺寸并分配数据空间
      *
-     * @param width Width of the image.
-     * @param height Height of the image.
-     * @throws std::invalid_argument If width or height is negative.
+     * @param width 掩码宽度
+     * @param height 掩码高度
      */
     Mask(int width, int height) : width(width), height(height) {
         if (width < 0 || height < 0) {
-            throw std::invalid_argument("Width and height must be non-negative");
+            throw std::invalid_argument(MAKE_ERROR_MESSAGE("Mask: width and height must be positive"));
         }
-        // Resize the data vector to hold width * height elements
         data.resize(width * height);
     }
 
-    // Copy constructor
-    Mask(const Mask& other)
-        : width(other.width), height(other.height), data(other.data) {
-    }
+    Mask(const Mask& other)            = default;      // < 默认拷贝构造函数
+    Mask& operator=(const Mask& other) = default;      // < 默认拷贝赋值运算符
 
-    // Copy assignment operator
-    Mask& operator=(const Mask& other) {
-        if (this != &other) {
-            width  = other.width;
-            height = other.height;
-            data   = other.data;  // Copy the data vector
-        }
-        return *this;
-    }
-
-    // Move constructor
-    Mask(Mask&& other) noexcept
-        : data(std::move(other.data)), width(other.width), height(other.height) {
-        other.width  = 0;
-        other.height = 0;
-    }
-
-    // Move assignment operator
-    Mask& operator=(Mask&& other) noexcept {
-        if (this != &other) {
-            data         = std::move(other.data);
-            width        = other.width;
-            height       = other.height;
-            other.width  = 0;
-            other.height = 0;
-        }
-        return *this;
-    }
+    Mask(Mask&& other) noexcept            = default;  // < 默认移动构造函数
+    Mask& operator=(Mask&& other) noexcept = default;  // < 默认移动赋值运算符
 };
 
 /**
- * @brief Represents a key point.
+ * @brief 关键点结构体，用于存储关键点的坐标和置信度
  */
-struct KeyPoint {
-    float                x;     // x-coordinate of the key point
-    float                y;     // y-coordinate of the key point
-    std::optional<float> conf;  // Optional confidence value of the key point
+struct DEPLOYAPI KeyPoint {
+    float                x;     // < 关键点的 x 坐标
+    float                y;     // < 关键点的 y 坐标
+    std::optional<float> conf;  // < 关键点的置信度，可选
 
-    // Default constructor
+    /**
+     * @brief 默认构造函数
+     *
+     */
     KeyPoint() = default;
 
     /**
-     * @brief Parameterized constructor with boundary checks.
+     * @brief 构造函数，初始化关键点坐标和置信度
      *
-     * @param x x-coordinate of the key point.
-     * @param y y-coordinate of the key point.
-     * @param conf Optional confidence value of the key point (default is std::nullopt).
+     * @param x 关键点的 x 坐标
+     * @param y 关键点的 y 坐标
+     * @param conf 关键点的置信度，可选，默认为 std::nullopt
      */
     KeyPoint(float x, float y, std::optional<float> conf = std::nullopt)
         : x(x), y(y), conf(conf) {}
 
-    // Copy constructor
-    KeyPoint(const KeyPoint& other)
-        : x(other.x), y(other.y), conf(other.conf) {}
+    KeyPoint(const KeyPoint& other)            = default;      // < 默认拷贝构造函数
+    KeyPoint& operator=(const KeyPoint& other) = default;      // < 默认拷贝赋值运算符
 
-    // Copy assignment operator
-    KeyPoint& operator=(const KeyPoint& other) {
-        if (this != &other) {  // Check for self-assignment
-            x    = other.x;
-            y    = other.y;
-            conf = other.conf;
-        }
-        return *this;
-    }
-
-    // Move constructor
-    KeyPoint(KeyPoint&& other) noexcept
-        : x(std::move(other.x)), y(std::move(other.y)), conf(std::move(other.conf)) {}
-
-    // Move assignment operator
-    KeyPoint& operator=(KeyPoint&& other) noexcept {
-        if (this != &other) {  // Check for self-assignment
-            x    = std::move(other.x);
-            y    = std::move(other.y);
-            conf = std::move(other.conf);
-        }
-        return *this;
-    }
+    KeyPoint(KeyPoint&& other) noexcept            = default;  // < 默认移动构造函数
+    KeyPoint& operator=(KeyPoint&& other) noexcept = default;  // < 默认移动赋值运算符
 };
 
 /**
- * @brief Represents a bounding box.
+ * @brief 矩形框结构体，用于存储矩形框的坐标信息
  */
 struct DEPLOYAPI Box {
-    float left;   /**< Left coordinate of the bounding box */
-    float top;    /**< Top coordinate of the bounding box */
-    float right;  /**< Right coordinate of the bounding box */
-    float bottom; /**< Bottom coordinate of the bounding box */
+    float left;    // < 矩形框的左边界坐标
+    float top;     // < 矩形框的上边界坐标
+    float right;   // < 矩形框的右边界坐标
+    float bottom;  // < 矩形框的下边界坐标
+
+    /**
+     * @brief 默认构造函数
+     *
+     */
+    Box() = default;
+
+    /**
+     * @brief 构造函数，初始化矩形框的坐标
+     *
+     * @param left 矩形框的左边界坐标
+     * @param top 矩形框的上边界坐标
+     * @param right 矩形框的右边界坐标
+     * @param bottom 矩形框的下边界坐标
+     */
+    Box(float left, float top, float right, float bottom)
+        : left(left), top(top), right(right), bottom(bottom) {}
+
+    Box(const Box& other)            = default;      // < 默认拷贝构造函数
+    Box& operator=(const Box& other) = default;      // < 默认拷贝赋值运算符
+
+    Box(Box&& other) noexcept            = default;  // < 默认移动构造函数
+    Box& operator=(Box&& other) noexcept = default;  // < 默认移动赋值运算符
 };
 
 /**
- * @brief Represents an oriented bounding box (OBB) by extending Box with a rotation angle.
+ * @brief 旋转矩形框结构体，继承自矩形框结构体，增加旋转角度信息
  */
 struct DEPLOYAPI RotatedBox : public Box {
-    float theta; /**< Rotation angle of the bounding box, in radians, measured clockwise from the positive x-axis */
+    float theta;  // < 旋转矩形框的旋转角度，以弧度为单位，顺时针旋转角度从正 x 轴开始测量
+
+    /**
+     * @brief 默认构造函数
+     *
+     */
+    RotatedBox() = default;
+
+    /**
+     * @brief 构造函数，初始化旋转矩形框的坐标和旋转角度
+     *
+     * @param left 旋转矩形框的左边界坐标
+     * @param top 旋转矩形框的上边界坐标
+     * @param right 旋转矩形框的右边界坐标
+     * @param bottom 旋转矩形框的下边界坐标
+     * @param theta 旋转矩形框的旋转角度
+     */
+    RotatedBox(float left, float top, float right, float bottom, float theta)
+        : Box(left, top, right, bottom), theta(theta) {}
+
+    RotatedBox(const RotatedBox& other)            = default;      // < 默认拷贝构造函数
+    RotatedBox& operator=(const RotatedBox& other) = default;      // < 默认拷贝赋值运算符
+
+    RotatedBox(RotatedBox&& other) noexcept            = default;  // < 默认移动构造函数
+    RotatedBox& operator=(RotatedBox&& other) noexcept = default;  // < 默认移动赋值运算符
 };
 
 /**
- * @brief Represents the result of object detection.
+ * @brief 基础结果结构体，用于存储检测结果的基础信息，如数量、类别和得分
  */
-struct DEPLOYAPI DetResult {
-    int                num = 0;   /**< Number of detected objects */
-    std::vector<Box>   boxes{};   /**< Detected bounding boxes */
-    std::vector<int>   classes{}; /**< Detected classes */
-    std::vector<float> scores{};  /**< Detection scores */
+struct DEPLOYAPI BaseRes {
+    int                num = 0;  // < 检测结果的数量
+    std::vector<int>   classes;  // < 检测结果的类别
+    std::vector<float> scores;   // < 检测结果的得分
 
     /**
-     * @brief Copy assignment operator.
+     * @brief 默认构造函数
      *
-     * @param other The source DetResult to copy from.
-     * @return DetResult& Reference to the assigned DetResult.
      */
-    DetResult& operator=(const DetResult& other) {
-        if (this != &other) {
-            num     = other.num;
-            boxes   = other.boxes;
-            classes = other.classes;
-            scores  = other.scores;
-        }
-        return *this;
-    }
+    BaseRes() = default;
+
+    /**
+     * @brief 构造函数，初始化检测结果的数量、类别和得分
+     *
+     * @param num 检测结果的数量
+     * @param classes 检测结果的类别
+     * @param scores 检测结果的得分
+     */
+    BaseRes(int num, const std::vector<int>& classes, const std::vector<float>& scores)
+        : num(num), classes(classes), scores(scores) {}
+
+    BaseRes(const BaseRes& other)            = default;      // < 默认拷贝构造函数
+    BaseRes& operator=(const BaseRes& other) = default;      // < 默认拷贝赋值运算符
+
+    BaseRes(BaseRes&& other) noexcept            = default;  // < 默认移动构造函数
+    BaseRes& operator=(BaseRes&& other) noexcept = default;  // < 默认移动赋值运算符
 };
 
 /**
- * @brief Represents the result of object detection with oriented bounding boxes.
+ * @brief 分类结果结构体，继承自基础结果结构体，无需额外的构造函数
  */
-struct DEPLOYAPI OBBResult : public DetResult {
-    std::vector<RotatedBox> boxes{}; /**< Detected oriented bounding boxes */
-
-    /**
-     * @brief Copy assignment operator.
-     *
-     * @param other The source OBBResult to copy from.
-     * @return OBBResult& Reference to the assigned OBBResult.
-     */
-    OBBResult& operator=(const OBBResult& other) {
-        if (this != &other) {
-            DetResult::operator=(static_cast<const DetResult&>(other));
-            boxes = other.boxes;
-        }
-        return *this;
-    }
+struct DEPLOYAPI ClassifyRes : public BaseRes {
+    // 无需额外的构造函数，继承自 BaseRes 的默认构造函数已经足够
 };
 
 /**
- * @brief Represents the result of instance segmentation.
+ * @brief 检测结果结构体，继承自基础结果结构体，增加矩形框信息
  */
-struct DEPLOYAPI SegResult : public DetResult {
-    std::vector<Mask> masks{}; /**< Detected object masks (binary, 0 for background, 1 for foreground) */
+struct DEPLOYAPI DetectRes : public BaseRes {
+    std::vector<Box> boxes;  // < 检测结果的矩形框
 
     /**
-     * @brief Copy assignment operator.
+     * @brief 构造函数，初始化检测结果的数量、类别、得分和矩形框
      *
-     * @param other The source SegResult to copy from.
-     * @return SegResult& Reference to the assigned SegResult.
+     * @param num 检测结果的数量
+     * @param classes 检测结果的类别
+     * @param scores 检测结果的得分
+     * @param boxes 检测结果的矩形框
      */
-    SegResult& operator=(const SegResult& other) {
-        DetResult::operator=(static_cast<const DetResult&>(other));
-        masks = other.masks;
-        return *this;
-    }
+    DetectRes(int num, const std::vector<int>& classes, const std::vector<float>& scores, const std::vector<Box>& boxes)
+        : BaseRes(num, classes, scores), boxes(boxes) {}
+
+    DetectRes(const DetectRes& other)            = default;      // < 默认拷贝构造函数
+    DetectRes& operator=(const DetectRes& other) = default;      // < 默认拷贝赋值运算符
+
+    DetectRes(DetectRes&& other) noexcept            = default;  // < 默认移动构造函数
+    DetectRes& operator=(DetectRes&& other) noexcept = default;  // < 默认移动赋值运算符
 };
 
 /**
- * @brief Represents the result of Pose Estimation.
+ * @brief 旋转矩形框检测结果结构体，继承自基础结果结构体，增加旋转矩形框信息
  */
-struct DEPLOYAPI PoseResult : public DetResult {
-    std::vector<std::vector<KeyPoint>> kpts{}; /**< Container for detected key points. */
+struct DEPLOYAPI OBBRes : public BaseRes {
+    std::vector<RotatedBox> boxes;  // < 检测结果的旋转矩形框
 
     /**
-     * @brief Copy assignment operator.
+     * @brief 构造函数，初始化检测结果的数量、类别、得分和旋转矩形框
      *
-     * @param other The source PoseResult to copy from.
-     * @return PoseResult& Reference to the assigned PoseResult.
+     * @param num 检测结果的数量
+     * @param classes 检测结果的类别
+     * @param scores 检测结果的得分
+     * @param boxes 检测结果的旋转矩形框
      */
-    PoseResult& operator=(const PoseResult& other) {
-        DetResult::operator=(static_cast<const DetResult&>(other));
-        kpts = other.kpts;
-        return *this;
-    }
+    OBBRes(int num, const std::vector<int>& classes, const std::vector<float>& scores, const std::vector<RotatedBox>& boxes)
+        : BaseRes(num, classes, scores), boxes(boxes) {}
+
+    OBBRes(const OBBRes& other)            = default;      // < 默认拷贝构造函数
+    OBBRes& operator=(const OBBRes& other) = default;      // < 默认拷贝赋值运算符
+
+    OBBRes(OBBRes&& other) noexcept            = default;  // < 默认移动构造函数
+    OBBRes& operator=(OBBRes&& other) noexcept = default;  // < 默认移动赋值运算符
 };
 
 /**
- * @brief Represents the result of Classification.
+ * @brief 分割结果结构体，继承自基础结果结构体，增加矩形框和掩码信息
  */
-struct DEPLOYAPI ClsResult {
-    const int          num = 5; /**< The number of top classification results to store, which is set to 5. */
-    std::vector<int>   classes; /**< Classification top5 classes */
-    std::vector<float> scores;  /**< Classification top5 scores */
+struct DEPLOYAPI SegmentRes : public BaseRes {
+    std::vector<Box>  boxes;  // < 分割结果的矩形框
+    std::vector<Mask> masks;  // < 分割结果的掩码
 
     /**
-     * @brief Copy assignment operator.
+     * @brief 构造函数，初始化分割结果的数量、类别、得分、矩形框和掩码
      *
-     * @param other The source ClsResult to copy from.
-     * @return ClsResult& Reference to the assigned ClsResult.
+     * @param num 分割结果的数量
+     * @param classes 分割结果的类别
+     * @param scores 分割结果的得分
+     * @param boxes 分割结果的矩形框
+     * @param masks 分割结果的掩码
      */
-    ClsResult& operator=(const ClsResult& other) {
-        classes = other.classes;
-        scores  = other.scores;
-        return *this;
-    }
+    SegmentRes(int num, const std::vector<int>& classes, const std::vector<float>& scores, const std::vector<Box>& boxes, const std::vector<Mask>& masks)
+        : BaseRes(num, classes, scores), boxes(boxes), masks(masks) {}
+
+    SegmentRes(const SegmentRes& other)            = default;      // < 默认拷贝构造函数
+    SegmentRes& operator=(const SegmentRes& other) = default;      // < 默认拷贝赋值运算符
+
+    SegmentRes(SegmentRes&& other) noexcept            = default;  // < 默认移动构造函数
+    SegmentRes& operator=(SegmentRes&& other) noexcept = default;  // < 默认移动赋值运算符
+};
+
+/**
+ * @brief 姿态估计结果结构体，继承自基础结果结构体，增加矩形框和关键点信息
+ */
+struct DEPLOYAPI PoseRes : public BaseRes {
+    std::vector<Box>                   boxes;  // < 姿态估计结果的矩形框
+    std::vector<std::vector<KeyPoint>> kpts;   // < 姿态估计结果的关键点
+
+    /**
+     * @brief 构造函数，初始化姿态估计结果的数量、类别、得分、矩形框和关键点
+     *
+     * @param num 姿态估计结果的数量
+     * @param classes 姿态估计结果的类别
+     * @param scores 姿态估计结果的得分
+     * @param boxes 姿态估计结果的矩形框
+     * @param kpts 姿态估计结果的关键点
+     */
+    PoseRes(int num, const std::vector<int>& classes, const std::vector<float>& scores, const std::vector<Box>& boxes, const std::vector<std::vector<KeyPoint>>& kpts)
+        : BaseRes(num, classes, scores), boxes(boxes), kpts(kpts) {}
+
+    PoseRes(const PoseRes& other)            = default;      // < 默认拷贝构造函数
+    PoseRes& operator=(const PoseRes& other) = default;      // < 默认拷贝赋值运算符
+
+    PoseRes(PoseRes&& other) noexcept            = default;  // < 默认移动构造函数
+    PoseRes& operator=(PoseRes&& other) noexcept = default;  // < 默认移动赋值运算符
 };
 
 }  // namespace deploy
