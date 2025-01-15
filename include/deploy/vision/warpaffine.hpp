@@ -51,18 +51,39 @@ struct AffineTransform {
 /**
  * @brief 使用 CUDA 应用仿射变换。
  *
- * @param src 输入图像数据的指针。
- * @param src_cols 输入图像的宽度。
- * @param src_rows 输入图像的高度。
- * @param dst 输出图像数据的指针。
- * @param dst_cols 输出图像的宽度。
- * @param dst_rows 输出图像的高度。
- * @param matrix 仿射变换矩阵。
- * @param config 处理配置参数。
- * @param stream 用于异步执行的 CUDA 流。
+ * @param src 输入图像数据的指针
+ * @param src_cols 输入图像的宽度
+ * @param src_rows 输入图像的高度
+ * @param dst 输出图像数据的指针
+ * @param dst_cols 输出图像的宽度
+ * @param dst_rows 输出图像的高度
+ * @param matrix 仿射变换矩阵
+ * @param config 处理配置参数
+ * @param stream 用于异步执行的 CUDA 流
  */
 void cudaWarpAffine(const void* src, const int src_cols, const int src_rows,
                     void* dst, const int dst_cols, const int dst_rows,
                     const float3 matrix[2], const ProcessConfig config, cudaStream_t stream);
+
+/**
+ * @brief 使用 CUDA 对多张图像应用仿射变换。
+ *
+ * 此函数对多张输入图像同时应用仿射变换，将变换后的图像输出到指定的内存位置
+ * 与 `cudaWarpAffine` 类似，但支持批量处理多张图像，提高处理效率
+ *
+ * @param src 输入图像数据的指针数组，每个元素指向一张输入图像的首地址
+ * @param src_cols 输入图像的宽度
+ * @param src_rows 输入图像的高度
+ * @param dst 输出图像数据的指针数组，每个元素指向一张输出图像的首地址
+ * @param dst_cols 输出图像的宽度
+ * @param dst_rows 输出图像的高度
+ * @param matrix 仿射变换矩阵数组，每个元素包含一个 2x3 的仿射变换矩阵
+ * @param config 处理配置参数，如插值方法、边界处理等
+ * @param num_images 图像数量，即 `src` 和 `dst` 数组的长度
+ * @param stream 用于异步执行的 CUDA 流
+ */
+void cudaMutliWarpAffine(const void* src, const int src_cols, const int src_rows,
+                         void* dst, const int dst_cols, const int dst_rows,
+                         const float3 matrix[2], const ProcessConfig config, int num_images, cudaStream_t stream);
 
 }  // namespace deploy

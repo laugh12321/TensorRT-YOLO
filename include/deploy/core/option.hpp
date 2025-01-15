@@ -11,6 +11,7 @@
 #pragma once
 
 #include <cassert>
+#include <optional>
 #include <vector>
 #include <vector_functions.hpp>
 
@@ -67,10 +68,11 @@ struct ProcessConfig {
  *
  */
 struct InferOption {
-    int           device_id             = 0;      // < GPU ID
-    bool          cuda_mem              = false;  // < 推理数据是否已经在 CUDA 显存中
-    bool          enable_managed_memory = false;  // < 是否启用统一内存
-    ProcessConfig config;                         // < 图像预处理配置
+    int                 device_id             = 0;      // < GPU ID
+    bool                cuda_mem              = false;  // < 推理数据是否已经在 CUDA 显存中
+    bool                enable_managed_memory = false;  // < 是否启用统一内存
+    std::optional<int2> input_shape;                    // < 输入数据的高、宽，未设置时表示宽度可变（用于输入数据宽高确定的任务场景：监控视频分析，AI外挂等）
+    ProcessConfig       config;                         // < 图像预处理配置
 
     /**
      * @brief 设置 GPU 设备 ID
@@ -78,7 +80,7 @@ struct InferOption {
      * @param id
      */
     void setDeviceId(int id) {
-        this->device_id = id;
+        device_id = id;
     }
 
     /**
@@ -86,7 +88,7 @@ struct InferOption {
      *
      */
     void enableCudaMem() {
-        this->cuda_mem = true;
+        cuda_mem = true;
     }
 
     /**
@@ -94,7 +96,7 @@ struct InferOption {
      *
      */
     void enableManagedMemory() {
-        this->enable_managed_memory = true;
+        enable_managed_memory = true;
     }
 
     /**
@@ -123,6 +125,16 @@ struct InferOption {
      */
     void setNormalizeParams(const std::vector<float>& mean, const std::vector<float>& std) {
         config.setNormalizeParams(mean, std);
+    }
+
+    /**
+     * @brief 设置输入数据的宽高，未设置时表示宽高可变。（用于输入数据宽高确定的任务场景：监控视频分析，AI外挂等）
+     *
+     * @param width 宽度
+     * @param height 高度
+     */
+    void setInputDimensions(int width, int height) {
+        input_shape = make_int2(height, width);
     }
 };
 

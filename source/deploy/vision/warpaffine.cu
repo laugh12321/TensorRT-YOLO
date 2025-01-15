@@ -123,6 +123,26 @@ __global__ void gpuBilinearWarpAffine(const void* src, const int src_cols, const
                          element_x, element_y);
 }
 
+__global__ void gpuMutliBilinearWarpAffine(const void* src, const int src_cols, const int src_rows,
+                                           void* dst, const int dst_cols, const int dst_rows,
+                                           const float3 m0, const float3 m1, const ProcessConfig config,
+                                           int num_images) {
+    int image_idx = blockIdx.z;
+    if (image_idx >= num_images) {
+        return;
+    }
+
+    int element_x = blockDim.x * blockIdx.x + threadIdx.x;
+    int element_y = blockDim.y * blockIdx.y + threadIdx.y;
+
+    warp_affine_bilinear(static_cast<const uint8_t*>(src) + image_idx * src_rows * src_cols * 3,
+                         src_cols, src_rows,
+                         static_cast<float*>(dst) + image_idx * dst_rows * dst_cols * 3,
+                         dst_cols, dst_rows,
+                         m0, m1, config,
+                         element_x, element_y);
+}
+
 void AffineTransform::updateMatrix(int src_width, int src_height, int dst_width, int dst_height) {
     if (src_width == last_src_width_ && src_height == last_src_height_) return;
     last_src_width_  = src_width;
@@ -158,6 +178,15 @@ void cudaWarpAffine(const void* src, const int src_cols, const int src_rows,
     const dim3 blockDim(16, 16);
     const dim3 gridDim(iDivUp(dst_cols, blockDim.x), iDivUp(dst_rows, blockDim.y));
     gpuBilinearWarpAffine<<<gridDim, blockDim, 0, stream>>>(src, src_cols, src_rows, dst, dst_cols, dst_rows, matrix[0], matrix[1], config);
+}
+
+void cudaMutliWarpAffine(const void* src, const int src_cols, const int src_rows,
+                         void* dst, const int dst_cols, const int dst_rows,
+                         const float3 matrix[2], const ProcessConfig config, int num_images, cudaStream_t stream) {
+    // launch kernel
+    const dim3 blockDim(16, 16);
+    const dim3 gridDim(iDivUp(dst_cols, blockDim.x), iDivUp(dst_rows, blockDim.y), num_images);
+    gpuMutliBilinearWarpAffine<<<gridDim, blockDim, 0, stream>>>(src, src_cols, src_rows, dst, dst_cols, dst_rows, matrix[0], matrix[1], config, num_images);
 }
 
 }  // namespace deploy
