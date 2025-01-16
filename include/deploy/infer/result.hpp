@@ -215,6 +215,12 @@ struct DEPLOYAPI DetectRes : public BaseRes {
     std::vector<Box> boxes;  // < 检测结果的矩形框
 
     /**
+     * @brief 默认构造函数
+     *
+     */
+    DetectRes() = default;
+
+    /**
      * @brief 构造函数，初始化检测结果的数量、类别、得分和矩形框
      *
      * @param num 检测结果的数量
@@ -237,6 +243,12 @@ struct DEPLOYAPI DetectRes : public BaseRes {
  */
 struct DEPLOYAPI OBBRes : public BaseRes {
     std::vector<RotatedBox> boxes;  // < 检测结果的旋转矩形框
+
+    /**
+     * @brief 默认构造函数
+     *
+     */
+    OBBRes() = default;
 
     /**
      * @brief 构造函数，初始化检测结果的数量、类别、得分和旋转矩形框
@@ -264,6 +276,12 @@ struct DEPLOYAPI SegmentRes : public BaseRes {
     std::vector<Mask> masks;  // < 分割结果的掩码
 
     /**
+     * @brief 默认构造函数
+     *
+     */
+    SegmentRes() = default;
+
+    /**
      * @brief 构造函数，初始化分割结果的数量、类别、得分、矩形框和掩码
      *
      * @param num 分割结果的数量
@@ -288,6 +306,12 @@ struct DEPLOYAPI SegmentRes : public BaseRes {
 struct DEPLOYAPI PoseRes : public BaseRes {
     std::vector<Box>                   boxes;  // < 姿态估计结果的矩形框
     std::vector<std::vector<KeyPoint>> kpts;   // < 姿态估计结果的关键点
+
+    /**
+     * @brief 默认构造函数
+     *
+     */
+    PoseRes() = default;
 
     /**
      * @brief 构造函数，初始化姿态估计结果的数量、类别、得分、矩形框和关键点
