@@ -10,7 +10,7 @@
 
 #include <cstdint>
 
-#include "deploy/vision/warpaffine.hpp"
+#include "deploy/infer/warpaffine.hpp"
 
 namespace deploy {
 
