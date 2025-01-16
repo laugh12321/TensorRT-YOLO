@@ -233,13 +233,9 @@ public:
      * @param dtype 张量数据类型
      * @param input 是否为输入张量
      */
-    TensorInfo(const std::string name, const nvinfer1::Dims& shape, const nvinfer1::DataType dtype, const bool input)
+    TensorInfo(const std::string name, const nvinfer1::Dims& shape, const nvinfer1::DataType dtype, const bool input, BufferType buffer_type)
         : name(name), shape(shape), dtype_(dtype), input(input) {
-        if (input) {
-            buffer = BufferFactory::createBuffer(BufferType::Device);
-        } else {
-            buffer = BufferFactory::createBuffer(BufferType::Discrete);
-        }
+        buffer = BufferFactory::createBuffer(buffer_type);
         update();
     }
 
