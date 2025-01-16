@@ -15,6 +15,8 @@
 #include <vector>
 #include <vector_functions.hpp>
 
+#include "deploy/core/macro.hpp"
+
 namespace deploy {
 
 /**
@@ -32,8 +34,8 @@ struct ProcessConfig {
      *
      * @param swap_rb
      */
-    void setSwapRb(bool swap_rb) {
-        this->swap_rb = swap_rb;
+    void enableSwapRB() {
+        this->swap_rb = true;
     }
 
     /**
@@ -67,7 +69,7 @@ struct ProcessConfig {
  * @brief 推理选项配置结构体
  *
  */
-struct InferOption {
+struct DEPLOYAPI InferOption {
     int                 device_id             = 0;      // < GPU ID
     bool                cuda_mem              = false;  // < 推理数据是否已经在 CUDA 显存中
     bool                enable_managed_memory = false;  // < 是否启用统一内存
@@ -104,8 +106,8 @@ struct InferOption {
      *
      * @param swap_rb
      */
-    void setSwapRb(bool swap_rb) {
-        config.setSwapRb(swap_rb);
+    void enableSwapRB() {
+        config.enableSwapRB();
     }
 
     /**
