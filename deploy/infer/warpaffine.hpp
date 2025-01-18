@@ -12,7 +12,7 @@
 
 #include <cuda_runtime_api.h>
 
-#include "deploy/core/option.hpp"
+#include "deploy/option.hpp"
 
 namespace deploy {
 

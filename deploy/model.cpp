@@ -11,8 +11,8 @@
 #include <cstdint>
 #include <cstring>
 
-#include "deploy/infer/model.hpp"
-#include "deploy/infer/result.hpp"
+#include "deploy/model.hpp"
+#include "deploy/result.hpp"
 
 namespace deploy {
 

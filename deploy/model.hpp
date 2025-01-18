@@ -14,9 +14,9 @@
 #include <string>
 #include <vector>
 
-#include "deploy/core/option.hpp"
 #include "deploy/infer/backend.hpp"
-#include "deploy/infer/result.hpp"
+#include "deploy/option.hpp"
+#include "deploy/result.hpp"
 
 namespace deploy {
 

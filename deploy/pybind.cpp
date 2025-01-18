@@ -14,9 +14,9 @@
 
 #include <sstream>
 
-#include "deploy/core/option.hpp"
-#include "deploy/infer/model.hpp"
-#include "deploy/infer/result.hpp"
+#include "deploy/model.hpp"
+#include "deploy/option.hpp"
+#include "deploy/result.hpp"
 
 namespace py = pybind11;
 

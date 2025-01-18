@@ -10,16 +10,17 @@
 
 #pragma once
 
+#include <NvInferRuntime.h>
+
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "NvInferRuntime.h"
 #include "deploy/core/buffer.hpp"
 #include "deploy/core/core.hpp"
-#include "deploy/core/option.hpp"
-#include "deploy/infer/result.hpp"
 #include "deploy/infer/warpaffine.hpp"
+#include "deploy/option.hpp"
+#include "deploy/result.hpp"
 
 namespace deploy {
 
