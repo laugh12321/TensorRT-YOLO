@@ -10,6 +10,8 @@
 
 #include <cstdint>
 #include <cstring>
+#include <sstream>
+#include <vector>
 
 #include "deploy/model.hpp"
 #include "deploy/result.hpp"
@@ -18,12 +20,23 @@ namespace deploy {
 
 template <typename ResultType>
 std::vector<ResultType> BaseModel<ResultType>::predict(const std::vector<Image>& images) {
+    if (backend_->option.enable_performance_report) {
+        total_request_ += (backend_->dynamic ? images.size() : backend_->max_shape.x);
+        infer_cpu_trace_->start();
+        infer_gpu_trace_->start();
+    }
+
     backend_->infer(images);  // 调用推理方法
 
     // 预分配结果空间
     std::vector<ResultType> results(images.size());
     for (auto idx = 0u; idx < images.size(); ++idx) {
         results[idx] = postProcess(idx);
+    }
+
+    if (backend_->option.enable_performance_report) {
+        infer_gpu_trace_->stop();
+        infer_cpu_trace_->stop();
     }
 
     return results;
@@ -37,6 +50,44 @@ ResultType BaseModel<ResultType>::predict(const Image& image) {
 template <typename ResultType>
 int BaseModel<ResultType>::batch_size() const {
     return backend_->max_shape.x;
+}
+
+template <typename ResultType>
+std::tuple<std::string, std::string, std::string> BaseModel<ResultType>::performanceReport() {
+    if (backend_->option.enable_performance_report) {
+        float const       throughput = total_request_ / infer_cpu_trace_->totalMilliseconds() * 1000;
+        std::stringstream ss;
+
+        // 构建吞吐量字符串
+        ss << "Throughput: " << throughput << " qps";
+        std::string throughputStr = ss.str();
+        ss.str("");  // 清空 stringstream
+
+        auto percentiles = std::vector<float>{90, 95, 99};
+
+        auto getLatencyStr = [&](const auto& trace, const std::string& device) {
+            auto result = getPerformanceResult(trace->milliseconds(), {0.90, 0.95, 0.99});
+            ss << device << " Latency: min = " << result.min << " ms, max = " << result.max << " ms, mean = " << result.mean << " ms, median = " << result.median << " ms";
+            for (int32_t i = 0, n = percentiles.size(); i < n; ++i) {
+                ss << ", percentile(" << percentiles[i] << "%) = " << result.percentiles[i] << " ms";
+            }
+            std::string output = ss.str();
+            ss.str("");  // 清空 stringstream
+            return output;
+        };
+
+        std::string cpuLatencyStr = getLatencyStr(infer_cpu_trace_, "CPU");
+        std::string gpuLatencyStr = getLatencyStr(infer_gpu_trace_, "GPU");
+
+        total_request_ = 0;
+        infer_cpu_trace_->reset();
+        infer_gpu_trace_->reset();
+
+        return std::make_tuple(throughputStr, cpuLatencyStr, gpuLatencyStr);
+    } else {
+        // 性能报告未启用时返回空字符串
+        return std::make_tuple("", "", "");
+    }
 }
 
 // ClassifyModel 的后处理方法实现
@@ -251,36 +302,46 @@ PoseRes PoseModel::postProcess(int idx) {
 
 // ClassifyModel 的 clone 方法实现
 std::unique_ptr<BaseModel<ClassifyRes>> ClassifyModel::clone() const {
-    auto clone_model      = std::make_unique<ClassifyModel>();
-    clone_model->backend_ = backend_->clone();  // < 克隆 TrtBackend
+    auto clone_model              = std::make_unique<ClassifyModel>();
+    clone_model->backend_         = backend_->clone();  // < 克隆 TrtBackend
+    clone_model->infer_gpu_trace_ = std::make_unique<GpuTimer>(clone_model->backend_->stream);
+    clone_model->infer_cpu_trace_ = std::make_unique<CpuTimer>();
     return clone_model;
 }
 
 // DetectModel 的 clone 方法实现
 std::unique_ptr<BaseModel<DetectRes>> DetectModel::clone() const {
-    auto clone_model      = std::make_unique<DetectModel>();
-    clone_model->backend_ = backend_->clone();  // < 克隆 TrtBackend
+    auto clone_model              = std::make_unique<DetectModel>();
+    clone_model->backend_         = backend_->clone();  // < 克隆 TrtBackend
+    clone_model->infer_gpu_trace_ = std::make_unique<GpuTimer>(clone_model->backend_->stream);
+    clone_model->infer_cpu_trace_ = std::make_unique<CpuTimer>();
     return clone_model;
 }
 
 // OBBModel 的 clone 方法实现
 std::unique_ptr<BaseModel<OBBRes>> OBBModel::clone() const {
-    auto clone_model      = std::make_unique<OBBModel>();
-    clone_model->backend_ = backend_->clone();  // < 克隆 TrtBackend
+    auto clone_model              = std::make_unique<OBBModel>();
+    clone_model->backend_         = backend_->clone();  // < 克隆 TrtBackend
+    clone_model->infer_gpu_trace_ = std::make_unique<GpuTimer>(clone_model->backend_->stream);
+    clone_model->infer_cpu_trace_ = std::make_unique<CpuTimer>();
     return clone_model;
 }
 
 // SegmentModel 的 clone 方法实现
 std::unique_ptr<BaseModel<SegmentRes>> SegmentModel::clone() const {
-    auto clone_model      = std::make_unique<SegmentModel>();
-    clone_model->backend_ = backend_->clone();  // < 克隆 TrtBackend
+    auto clone_model              = std::make_unique<SegmentModel>();
+    clone_model->backend_         = backend_->clone();  // < 克隆 TrtBackend
+    clone_model->infer_gpu_trace_ = std::make_unique<GpuTimer>(clone_model->backend_->stream);
+    clone_model->infer_cpu_trace_ = std::make_unique<CpuTimer>();
     return clone_model;
 }
 
 // PoseModel 的 clone 方法实现
 std::unique_ptr<BaseModel<PoseRes>> PoseModel::clone() const {
-    auto clone_model      = std::make_unique<PoseModel>();
-    clone_model->backend_ = backend_->clone();  // < 克隆 TrtBackend
+    auto clone_model              = std::make_unique<PoseModel>();
+    clone_model->backend_         = backend_->clone();  // < 克隆 TrtBackend
+    clone_model->infer_gpu_trace_ = std::make_unique<GpuTimer>(clone_model->backend_->stream);
+    clone_model->infer_cpu_trace_ = std::make_unique<CpuTimer>();
     return clone_model;
 }
 

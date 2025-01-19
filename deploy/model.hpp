@@ -17,6 +17,7 @@
 #include "deploy/infer/backend.hpp"
 #include "deploy/option.hpp"
 #include "deploy/result.hpp"
+#include "deploy/utils/utils.hpp"
 
 namespace deploy {
 
@@ -34,7 +35,12 @@ public:
      * @param infer_option 推理选项
      */
     explicit BaseModel(const std::string& trt_engine_file, const InferOption& infer_option)
-        : backend_(std::make_unique<TrtBackend>(trt_engine_file, infer_option)) {}
+        : backend_(std::make_unique<TrtBackend>(trt_engine_file, infer_option)) {
+        if (backend_->option.enable_performance_report) {
+            infer_gpu_trace_ = std::make_unique<GpuTimer>(backend_->stream);
+            infer_cpu_trace_ = std::make_unique<CpuTimer>();
+        }
+    }
 
     virtual ~BaseModel() = default;
 
@@ -62,6 +68,13 @@ public:
     std::vector<ResultType> predict(const std::vector<Image>& images);
 
     /**
+     * @brief 获取性能报告
+     *
+     * @return 包含吞吐量、CPU延迟和GPU延迟的元组
+     */
+    std::tuple<std::string, std::string, std::string> performanceReport();
+
+    /**
      * @brief 获取批量大小
      *
      * @return 批量大小
@@ -69,9 +82,19 @@ public:
     int batch_size() const;
 
 protected:
-    virtual ResultType postProcess(int idx) = 0;  // < 后处理方法，由派生类实现
+    /**
+     * @brief 后处理方法，由派生类实现
+     *
+     * @param idx 索引
+     * @return 后处理后的结果
+     */
+    virtual ResultType postProcess(int idx) = 0;
 
-    std::unique_ptr<TrtBackend> backend_;
+    std::unique_ptr<TrtBackend> backend_;         // < TensorRT 后端
+
+    unsigned long long        total_request_{0};  // < 总请求数
+    std::unique_ptr<GpuTimer> infer_gpu_trace_;   // < GPU推理计时器
+    std::unique_ptr<CpuTimer> infer_cpu_trace_;   // < CPU推理计时器
 };
 
 // 分类模型

@@ -48,7 +48,7 @@ TrtBackend::TrtBackend(const std::string& trt_engine_file, const InferOption& in
     initialize();
 
     // 捕获 Cuda Graph，当模型是静态时
-    if (!dynamic_) captureCudaGraph();
+    if (!dynamic) captureCudaGraph();
 }
 
 std::unique_ptr<TrtBackend> TrtBackend::clone() {
@@ -75,7 +75,7 @@ std::unique_ptr<TrtBackend> TrtBackend::clone() {
     clone_backend->initialize();
 
     // 捕获 Cuda Graph，当模型是静态时
-    if (!clone_backend->dynamic_) clone_backend->captureCudaGraph();
+    if (!clone_backend->dynamic) clone_backend->captureCudaGraph();
 
     return clone_backend;
 }
@@ -83,7 +83,7 @@ std::unique_ptr<TrtBackend> TrtBackend::clone() {
 TrtBackend::~TrtBackend() {
     std::vector<TensorInfo>().swap(tensor_infos);
     std::vector<AffineTransform>().swap(affine_transforms);
-    if (!dynamic_) cuda_graph_.destroy();
+    if (!dynamic) cuda_graph_.destroy();
     CHECK(cudaStreamDestroy(stream));
 }
 
@@ -98,15 +98,15 @@ void TrtBackend::getTensorInfo() {
         bool        input = (engine_->getTensorIOMode(name.c_str()) == nvinfer1::TensorIOMode::kINPUT);
 
         if (input) {
-            dynamic_ = std::any_of(shape.d, shape.d + shape.nbDims, [](int val) { return val == -1; });
-            if (dynamic_) {
+            dynamic = std::any_of(shape.d, shape.d + shape.nbDims, [](int val) { return val == -1; });
+            if (dynamic) {
                 shape     = engine_->getProfileShape(name.c_str(), 0, nvinfer1::OptProfileSelector::kMIN);
                 min_shape = make_int4(shape.d[0], shape.d[1], shape.d[2], shape.d[3]);
                 shape     = engine_->getProfileShape(name.c_str(), 0, nvinfer1::OptProfileSelector::kMAX);
                 // < 打印接受范围
             }
             max_shape = make_int4(shape.d[0], shape.d[1], shape.d[2], shape.d[3]);
-        } else if (!input && dynamic_) {
+        } else if (!input && dynamic) {
             shape.d[0] = max_shape.x;
         }
         tensor_infos.emplace_back(name, shape, dtype, input, input ? BufferType::Device : buffer_type_);
@@ -132,7 +132,7 @@ void TrtBackend::initialize() {
     } else {
         // 输入尺寸不固定时
         affine_transforms.resize(max_shape.x, AffineTransform());
-        if (!dynamic_) inputs_buffer_->allocate(max_shape.x * infer_size_);
+        if (!dynamic) inputs_buffer_->allocate(max_shape.x * infer_size_);
     }
 }
 
@@ -435,7 +435,7 @@ void TrtBackend::dynamicInfer(const std::vector<Image>& inputs) {
 }
 
 void TrtBackend::infer(const std::vector<Image>& inputs) {
-    if (dynamic_) {
+    if (dynamic) {
         dynamicInfer(inputs);
     } else {
         staticInfer(inputs);

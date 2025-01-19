@@ -67,6 +67,7 @@ public:
     std::vector<AffineTransform> affine_transforms;  // < 仿射变换向量
     int4                         min_shape;          // < 最小形状
     int4                         max_shape;          // < 最大形状
+    bool                         dynamic;            // < 是否为动态形状
 
 private:
     void getTensorInfo();
@@ -80,8 +81,8 @@ private:
     CudaGraph                                    cuda_graph_;     // < CUDA 图
     std::unique_ptr<BaseBuffer>                  inputs_buffer_;  // < 输入缓冲区智能指针
     BufferType                                   buffer_type_;    // < 缓冲区类型
-    bool                                         dynamic_;        // < 是否为动态形状
-    bool                                         zero_copy_;      // < 是否为零拷贝
+
+    bool zero_copy_;                                              // < 是否为零拷贝
 
     int input_size_;                                              // < 输入大小
     int infer_size_;                                              // < 推理大小

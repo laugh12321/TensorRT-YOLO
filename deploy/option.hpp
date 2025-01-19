@@ -70,11 +70,12 @@ struct ProcessConfig {
  *
  */
 struct DEPLOYAPI InferOption {
-    int                 device_id             = 0;      // < GPU ID
-    bool                cuda_mem              = false;  // < 推理数据是否已经在 CUDA 显存中
-    bool                enable_managed_memory = false;  // < 是否启用统一内存
-    std::optional<int2> input_shape;                    // < 输入数据的高、宽，未设置时表示宽度可变（用于输入数据宽高确定的任务场景：监控视频分析，AI外挂等）
-    ProcessConfig       config;                         // < 图像预处理配置
+    int                 device_id                 = 0;      // < GPU ID
+    bool                cuda_mem                  = false;  // < 推理数据是否已经在 CUDA 显存中
+    bool                enable_managed_memory     = false;  // < 是否启用统一内存
+    bool                enable_performance_report = false;  // < 是否启用性能报告
+    std::optional<int2> input_shape;                        // < 输入数据的高、宽，未设置时表示宽度可变（用于输入数据宽高确定的任务场景：监控视频分析，AI外挂等）
+    ProcessConfig       config;                             // < 图像预处理配置
 
     /**
      * @brief 设置 GPU 设备 ID
@@ -99,6 +100,14 @@ struct DEPLOYAPI InferOption {
      */
     void enableManagedMemory() {
         enable_managed_memory = true;
+    }
+
+    /**
+     * @brief 启用性能报告
+     *
+     */
+    void enablePerformanceReport() {
+        enable_performance_report = true;
     }
 
     /**

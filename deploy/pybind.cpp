@@ -144,9 +144,10 @@ void binding_option_module(py::module& m) {
 
     py::class_<deploy::InferOption>(m, "InferOption", "A class to configure inference options, including device settings, memory options, and image preprocessing.")
         .def(py::init<>())
-        .def("set_device_id", &deploy::InferOption::setDeviceId, "Set the device ID (GPU or CPU) for inference.")
-        .def("enable_cuda_memory", &deploy::InferOption::enableCudaMem, "Enable CUDA memory for inference.")
+        .def("set_device_id", &deploy::InferOption::setDeviceId, "Set the device ID (GPU) for inference.")
+        .def("enable_cuda_memory", &deploy::InferOption::enableCudaMem, "Inference data already in CUDA memory.")
         .def("enable_managed_memory", &deploy::InferOption::enableManagedMemory, "Enable managed memory for inference.")
+        .def("enable_performance_report", &deploy::InferOption::enablePerformanceReport, "Enable performance report for inference.")
         .def("enable_swap_rb", &deploy::InferOption::enableSwapRB, "Enable RGB-to-BGR swap for image input.")
         .def("set_border_value", &deploy::InferOption::setBorderValue, "Set border value for image resizing (used for padding).")
         .def("set_normalize_params", &deploy::InferOption::setNormalizeParams, "Set normalization parameters for image preprocessing.")
@@ -201,7 +202,10 @@ void bind_model(py::module& m, const std::string& model_name) {
                     return PyArray2Image(input);
                 });
                 return self.predict(images); }, "Predict the results from a list of images (list of HWC format numpy arrays).")
-        .def("batch_size", &ModelType::batch_size, "Get the batch size of the model.");
+        .def("performance_report", [](ModelType& self) {
+            auto report = self.performanceReport();
+            return std::make_tuple(py::str(std::get<0>(report)), py::str(std::get<1>(report)), py::str(std::get<2>(report))); }, "Get the performance report of the model.");
+    .def("batch_size", &ModelType::batch_size, "Get the batch size of the model.");
 }
 
 /**
