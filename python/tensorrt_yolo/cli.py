@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   cli.py
-# Version :   5.1.0
+# Version :   6.0.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/07/05 14:26:53
@@ -109,19 +109,18 @@ def export(
 @trtyolo.command(help="Perform inference with TensorRT-YOLO.")
 @click.option('-e', '--engine', help='Engine file for inference.', type=str, required=True)
 @click.option(
-    '-m', '--mode', help='Mode for inference: 0 for Detect, 1 for OBB, 2 for Segment, 3 for Pose, 4 for Classify.', type=int, required=True
+    '-m', '--mode', help='Mode for inference: 0 for Classify, 1 for Detect, 2 for OBB, 3 for Segment, 4 for Pose.', type=int, required=True
 )
 @click.option('-i', '--input', help='Input directory or file for inference.', type=str, required=True)
 @click.option('-o', '--output', help='Output directory for inference results.', type=str)
 @click.option('-l', '--labels', help='Labels file for inference.', type=str)
-@click.option('--cudaGraph', help='Optimize inference using CUDA Graphs, compatible with static models only.', is_flag=True)
-def infer(engine, mode, input, output, labels, cudagraph):
+def infer(engine, mode, input, output, labels):
     """Perform inference with TensorRT-YOLO.
 
     This command performs inference using TensorRT-YOLO with the specified engine file and input source.
     """
     if mode not in (0, 1, 2, 3, 4):
-        logger.error(f"Invalid mode: {mode}. Please use 0 for Detect, 1 for OBB, 2 for Segment, 3 for Pose, 4 for Classify.")
+        logger.error(f"Invalid mode: {mode}. Please use 0 for Classify, 1 for Detect, 2 for OBB, 3 for Segment, 4 for Pose.")
         sys.exit(1)
 
     if output and not labels:
@@ -139,75 +138,43 @@ def infer(engine, mode, input, output, labels, cudagraph):
     from rich.progress import track
 
     from .infer import (
-        CpuTimer,
-        DeployCGCls,
-        DeployCGDet,
-        DeployCGOBB,
-        DeployCGPose,
-        DeployCGSeg,
-        DeployCls,
-        DeployDet,
-        DeployOBB,
-        DeployPose,
-        DeploySeg,
-        GpuTimer,
+        ClassifyModel,
+        DetectModel,
+        InferOption,
+        OBBModel,
+        PoseModel,
+        SegmentModel,
         image_batches,
         visualize,
     )
 
+    option = InferOption()
+    option.enable_swap_rb()
+    option.enable_performance_report()
+
     model = (
-        DeployCGOBB(engine)
-        if cudagraph and mode == 1
-        else DeployCGSeg(engine)
-        if cudagraph and mode == 2
-        else DeployCGPose(engine)
-        if cudagraph and mode == 3
-        else DeployCGCls(engine)
-        if cudagraph and mode == 4
-        else DeployCGDet(engine)
-        if cudagraph
-        else DeployOBB(engine)
+        DetectModel(engine, option)
         if mode == 1
-        else DeploySeg(engine)
+        else OBBModel(engine, option)
         if mode == 2
-        else DeployPose(engine)
+        else SegmentModel(engine, option)
         if mode == 3
-        else DeployCls(engine)
+        else PoseModel(engine, option)
         if mode == 4
-        else DeployDet(engine)
+        else ClassifyModel(engine, option)
     )
 
-    batchs = image_batches(input, model.batch, cudagraph)
-
-    if len(batchs) > 2:
-        cpu_timer = CpuTimer()
-        gpu_timer = GpuTimer()
+    batchs = image_batches(input, model.batch_size, True)
 
     logger.info(f"Infering data in {input}")
     for batch in track(batchs, description="[cyan]Processing batches", total=len(batchs)):
-        images = [cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2RGB) for image_path in batch]
-
-        if len(batchs) > 2:
-            cpu_timer.start()
-            gpu_timer.start()
-
+        images = [cv2.imread(image_path) for image_path in batch]
         results = model.predict(images)
-
-        if len(batchs) > 2:
-            cpu_timer.stop()
-            gpu_timer.stop()
 
         if output:
             for image_path, image, result in zip(batch, images, results):
                 vis_image = visualize(image, result, labels)
-                cv2.imwrite(str(output_dir / Path(image_path).name), cv2.cvtColor(vis_image, cv2.COLOR_RGB2BGR))
+                cv2.imwrite(str(output_dir / Path(image_path).name), vis_image)
 
     logger.success("Finished Inference.")
-
-    if len(batchs) > 2:
-        logger.success(
-            "Benchmark results include time for H2D and D2H memory copies, preprocessing, and postprocessing.\n"
-            f"    CPU Average Latency: {cpu_timer.milliseconds() / len(batchs):.3f} ms\n"
-            f"    GPU Average Latency: {gpu_timer.milliseconds() / len(batchs):.3f} ms\n"
-            "    Finished Inference."
-        )
+    model.performance_report()

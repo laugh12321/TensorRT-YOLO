@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   c_lib_wrap.py
-# Version :   5.0.0
+# Version :   6.0.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/07/03 13:12:29
@@ -25,7 +25,6 @@
 import os
 import re
 import sys
-from collections.abc import Mapping
 from pathlib import Path
 from typing import Optional
 
@@ -68,12 +67,12 @@ def find_library(base_path: Path, lib_name: str) -> Optional[Path]:
     return None
 
 
-def check_libs(libs_dir: Mapping[str, Path]) -> bool:
+def check_libs(libs_dir: dict[str, Path]) -> bool:
     """
     Check if all necessary libraries are found.
 
     Args:
-        libs_dir (Mapping[str, Path]): A dictionary containing library paths.
+        libs_dir (dict[str, Path]): A dictionary containing library paths.
 
     Returns:
         bool: True if all libraries are found, False otherwise.
@@ -89,13 +88,13 @@ def check_libs(libs_dir: Mapping[str, Path]) -> bool:
     return False
 
 
-def update_libs(user_specified_dir: Path, libs_dir: Mapping[str, Path]) -> bool:
+def update_libs(user_specified_dir: Path, libs_dir: dict[str, Path]) -> bool:
     """
     Update library directories and check if all libraries are found.
 
     Args:
         user_specified_dir (Path): The directory to check.
-        libs_dir (Mapping[str, Path]): A dictionary to store library paths.
+        libs_dir (dict[str, Path]): A dictionary to store library paths.
 
     Returns:
         bool: True if all libraries are found, False otherwise.

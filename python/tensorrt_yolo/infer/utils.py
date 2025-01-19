@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   utils.py
-# Version :   5.1.1
+# Version :   6.0.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/07/05 14:06:46
@@ -31,7 +31,7 @@ import cv2
 import numpy as np
 from loguru import logger
 
-from .result import ClsResult, PoseResult, ResultType, RotatedBox, SegResult
+from .model import ClassifyRes, PoseRes, ResultType, RotatedBox, SegmentRes
 
 __all__ = ["generate_labels", "visualize", "image_batches"]
 
@@ -171,9 +171,9 @@ def visualize(
     font_scale = line_width / 3
 
     # Colors
-    lowlight_color = (208, 168, 253)
-    mediumlight_color = (163, 81, 251)
-    highlight_color = (81, 40, 125)
+    lowlight_color = (253, 168, 208)
+    mediumlight_color = (251, 81, 163)
+    highlight_color = (125, 40, 81)
 
     # Copy the image to avoid modifying the original
     img = image.copy()
@@ -205,7 +205,7 @@ def visualize(
         label_text = f"{labels[result.classes[i]]} {result.scores[i]:.3f}"
 
         # Classification result
-        if isinstance(result, ClsResult):
+        if isinstance(result, ClassifyRes):
             text_position = [5, 32 + i * 32]
             cv2.putText(img, label_text, text_position, 0, font_scale, mediumlight_color, thickness=font_thickness, lineType=cv2.LINE_AA)
             continue
@@ -223,7 +223,7 @@ def visualize(
             cv2.rectangle(img, box_top_left, box_bottom_right, mediumlight_color, thickness=line_width, lineType=cv2.LINE_AA)
 
         # Segmentation mask
-        if isinstance(result, SegResult):
+        if isinstance(result, SegmentRes):
             resized_mask = cv2.resize(result.masks[i], (image_width, image_height)) > 0
             box_mask = np.zeros_like(resized_mask, dtype=bool)
             box_mask[box_coords[1] : box_coords[3], box_coords[0] : box_coords[2]] = True
@@ -232,7 +232,7 @@ def visualize(
             img = np.clip(img, 0, 255).astype(np.uint8)
 
         # Pose keypoints
-        if isinstance(result, PoseResult):
+        if isinstance(result, PoseRes):
             confidence_threshold = 0.25
             for keypoint in result.kpts[i]:
                 if keypoint.conf is None or keypoint.conf >= confidence_threshold:
