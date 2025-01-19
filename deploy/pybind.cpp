@@ -204,8 +204,8 @@ void bind_model(py::module& m, const std::string& model_name) {
                 return self.predict(images); }, "Predict the results from a list of images (list of HWC format numpy arrays).")
         .def("performance_report", [](ModelType& self) {
             auto report = self.performanceReport();
-            return std::make_tuple(py::str(std::get<0>(report)), py::str(std::get<1>(report)), py::str(std::get<2>(report))); }, "Get the performance report of the model.");
-    .def("batch_size", &ModelType::batch_size, "Get the batch size of the model.");
+            return std::make_tuple(py::str(std::get<0>(report)), py::str(std::get<1>(report)), py::str(std::get<2>(report))); }, "Get the performance report of the model.")
+        .def("batch_size", &ModelType::batch_size, "Get the batch size of the model.");
 }
 
 /**
