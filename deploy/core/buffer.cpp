@@ -200,8 +200,8 @@ MappedBuffer& MappedBuffer::operator=(MappedBuffer&& other) noexcept {
 void MappedBuffer::allocate(size_t size) {
     if (size > size_) {
         free();
-        CHECK(cudaHostAlloc(&host_, size_, cudaHostAllocMapped));  // < 分配映射内存
-        CHECK(cudaHostGetDevicePointer(&device_, host_, 0));       // < 获取设备指针
+        CHECK(cudaHostAlloc(&host_, size, cudaHostAllocMapped));  // < 分配映射内存
+        CHECK(cudaHostGetDevicePointer(&device_, host_, 0));      // < 获取设备指针
         size_ = size;
     }
 }
