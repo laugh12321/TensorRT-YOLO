@@ -27,15 +27,16 @@ TrtBackend::TrtBackend(const std::string& trt_engine_file, const InferOption& in
     // 初始化插件
     initLibNvInferPlugins(static_cast<void*>(TrtLogger::get()), "");
 
-    //
-    std::unique_ptr<nvinfer1::IRuntime> runtime{
-        nvinfer1::createInferRuntime(*TrtLogger::get())};
+    // 创建 runtime 对象，作为成员变量
+    auto runtime = TrtRuntimeManager::getRuntime();
     if (!runtime) throw std::runtime_error("Failed to call createInferRuntime().");
 
+    // 反序列化 engine 并持有其引用
     engine_ = std::shared_ptr<nvinfer1::ICudaEngine>(runtime->deserializeCudaEngine(engine_buffer.data(), engine_buffer.size()));
     if (!engine_) throw std::runtime_error("Failed to call deserializeCudaEngine().");
 
-    context_ = std::shared_ptr<nvinfer1::IExecutionContext>(engine_->createExecutionContext());
+    // 创建 context
+    context_ = std::unique_ptr<nvinfer1::IExecutionContext>(engine_->createExecutionContext());
     if (!context_) throw std::runtime_error("Failed to call createExecutionContext().");
 
     // 是否支持 Zero Copy
@@ -62,7 +63,7 @@ std::unique_ptr<TrtBackend> TrtBackend::clone() {
     initLibNvInferPlugins(static_cast<void*>(TrtLogger::get()), "");
 
     clone_backend->engine_  = engine_;
-    clone_backend->context_ = std::shared_ptr<nvinfer1::IExecutionContext>(clone_backend->engine_->createExecutionContext());
+    clone_backend->context_ = std::unique_ptr<nvinfer1::IExecutionContext>(clone_backend->engine_->createExecutionContext());
     if (!clone_backend->context_) throw std::runtime_error("Failed to call createExecutionContext().");
 
     // 是否支持 Zero Copy

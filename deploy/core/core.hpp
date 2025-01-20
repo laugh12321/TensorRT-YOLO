@@ -16,6 +16,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <mutex>
 
 namespace deploy {
 
@@ -63,6 +64,40 @@ private:
     static std::map<nvinfer1::ILogger::Severity, std::string> severity_map_;  // < 日志严重性级别与描述的映射表
 
     TrtLogger() : severity_(nvinfer1::ILogger::Severity::kWARNING) {}         // < 构造函数，初始化日志严重性级别为警告级别
+};
+
+/**
+ * @brief TensorRT 运行时管理器类，用于全局管理 TensorRT 的运行时实例。
+ */
+class TrtRuntimeManager {
+public:
+    /**
+     * @brief 获取 TensorRT 运行时实例的单例方法。
+     *
+     * 该方法通过线程安全的方式初始化 TensorRT 运行时实例，并确保全局只有一个实例。
+     * 在程序结束时，会自动释放运行时实例以释放资源。
+     *
+     * @return nvinfer1::IRuntime* 返回 TensorRT 运行时实例的指针。
+     */
+    static nvinfer1::IRuntime* getRuntime() {
+        static nvinfer1::IRuntime* runtime = nullptr;
+        static std::once_flag      init_flag;
+
+        // 使用 std::call_once 确保初始化逻辑的线程安全性
+        std::call_once(init_flag, []() {
+            runtime = nvinfer1::createInferRuntime(*TrtLogger::get());
+            if (!runtime) {
+                throw std::runtime_error("Failed to create TensorRT Runtime.");
+            }
+            atexit([]() {
+                if (runtime) {
+                    delete runtime;
+                }
+            });
+        });
+
+        return runtime;
+    }
 };
 
 /**

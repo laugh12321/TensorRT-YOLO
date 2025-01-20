@@ -77,7 +77,7 @@ private:
     void staticInfer(const std::vector<Image>& inputs);
 
     std::shared_ptr<nvinfer1::ICudaEngine>       engine_;         // < CUDA 引擎共享指针
-    std::shared_ptr<nvinfer1::IExecutionContext> context_;        // < 执行上下文共享指针
+    std::unique_ptr<nvinfer1::IExecutionContext> context_;        // < 执行上下文共享指针
     CudaGraph                                    cuda_graph_;     // < CUDA 图
     std::unique_ptr<BaseBuffer>                  inputs_buffer_;  // < 输入缓冲区智能指针
     BufferType                                   buffer_type_;    // < 缓冲区类型
