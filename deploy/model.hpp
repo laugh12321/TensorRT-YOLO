@@ -21,12 +21,20 @@
 
 namespace deploy {
 
-// 基类模板
+/**
+ * @brief 基类模板，用于定义模型的基本结构和接口。
+ *
+ * 该模板类封装了模型的推理逻辑、性能统计和后处理功能，适用于多种类型的模型。
+ * 通过模板参数 `ResultType`，可以灵活地支持不同类型的推理结果。
+ *
+ * @tparam ResultType 推理结果的类型，例如 `ClassifyRes`、`DetectRes` 等。
+ */
 template <typename ResultType>
 class DEPLOYAPI BaseModel {
 public:
     // 私有的无参构造函数，仅在 clone 方法中使用
-    BaseModel() = default;
+    BaseModel()  = default;
+    ~BaseModel() = default;
 
     /**
      * @brief 构造一个新的 BaseModel 对象
@@ -42,14 +50,12 @@ public:
         }
     }
 
-    virtual ~BaseModel() = default;
-
     /**
      * @brief 克隆 BaseModel 对象
      *
      * @return 克隆后的 BaseModel 对象的智能指针
      */
-    virtual std::unique_ptr<BaseModel<ResultType>> clone() const = 0;
+    std::unique_ptr<BaseModel<ResultType>> clone() const;
 
     /**
      * @brief 对单张图像进行推理
@@ -88,7 +94,7 @@ protected:
      * @param idx 索引
      * @return 后处理后的结果
      */
-    virtual ResultType postProcess(int idx) = 0;
+    ResultType postProcess(int idx);
 
     std::unique_ptr<TrtBackend> backend_;         // < TensorRT 后端
 
@@ -97,59 +103,18 @@ protected:
     std::unique_ptr<CpuTimer> infer_cpu_trace_;   // < CPU推理计时器
 };
 
-// 分类模型
-class DEPLOYAPI ClassifyModel : public BaseModel<ClassifyRes> {
-public:
-    using BaseModel<ClassifyRes>::BaseModel;                         // < 继承构造函数
+// 实例化模板类
+template class BaseModel<ClassifyRes>;
+template class BaseModel<DetectRes>;
+template class BaseModel<OBBRes>;
+template class BaseModel<SegmentRes>;
+template class BaseModel<PoseRes>;
 
-    std::unique_ptr<BaseModel<ClassifyRes>> clone() const override;  // < 实现 clone 方法
-
-protected:
-    ClassifyRes postProcess(int idx) override;
-};
-
-// 检测模型
-class DEPLOYAPI DetectModel : public BaseModel<DetectRes> {
-public:
-    using BaseModel<DetectRes>::BaseModel;                         // < 继承构造函数
-
-    std::unique_ptr<BaseModel<DetectRes>> clone() const override;  // < 实现 clone 方法
-
-protected:
-    DetectRes postProcess(int idx) override;
-};
-
-// 旋转检测模型
-class DEPLOYAPI OBBModel : public BaseModel<OBBRes> {
-public:
-    using BaseModel<OBBRes>::BaseModel;                         // < 继承构造函数
-
-    std::unique_ptr<BaseModel<OBBRes>> clone() const override;  // < 实现 clone 方法
-
-protected:
-    OBBRes postProcess(int idx) override;
-};
-
-// 分割模型
-class DEPLOYAPI SegmentModel : public BaseModel<SegmentRes> {
-public:
-    using BaseModel<SegmentRes>::BaseModel;                         // < 继承构造函数
-
-    std::unique_ptr<BaseModel<SegmentRes>> clone() const override;  // < 实现 clone 方法
-
-protected:
-    SegmentRes postProcess(int idx) override;
-};
-
-// 姿态估计模型
-class DEPLOYAPI PoseModel : public BaseModel<PoseRes> {
-public:
-    using BaseModel<PoseRes>::BaseModel;                         // < 继承构造函数
-
-    std::unique_ptr<BaseModel<PoseRes>> clone() const override;  // < 实现 clone 方法
-
-protected:
-    PoseRes postProcess(int idx) override;
-};
+// 定义模型的别名
+typedef BaseModel<ClassifyRes> ClassifyModel;
+typedef BaseModel<DetectRes>   DetectModel;
+typedef BaseModel<OBBRes>      OBBModel;
+typedef BaseModel<SegmentRes>  SegmentModel;
+typedef BaseModel<PoseRes>     PoseModel;
 
 }  // namespace deploy

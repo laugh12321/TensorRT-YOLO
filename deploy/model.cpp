@@ -19,6 +19,15 @@
 namespace deploy {
 
 template <typename ResultType>
+std::unique_ptr<BaseModel<ResultType>> BaseModel<ResultType>::clone() const {
+    auto clone_model              = std::make_unique<BaseModel<ResultType>>();
+    clone_model->backend_         = backend_->clone();  // < 克隆 TrtBackend
+    clone_model->infer_gpu_trace_ = std::make_unique<GpuTimer>(clone_model->backend_->stream);
+    clone_model->infer_cpu_trace_ = std::make_unique<CpuTimer>();
+    return clone_model;
+}
+
+template <typename ResultType>
 std::vector<ResultType> BaseModel<ResultType>::predict(const std::vector<Image>& images) {
     if (backend_->option.enable_performance_report) {
         total_request_ += (backend_->dynamic ? images.size() : backend_->max_shape.x);
@@ -91,7 +100,8 @@ std::tuple<std::string, std::string, std::string> BaseModel<ResultType>::perform
 }
 
 // ClassifyModel 的后处理方法实现
-ClassifyRes ClassifyModel::postProcess(int idx) {
+template <>
+ClassifyRes BaseModel<ClassifyRes>::postProcess(int idx) {
     auto&  tensor_info = backend_->tensor_infos[1];
     float* topk        = static_cast<float*>(tensor_info.buffer->host()) + idx * tensor_info.shape.d[1] * tensor_info.shape.d[2];
 
@@ -109,7 +119,8 @@ ClassifyRes ClassifyModel::postProcess(int idx) {
 }
 
 // DetectModel 的后处理方法实现
-DetectRes DetectModel::postProcess(int idx) {
+template <>
+DetectRes BaseModel<DetectRes>::postProcess(int idx) {
     auto& num_tensor   = backend_->tensor_infos[1];
     auto& box_tensor   = backend_->tensor_infos[2];
     auto& score_tensor = backend_->tensor_infos[3];
@@ -149,7 +160,8 @@ DetectRes DetectModel::postProcess(int idx) {
 }
 
 // OBBModel 的后处理方法实现
-OBBRes OBBModel::postProcess(int idx) {
+template <>
+OBBRes BaseModel<OBBRes>::postProcess(int idx) {
     auto& num_tensor   = backend_->tensor_infos[1];
     auto& box_tensor   = backend_->tensor_infos[2];
     auto& score_tensor = backend_->tensor_infos[3];
@@ -190,7 +202,8 @@ OBBRes OBBModel::postProcess(int idx) {
 }
 
 // SegmentModel 的后处理方法实现
-SegmentRes SegmentModel::postProcess(int idx) {
+template <>
+SegmentRes BaseModel<SegmentRes>::postProcess(int idx) {
     auto& num_tensor   = backend_->tensor_infos[1];
     auto& box_tensor   = backend_->tensor_infos[2];
     auto& score_tensor = backend_->tensor_infos[3];
@@ -247,7 +260,8 @@ SegmentRes SegmentModel::postProcess(int idx) {
 }
 
 // PoseModel 的后处理方法实现
-PoseRes PoseModel::postProcess(int idx) {
+template <>
+PoseRes BaseModel<PoseRes>::postProcess(int idx) {
     auto& num_tensor   = backend_->tensor_infos[1];
     auto& box_tensor   = backend_->tensor_infos[2];
     auto& score_tensor = backend_->tensor_infos[3];
@@ -299,57 +313,5 @@ PoseRes PoseModel::postProcess(int idx) {
 
     return result;
 }
-
-// ClassifyModel 的 clone 方法实现
-std::unique_ptr<BaseModel<ClassifyRes>> ClassifyModel::clone() const {
-    auto clone_model              = std::make_unique<ClassifyModel>();
-    clone_model->backend_         = backend_->clone();  // < 克隆 TrtBackend
-    clone_model->infer_gpu_trace_ = std::make_unique<GpuTimer>(clone_model->backend_->stream);
-    clone_model->infer_cpu_trace_ = std::make_unique<CpuTimer>();
-    return clone_model;
-}
-
-// DetectModel 的 clone 方法实现
-std::unique_ptr<BaseModel<DetectRes>> DetectModel::clone() const {
-    auto clone_model              = std::make_unique<DetectModel>();
-    clone_model->backend_         = backend_->clone();  // < 克隆 TrtBackend
-    clone_model->infer_gpu_trace_ = std::make_unique<GpuTimer>(clone_model->backend_->stream);
-    clone_model->infer_cpu_trace_ = std::make_unique<CpuTimer>();
-    return clone_model;
-}
-
-// OBBModel 的 clone 方法实现
-std::unique_ptr<BaseModel<OBBRes>> OBBModel::clone() const {
-    auto clone_model              = std::make_unique<OBBModel>();
-    clone_model->backend_         = backend_->clone();  // < 克隆 TrtBackend
-    clone_model->infer_gpu_trace_ = std::make_unique<GpuTimer>(clone_model->backend_->stream);
-    clone_model->infer_cpu_trace_ = std::make_unique<CpuTimer>();
-    return clone_model;
-}
-
-// SegmentModel 的 clone 方法实现
-std::unique_ptr<BaseModel<SegmentRes>> SegmentModel::clone() const {
-    auto clone_model              = std::make_unique<SegmentModel>();
-    clone_model->backend_         = backend_->clone();  // < 克隆 TrtBackend
-    clone_model->infer_gpu_trace_ = std::make_unique<GpuTimer>(clone_model->backend_->stream);
-    clone_model->infer_cpu_trace_ = std::make_unique<CpuTimer>();
-    return clone_model;
-}
-
-// PoseModel 的 clone 方法实现
-std::unique_ptr<BaseModel<PoseRes>> PoseModel::clone() const {
-    auto clone_model              = std::make_unique<PoseModel>();
-    clone_model->backend_         = backend_->clone();  // < 克隆 TrtBackend
-    clone_model->infer_gpu_trace_ = std::make_unique<GpuTimer>(clone_model->backend_->stream);
-    clone_model->infer_cpu_trace_ = std::make_unique<CpuTimer>();
-    return clone_model;
-}
-
-// 实例化模板类
-template class BaseModel<ClassifyRes>;
-template class BaseModel<DetectRes>;
-template class BaseModel<OBBRes>;
-template class BaseModel<SegmentRes>;
-template class BaseModel<PoseRes>;
 
 }  // namespace deploy
