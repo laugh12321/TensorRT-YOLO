@@ -41,10 +41,6 @@ trtexec --onnx=models/yolo11n-pose.onnx --saveEngine=models/yolo11n-pose.engine 
 
 ### 使用 CLI 进行推理
 
-> [!NOTE] 
-> 从 4.0 版本开始新增的 `--cudaGraph` 指令可以进一步加速推理过程，但该功能仅支持静态模型。
-> 
-> 从 4.3 以后的版本开始，支持姿态识别，指令 `-m 3, --mode 3` 用于选择姿态识别。
 
 1. 使用 `tensorrt_yolo` 库的 `trtyolo` 命令行工具进行推理。运行以下命令查看帮助信息：
 
@@ -55,7 +51,7 @@ trtexec --onnx=models/yolo11n-pose.onnx --saveEngine=models/yolo11n-pose.engine 
 2. 运行以下命令进行推理：
 
     ```bash
-    trtyolo infer -e models/yolo11n-pose.engine -m 3 -i images -o output -l labels.txt --cudaGraph
+    trtyolo infer -e models/yolo11n-pose.engine -m 4 -i images -o output -l labels.txt
     ```
 
     推理结果将保存至 `output` 文件夹，并生成可视化结果。
@@ -66,7 +62,7 @@ trtexec --onnx=models/yolo11n-pose.onnx --saveEngine=models/yolo11n-pose.engine 
 2. 运行以下命令进行推理：
 
     ```bash
-    python pose.py -e models/yolo11n-pose.engine -i images -o output -l labels.txt --cudaGraph
+    python pose.py -e models/yolo11n-pose.engine -i images -o output -l labels.txt
     ```
 
 ### 使用 C++ 进行推理
@@ -91,7 +87,7 @@ trtexec --onnx=models/yolo11n-pose.onnx --saveEngine=models/yolo11n-pose.engine 
 
     ```bash
     cd bin
-    ./pose -e ../models/yolo11n-pose.engine -i ../images -o ../output -l ../labels.txt --cudaGraph
+    ./pose -e ../models/yolo11n-pose.engine -i ../images -o ../output -l ../labels.txt
     ```
 
 通过以上方式，您可以顺利完成模型推理。

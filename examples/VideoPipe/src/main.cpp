@@ -17,7 +17,7 @@ int main() {
     auto file_src_1 = std::make_shared<vp_nodes::vp_file_src_node>("file_src_1", 1, "demo1.mp4");
 
     // Inference node (TensorRT-YOLO detector)
-    auto detector = std::make_shared<vp_nodes::vp_trtyolo_detector>("yolo_detector", "yolo11n.engine", "labels.txt", true, 2);
+    auto detector = std::make_shared<vp_nodes::vp_trtyolo_detector>("yolo_detector", "yolo11n.engine", "labels.txt", 2);
 
     // Tracking node (SORT tracker)
     auto track = std::make_shared<vp_nodes::vp_sort_track_node>("track");

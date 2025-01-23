@@ -1,7 +1,6 @@
 #pragma once
 
-#include "deploy/vision/inference.hpp"
-#include "deploy/vision/result.hpp"
+#include "deploy/model.hpp"
 #include "nodes/vp_primary_infer_node.h"
 
 namespace vp_nodes {
@@ -9,8 +8,7 @@ namespace vp_nodes {
 // TensorRT-YOLO detector node, based on vp_primary_infer_node
 class vp_trtyolo_detector : public vp_primary_infer_node {
 private:
-    bool                             use_cudagraph = false;
-    std::shared_ptr<deploy::BaseDet> detector      = nullptr;
+    std::shared_ptr<deploy::DetectModel> detector = nullptr;
 
 protected:
     // Override: Run inference logic for the whole batch of frames
@@ -25,10 +23,9 @@ public:
     //   node_name: Name of the node
     //   model_path: Path to the model
     //   labels_path: Path to labels file (optional)
-    //   cudagraph: Whether to use CUDA graph (default false)
     //   batch: Inference batch size (default 1)
     //   device_id: GPU device ID (default 0)
-    vp_trtyolo_detector(std::string node_name, std::string model_path, std::string labels_path = "", bool cudagraph = false, int batch = 1, int device_id = 0);
+    vp_trtyolo_detector(std::string node_name, std::string model_path, std::string labels_path = "", int batch = 1, int device_id = 0);
 
     // Destructor: Cleans up resources
     ~vp_trtyolo_detector();

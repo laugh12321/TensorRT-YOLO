@@ -35,7 +35,7 @@ target_include_directories(pose PRIVATE
     ${CUDA_INCLUDE_DIRS}
     ${TENSORRT_PATH}/include
     ${OpenCV_INCLUDE_DIRS}
-    ${DEPLOY_PATH}/include
+    ${DEPLOY_PATH}
 )
 
 # 链接库目录

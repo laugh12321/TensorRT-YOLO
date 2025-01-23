@@ -69,7 +69,7 @@ target("PipeDemo")
 
     -- 添加deploy链接目录和链接库
     if has_config("deploy") then
-        add_includedirs(path.join("$(deploy)", "include"))
+        add_includedirs("$(deploy)")
         add_linkdirs(path.join("$(deploy)", "lib"))
         add_links("deploy")
     end
