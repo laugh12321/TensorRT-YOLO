@@ -224,7 +224,7 @@ def visualize(
 
         # Segmentation mask
         if isinstance(result, SegmentRes):
-            resized_mask = cv2.resize(result.masks[i], (image_width, image_height)) > 0
+            resized_mask = cv2.resize(result.masks[i].to_numpy(), (image_width, image_height)) > 0
             box_mask = np.zeros_like(resized_mask, dtype=bool)
             box_mask[box_coords[1] : box_coords[3], box_coords[0] : box_coords[2]] = True
             resized_mask &= box_mask
