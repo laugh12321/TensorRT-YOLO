@@ -4,38 +4,38 @@ English | [中文](../cn/model_export.md)
 
 ## Exporting Models Using `trtyolo` CLI
 
-The `tensorrt_yolo` package comes with a handy Command Line Interface (CLI) tool called `trtyolo` for exporting ONNX models suitable for inference with this project, complete with TensorRT plugins. To see the specific export commands, you can use `trtyolo export --help`.
+`tensorrt_yolo` provides a convenient Command Line Interface (CLI) tool, `trtyolo`, for exporting ONNX models into formats suitable for inference in this project, with integrated TensorRT plugins. You can view detailed export command instructions by running `trtyolo export --help`.
 
 > [!NOTE]  
-> When exporting ONNX models for PP-YOLOE and PP-YOLOE+, only the `batch` dimension will be modified, while the `height` and `width` dimensions will remain unchanged. You will need to set this in [PaddleDetection](https://github.com/PaddlePaddle/PaddleDetection), with a default value typically being `640`.
+> When exporting ONNX models for PP-YOLOE and PP-YOLOE+, only the batch dimension is adjusted, while the height and width dimensions remain unchanged. You need to configure this in [PaddleDetection](https://github.com/PaddlePaddle/PaddleDetection), with the default value typically set to 640.
 >
-> Official repositories such as [YOLOv6](https://github.com/meituan/YOLOv6/tree/main/deploy/ONNX#tensorrt-backend-tensorrt-version-800), [YOLOv7](https://github.com/WongKinYiu/yolov7#export), [YOLOv9](https://github.com/WongKinYiu/yolov9/issues/130#issue-2162045461) already provide ONNX model exports with the EfficientNMS plugin, so they are not duplicated here.
->
+> Official repositories such as [YOLOv6](https://github.com/meituan/YOLOv6/tree/main/deploy/ONNX#tensorrt-backend-tensorrt-version-800), [YOLOv7](https://github.com/WongKinYiu/yolov7#export), and [YOLOv9](https://github.com/WongKinYiu/yolov9/issues/130#issue-2162045461) already provide ONNX model exports with the EfficientNMS plugin, so this functionality is not duplicated here.
 
 ### Export Command Examples
+
 ```bash
-# Export YOLOv3 model from a remote repository
+# Export a YOLOv3 model from a remote repository
 trtyolo export -w yolov3.pt -v yolov3 -o output
 
-# Export YOLOv5 model from a local repository
+# Export a YOLOv5 model from a local repository
 trtyolo export -w yolov5s.pt -v yolov5 -o output --repo_dir your_local_yolovs_repository
 
-# Export Ultralytics-trained yolo series models (YOLOv3, YOLOv5, YOLOv6, YOLOv8, YOLOv9, YOLOv10, YOLO11) with plugin parameters for dynamic batch export
+# Export models trained with Ultralytics (YOLOv3, YOLOv5, YOLOv6, YOLOv8, YOLOv9, YOLOv10, YOLO11) with plugin parameters, using dynamic batch export
 trtyolo export -w yolov8s.pt -v ultralytics -o output --max_boxes 100 --iou_thres 0.45 --conf_thres 0.25 -b -1
 
-# Export YOLOv10 model
-trtyolo export -w yolov10s.pt -v yolov10 -o output
+# Export a YOLOv10 model with height 1080 and width 1920
+trtyolo export -w yolov10s.pt -v yolov10 -o output --imgsz 1080 1920
 
-# Export YOLO11 OBB model
+# Export a YOLO11 OBB model
 trtyolo export -w yolo11n-obb.pt -v yolo11 -o output
 
-# Export PP-YOLOE, PP-YOLOE+ models
+# Export PP-YOLOE and PP-YOLOE+ models
 trtyolo export --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output
 ```
 
-## Building TensorRT Engine with `trtexec`
+## Building TensorRT Engines Using `trtexec`
 
-The exported ONNX models can be built into a TensorRT engine using the `trtexec` tool.
+Exported ONNX models can be built into TensorRT engines using the `trtexec` tool.
 
 ```bash
 # Static batch
@@ -52,4 +52,4 @@ trtexec --onnx=yolo11n-obb.onnx --saveEngine=yolo11n-obb.engine --fp16 --minShap
 ```
 
 > [!NOTE]  
-> When using the `--staticPlugins` and `--setPluginsToSerialize` parameters to build a dynamic model with custom plugins, encountering the error `[E] Error[4]: IRuntime::deserializeCudaEngine: Error Code 4: API Usage Error (Cannot register the library as plugin creator of EfficientRotatedNMS_TRT exists already.)` typically indicates that the engine has been successfully built, but an attempt to load and deserialize the engine detected a duplicate plugin registration. This error can be safely ignored.
+> When building dynamic models with custom plugins using the `--staticPlugins` and `--setPluginsToSerialize` parameters, if you encounter the error `[E] Error[4]: IRuntime::deserializeCudaEngine: Error Code 4: API Usage Error (Cannot register the library as plugin creator of EfficientRotatedNMS_TRT exists already.)`, this typically indicates that the engine build was successful, but a plugin duplicate registration was detected during engine loading and deserialization. In such cases, this error can be safely ignored.

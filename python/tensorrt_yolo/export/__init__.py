@@ -1,5 +1,6 @@
 import sys
 import warnings
+from collections.abc import Sequence
 from copy import deepcopy
 from pathlib import Path
 from typing import Optional
@@ -192,7 +193,7 @@ def torch_export(
     weights: str,
     output: str,
     version: str,
-    imgsz: Optional[int] = 640,
+    imgsz: Optional[Sequence[int]] = [640, 640],
     batch: Optional[int] = 1,
     max_boxes: Optional[int] = 100,
     iou_thres: Optional[float] = 0.45,
@@ -208,7 +209,7 @@ def torch_export(
         weights (str): Path to YOLO weights for PyTorch.
         output (str): Directory path to save the exported model.
         version (str): YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, ultralytics.
-        imgsz (Optional[int], optional): Inference image size. Defaults to 640.
+        imgsz (Optional[Sequence[int]], optional): Inference image size (height, width). Defaults to [640, 640].
         batch (Optional[int], optional): Total batch size for the model. Use -1 for dynamic batch size. Defaults to 1.
         max_boxes (Optional[int], optional): Maximum number of detections to output per image. Defaults to 100.
         iou_thres (Optional[float], optional): NMS IoU threshold for post-processing. Defaults to 0.45.
