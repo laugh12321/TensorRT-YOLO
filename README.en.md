@@ -17,7 +17,7 @@ English | [简体中文](README.md)
 </p>
 
 <p align="center">
-    <a href="/docs/cn/build_and_install"><img src="https://img.shields.io/badge/-Installation-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
+    <a href="/docs/en/build_and_install.md"><img src="https://img.shields.io/badge/-Installation-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
     <a href="/examples/"><img src="https://img.shields.io/badge/-Usage Examples-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
     <a href="#quick-start"><img src="https://img.shields.io/badge/-Quick Start-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
     <a href=""><img src="https://img.shields.io/badge/-API Documentation-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
