@@ -28,11 +28,11 @@
 
 <div align="center">
 
-[<img src='assets/detect.jpg' height="160px" width="220px">](examples/detect/)
-[<img src='assets/obb.png' height="160px" width="220px">](examples/obb/)
-[<img src='assets/segment.jpg' height="160px" width="220px">](examples/segment/)
-[<img src='assets/pose.jpg' height="160px" width="220px">](examples/pose/)
-[<img src='assets/example.gif' width="895px">](examples/videopipe)
+[<img src='assets/obb.png' height="138px" width="190px">](examples/obb/)
+[<img src='assets/detect.jpg' height="138px" width="190px">](examples/detect/)
+[<img src='assets/segment.jpg' height="138px" width="190px">](examples/segment/)
+[<img src='assets/pose.jpg' height="138px" width="190px">](examples/pose/)
+[<img src='assets/example.gif' width="770px">](examples/videopipe)
 
 </div>
 
