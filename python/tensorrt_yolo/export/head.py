@@ -622,7 +622,7 @@ class UltralyticsPose(Pose):
 
 
 class UltralyticsClassify(Classify):
-    """Ultralytics classification head, i.e. x(b,c1,20,20) to x(b,top5)."""
+    """Ultralytics classification head, i.e. x(b,c1,20,20) to x(b,min(5,cls_num),2)."""
 
     def forward(self, x):
         """Performs a forward pass of the Ultralytics model on input image data."""
@@ -630,7 +630,7 @@ class UltralyticsClassify(Classify):
             x = torch.cat(x, 1)
 
         x = self.linear(self.drop(self.pool(self.conv(x)).flatten(1)))
-        return torch.stack(x.softmax(1).topk(5, largest=True, sorted=True), dim=-1)
+        return torch.stack(x.softmax(1).topk(min(5, x.shape[1]), largest=True, sorted=True), dim=-1)
 
 
 class v10Detect(UltralyticsDetect):

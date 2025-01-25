@@ -87,7 +87,7 @@ OUTPUT_NAMES = {
     "OBB": DEFAULT_OUTPUT_NAMES,
     "Segment": DEFAULT_OUTPUT_NAMES + ["det_masks"],
     "Pose": DEFAULT_OUTPUT_NAMES + ["det_kpts"],
-    "Classify": ["top5"],
+    "Classify": ["topk"],
 }
 
 DYNAMIC_AXES = {
@@ -96,7 +96,7 @@ DYNAMIC_AXES = {
     "OBB": DEFAULT_DYNAMIC_AXES,
     "Segment": {**DEFAULT_DYNAMIC_AXES, "det_masks": {0: "batch", 2: "height", 3: "width"}},
     "Pose": {**DEFAULT_DYNAMIC_AXES, "det_kpts": {0: "batch"}},
-    "Classify": {"images": {0: "batch", 2: "height", 3: "width"}, "top5": {0: "batch"}},
+    "Classify": {"images": {0: "batch", 2: "height", 3: "width"}, "topk": {0: "batch"}},
 }
 
 YOLO_EXPORT_INFO = {
@@ -274,7 +274,7 @@ def torch_export(
             "width" if dynamic else imgsz[1],
         ]
     elif head_name == "Classify":
-        shapes = {'top5': ["batch" if dynamic else batch, 5, 2]}
+        shapes = {'topk': ["batch" if dynamic else batch, preds[-1].shape[1], 2]}
 
     for node in model_onnx.graph.output:
         for idx, dim in enumerate(node.type.tensor_type.shape.dim):
