@@ -1,10 +1,9 @@
+English | [简体中文](README.md)
+
 <div align="center">
   <p>
       <img width="100%" src="assets/logo.png"></a>
   </p>
-
-English | [简体中文](README.md)
-
 </div>
 
 ## <div align="center">🚀 TensorRT YOLO</div>
@@ -17,170 +16,161 @@ English | [简体中文](README.md)
     <img alt="GitHub forks" src="https://img.shields.io/github/forks/laugh12321/TensorRT-YOLO?style=for-the-badge&color=%2320878f">
 </p>
 
-🚀TensorRT-YOLO is a **user-friendly** and **extremely efficient** inference deployment tool for the **YOLO series**, specifically designed for NVIDIA devices. This project not only integrates TensorRT plugins to enhance post-processing effects but also utilizes CUDA kernels and CUDA graphs to accelerate inference. TensorRT-YOLO provides support for both C++ and Python inference, aiming to offer a **plug-and-play** deployment experience. It includes task scenarios such as [object detection](examples/detect/), [instance segmentation](examples/segment/), [image classification](examples/classify/), [pose recognition](examples/pose/), [oriented bounding box detection](examples/obb/), and [video analysis](examples/VideoPipe), meeting developers' **multi-scenario** deployment needs.
+<p align="center">
+    <a href="/docs/cn/build_and_install"><img src="https://img.shields.io/badge/-Installation-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
+    <a href="/examples/"><img src="https://img.shields.io/badge/-Usage Examples-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
+    <a href="#quick-start"><img src="https://img.shields.io/badge/-Quick Start-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
+    <a href=""><img src="https://img.shields.io/badge/-API Documentation-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
+    <a href="https://github.com/laugh12321/TensorRT-YOLO/releases"><img src="https://img.shields.io/badge/-Release Notes-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
+</p>
+
+🚀 TensorRT-YOLO is an **easy-to-use**, **extremely efficient** inference deployment tool for the **YOLO series** designed specifically for NVIDIA devices. The project not only integrates TensorRT plugins to enhance post-processing but also utilizes CUDA kernels and CUDA graphs to accelerate inference. TensorRT-YOLO provides support for both C++ and Python inference, aiming to deliver a 📦**out-of-the-box** deployment experience. It covers various task scenarios such as [object detection](examples/detect/), [instance segmentation](examples/segment/), [image classification](examples/classify/), [pose estimation](examples/pose/), [oriented object detection](examples/obb/), and [video analysis](examples/VideoPipe), meeting developers' deployment needs in **multiple scenarios**.
 
 <div align="center">
-    <img src="assets/example.gif" width="800">
-</div>
 
-<div align="center">
-    <table>
-        <tr>
-            <td>
-                <img src='assets/detect.jpg' height="300">
-                <center>Detect</center>
-            </td>
-            <td>
-                <img src='assets/segment.jpg' height="300">
-                <center>Segment</center>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <img src='assets/pose.jpg' height="300">
-                <center>Pose</center>
-            </td>
-            <td>
-                <img src='assets/obb.png' height="300">                                
-                <center>OBB</center>
-            </td>
-        </tr>
-    </table>
+[<img src='assets/detect.jpg' height="160px" width="220px">](examples/detect/)
+[<img src='assets/obb.png' height="160px" width="220px">](examples/obb/)
+[<img src='assets/segment.jpg' height="160px" width="220px">](examples/segment/)
+[<img src='assets/pose.jpg' height="160px" width="220px">](examples/pose/)
+[<img src='assets/example.gif' width="895px">](examples/videopipe)
+
 </div>
 
 ## <div align="center">✨ Key Features</div>
 
-- **Diverse YOLO Support**: Fully compatible with YOLOv3 to YOLOv11, as well as PP-YOLOE and PP-YOLOE+, meeting the needs of different versions.
-- **Multi-scenario Applications**: Provides example code for diverse scenarios such as [Detect](examples/detect/), [Segment](examples/segment/), [Classify](examples/classify/), [Pose](examples/pose/), and [OBB](examples/obb/).
-- **Model Optimization and Inference Acceleration**:
-  - **ONNX Support**: Supports static and dynamic export of ONNX models, including TensorRT custom plugin support, simplifying the model deployment process.
-  - **TensorRT Integration**: Integrated TensorRT plugins, including custom plugins, accelerate post-processing for Detect, Segment, Pose, OBB, and other scenarios, enhancing inference efficiency.
-  - **CUDA Acceleration**: Optimizes pre-processing with CUDA kernels and accelerates inference processes with CUDA graph technology, achieving high-performance computing.
-- **Language Support**: Supports C++ and Python (mapped through Pybind11, enhancing Python inference speed), meeting the needs of different programming languages.
-- **Deployment Convenience**:
-  - **Dynamic Library Compilation**: Provides support for dynamic library compilation, facilitating calling and deployment.
-  - **No Third-Party Dependencies**: All features are implemented using standard libraries, with no additional dependencies, simplifying the deployment process.
-- **Rapid Development and Deployment**:
-  - **CLI Tools**: Provides a command-line interface (CLI) tool for quick model export and inference.
-  - **Cross-Platform Support**: Supports various devices such as Windows, Linux, ARM, x86, adapting to different hardware environments.
-  - **Docker Deployment**: Supports one-click deployment with Docker, simplifying environment configuration and deployment processes.
-- **TensorRT Compatibility**: Compatible with TensorRT 10.x versions, ensuring compatibility with the latest technologies.
+### 🎯 Diverse YOLO Support
+- **Comprehensive Compatibility**: Supports YOLOv3 to YOLOv11 series models, as well as PP-YOLOE and PP-YOLOE+, meeting diverse needs.
+- **Flexible Switching**: Provides simple and easy-to-use interfaces for quick switching between different YOLO versions.
+- **Multi-Scenario Applications**: Offers rich example codes covering [Detect](examples/detect/), [Segment](examples/segment/), [Classify](examples/classify/), [Pose](examples/pose/), [OBB](examples/obb/), and more.
 
-## <div align="center">🔮 Documentation and Tutorials</div>
+### 🚀 Performance Optimization
+- **CUDA Acceleration**: Optimizes pre-processing through CUDA kernels and accelerates inference using CUDA graphs.
+- **TensorRT Integration**: Deeply integrates TensorRT plugins to significantly speed up post-processing and improve overall inference efficiency.
+- **Multi-Context Inference**: Supports multi-context parallel inference to maximize hardware resource utilization.
+- **Memory Management Optimization**: Adapts multi-architecture memory optimization strategies (e.g., Zero Copy mode for Jetson) to enhance memory efficiency.
+
+### 🛠️ Usability
+- **Out-of-the-Box**: Provides comprehensive C++ and Python inference support to meet different developers' needs.
+- **CLI Tools**: Built-in command-line tools for quick model export and inference, improving development efficiency.
+- **Docker Support**: Offers one-click Docker deployment solutions to simplify environment configuration and deployment processes.
+- **No Third-Party Dependencies**: All functionalities are implemented using standard libraries, eliminating the need for additional dependencies and simplifying deployment.
+- **Easy Deployment**: Provides dynamic library compilation support for easy calling and deployment.
+
+### 🌐 Compatibility
+- **Multi-Platform Support**: Fully compatible with various operating systems and hardware platforms, including Windows, Linux, ARM, and x86.
+- **TensorRT Compatibility**: Perfectly adapts to TensorRT 10.x versions, ensuring seamless integration with the latest technology ecosystem.
+
+### 🔧 Flexible Configuration
+- **Customizable Preprocessing Parameters**: Supports flexible configuration of various preprocessing parameters, including **channel swapping (SwapRB)**, **normalization parameters**, and **border padding**.
+
+## <div align="center">🔮 Documentation</div>
 
 - **Installation Guide**
     - [📦 Quick Compilation and Installation](docs/en/build_and_install.md)
-- **Quick Start**
-    - [✴️ Python SDK Quick Start](#quick-start-python)  
-    - [✴️ C++ SDK Quick Start](#quick-start-cpp)
 - **Usage Examples**
     - [Object Detection Example](examples/detect/README.en.md)
     - [Instance Segmentation Example](examples/segment/README.en.md)
     - [Image Classification Example](examples/classify/README.en.md)
-    - [Pose Recognition Example](examples/pose/README.en.md)
-    - [Oriented Bounding Box Detection Example](examples/obb/README.en.md)
+    - [Pose Estimation Example](examples/pose/README.en.md)
+    - [Oriented Object Detection Example](examples/obb/README.en.md)
     - [📹 Video Analysis Example](examples/VideoPipe/README.en.md)
 - **API Documentation**
     - Python API Documentation (⚠️ Not Implemented)
     - C++ API Documentation (⚠️ Not Implemented)
-- **Frequently Asked Questions**
-    - ⚠️ Collecting...
-- **Model Support List**
-    - [🖥️ Model Support List](#support-models)
+- **FAQ**
+    - ⚠️ Collecting ...
+- **Supported Models List**
+    - [🖥️ Supported Models List](#support-models)
 
-## <div align="center">💨 Quick Start</div>
+## <div align="center">💨 Quick Start</div><div id="quick-start"></div>
 
-### 🔸 Prerequisites
+### 1. Prerequisites
 
-- Recommended CUDA version >= 11.0.1 (Minimum CUDA version 11.0.1)
-- Recommended TensorRT version >= 8.6.1 (Minimum TensorRT version 8.6.1)
-- OS: Linux x86_64 (Recommended) arm / Windows /
+- **CUDA**: Recommended version ≥ 11.0.1
+- **TensorRT**: Recommended version ≥ 8.6.1
+- **Operating System**: Linux (x86_64 or arm) (recommended); Windows is also supported
 
-### 🎆 Quick Installation
+### 2. Installation
 
-- Refer to the [📦 Quick Compilation and Installation](docs/en/build_and_install.md) documentation
+- Refer to the [📦 Quick Compilation and Installation](docs/en/build_and_install.md) documentation.
 
-> [!IMPORTANT]
-> Before inference, please refer to the [🔧 CLI Model Export](/docs/en/model_export.md) documentation to export the ONNX model suitable for this project's inference and build it into a TensorRT engine.
+### 3. Model Export
 
-### Python SDK Quick Start<div id="quick-start-python"></div>
+- Refer to the [🔧 Model Export](docs/en/model_export.md) documentation to export an ONNX model suitable for inference in this project and build it into a TensorRT engine.
 
-> [!IMPORTANT]
-> Before inference, please refer to the [🔧 CLI Model Export](/docs/en/model_export.md) documentation to export the ONNX model suitable for this project's inference and build it into a TensorRT engine.
+### 4. Inference Example
 
-#### Python CLI Inference Example
-
-> [!NOTE] 
-> Using the `--cudaGraph` option can significantly improve inference speed, but note that this feature is only available for static models.
-> 
-> The `-m, --mode` parameter can be used to select different model types, where `0` represents detection (Detect), `1` represents oriented bounding box (OBB), `2` represents segmentation (Segment), `3` represents pose estimation (Pose), and `4` represents image classification (Classify).
-
-1. Use the `tensorrt_yolo` library's `trtyolo` command-line tool for inference. Run the following command to view help information:
-
-    ```bash
-    trtyolo infer --help
-    ```
-
-2. Run the following command for inference:
-
-    ```bash
-    trtyolo infer -e models/yolo11n.engine -m 0 -i images -o output -l labels.txt --cudaGraph
-    ```
-
-    Inference results will be saved to the `output` folder, and visualized results will be generated.
-
-#### Python Inference Example
-
-> [!NOTE] 
-> `DeployDet`, `DeployOBB`, `DeploySeg`, `DeployPose` and `DeployCls` correspond to detection (Detect), oriented bounding box (OBB), segmentation (Segment), pose estimation (Pose) and image classification (Classify) models, respectively.
+> [!NOTE]
 >
-> For these models, the `CG` version utilizes CUDA Graph to further accelerate the inference process, but please note that this feature is limited to static models.
+> `ClassifyModel`, `DetectModel`, `OBBModel`, `SegmentModel`, and `PoseModel` correspond to image classification (Classify), detection (Detect), oriented bounding box (OBB), segmentation (Segment), and pose estimation (Pose) models, respectively.
 
-```python
-import cv2
-from tensorrt_yolo.infer import DeployDet, generate_labels, visualize
+- Inference using Python:
 
-# Initialize the model
-model = DeployDet("yolo11n-with-plugin.engine")
-# Load the image
-im = cv2.imread("test_image.jpg")
-# Model prediction
-result = model.predict(cv2.cvtColor(im, cv2.COLOR_BGR2RGB))
-print(f"==> detect result: {result}")
-# Visualization
-labels = generate_labels("labels.txt")
-vis_im = visualize(im, result, labels)
-cv2.imwrite("vis_image.jpg", vis_im)
-```
+  ```python
+  import cv2
+  from tensorrt_yolo.infer import InferOption, DetectModel, generate_labels, visualize
 
-### C++ SDK Quick Start<div id="quick-start-cpp"></div>
+  # Configure inference options
+  option = InferOption()
+  option.enable_swap_rb()
 
-> [!NOTE] 
-> `DeployDet`, `DeployOBB`, `DeploySeg`, `DeployPose` and `DeployCls` correspond to detection (Detect), oriented bounding box (OBB), segmentation (Segment), pose estimation (Pose) and image classification (Classify) models, respectively.
->
-> For these models, the `CG` version utilizes CUDA Graph to further accelerate the inference process, but please note that this feature is limited to static models.
+  # Initialize the model
+  model = DetectModel("yolo11n-with-plugin.engine", option)
 
-```cpp
-#include <opencv2/opencv.hpp>
-// For convenience, the module uses standard libraries except for CUDA and TensorRT
-#include "deploy/vision/inference.hpp"
-#include "deploy/vision/result.hpp"
+  # Load an image
+  im = cv2.imread("test_image.jpg")
 
-int main() {
-    // Initialize the model
-    auto model = deploy::DeployDet("yolo11n-with-plugin.engine");
-    // Load the image
-    cv::Mat cvim = cv::imread("test_image.jpg");
-    // Convert the image from BGR to RGB
-    cv::cvtColor(cvim, cvim, cv::COLOR_BGR2RGB);
-    deploy::Image im(cvim.data, cvim.cols, cvim.rows);
-    // Model prediction
-    deploy::DetResult result = model.predict(im);
-    // Visualization (code omitted)
-    // ...
-    return 0;
-}
-```
+  # Model prediction
+  result = model.predict(im)
+  print(f"==> detect result: {result}")
+
+  # Visualize detection results
+  labels = generate_labels("labels.txt")
+  vis_im = visualize(im, result, labels)
+  cv2.imwrite("vis_image.jpg", vis_im)
+
+  # Clone the model and perform prediction
+  clone_model = model.clone()
+  clone_result = clone_model.predict(im)
+  print(f"==> detect clone result: {clone_result}")
+  ```
+
+- Inference using C++:
+
+  ```cpp
+  #include <memory>
+  #include <opencv2/opencv.hpp>
+
+  // For convenience, the module uses only CUDA and TensorRT, with the rest implemented using standard libraries
+  #include "deploy/model.hpp"  // Contains model inference-related class definitions
+  #include "deploy/option.hpp"  // Contains inference option configuration class definitions
+  #include "deploy/result.hpp"  // Contains inference result definitions
+
+  int main() {
+      // Configure inference options
+      deploy::InferOption option;
+      option.enableSwapRB();  // Enable channel swapping (from BGR to RGB)
+
+      // Initialize the model
+      auto model = std::make_unique<deploy::DetectModel>("yolo11n-with-plugin.engine", option);
+
+      // Load an image
+      cv::Mat cvim = cv::imread("test_image.jpg");
+      deploy::Image im(cvim.data, cvim.cols, cvim.rows);
+
+      // Model prediction
+      deploy::DetResult result = model->predict(im);
+
+      // Visualization (code omitted)
+      // ...  // Visualization code not provided, can be implemented as needed
+
+      // Clone the model and perform prediction
+      auto clone_model = model->clone();
+      deploy::DetResult clone_result = clone_model->predict(im);
+
+      return 0;  // Program ends normally
+  }
+  ```
 
 For more deployment examples, please refer to the [Model Deployment Examples](examples) section.
 
@@ -336,16 +326,6 @@ Symbol legend: (1)  ✅ : Supported; (2) ❔: In progress; (3) ❎ : Not support
       <td>✅</td>
     </tr>
   </table>
-</div>
-
-## <div align="center">☕ Buy the Author a Coffee</div>
-
-Open source projects require effort. If this project has been helpful to you, consider buying the author a coffee. Your support is the greatest motivation for the developer to keep maintaining the project!
-
-<div align="center">
-    <p>
-        <img width="500px" src="assets/sponsor.png"></a>
-    </p>
 </div>
 
 ## <div align="center">📄 License</div>
