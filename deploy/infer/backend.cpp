@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <cstring>
 
+#include "deploy/core/core.hpp"
 #include "deploy/infer/backend.hpp"
 #include "deploy/utils/utils.hpp"
 
@@ -24,15 +25,8 @@ TrtBackend::TrtBackend(const std::string& trt_engine_file, const InferOption& in
     std::string engine_buffer;
     ReadBinaryFromFile(trt_engine_file, &engine_buffer);
 
-    // 初始化插件
-    initLibNvInferPlugins(static_cast<void*>(TrtLogger::get()), "");
-
-    // 创建 runtime 对象，作为成员变量
-    auto runtime = TrtRuntimeManager::getRuntime();
-    if (!runtime) throw std::runtime_error("Failed to call createInferRuntime().");
-
     // 反序列化 engine 并持有其引用
-    engine_ = std::shared_ptr<nvinfer1::ICudaEngine>(runtime->deserializeCudaEngine(engine_buffer.data(), engine_buffer.size()));
+    engine_ = std::shared_ptr<nvinfer1::ICudaEngine>(TRTManager::getRuntime()->deserializeCudaEngine(engine_buffer.data(), engine_buffer.size()), TRTManager::engineDeleter);
     if (!engine_) throw std::runtime_error("Failed to call deserializeCudaEngine().");
 
     // 创建 context
@@ -58,9 +52,6 @@ std::unique_ptr<TrtBackend> TrtBackend::clone() {
 
     cudaSetDevice(option.device_id);                  // < 设置设备
     CHECK(cudaStreamCreate(&clone_backend->stream));  // < 创建 stream
-
-    // 初始化插件
-    initLibNvInferPlugins(static_cast<void*>(TrtLogger::get()), "");
 
     clone_backend->engine_  = engine_;
     clone_backend->context_ = std::unique_ptr<nvinfer1::IExecutionContext>(clone_backend->engine_->createExecutionContext());

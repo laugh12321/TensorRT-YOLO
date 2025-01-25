@@ -13,91 +13,46 @@
 #include <NvInferPlugin.h>
 #include <cuda_runtime.h>
 
-#include <iostream>
-#include <map>
+#include <atomic>
 #include <memory>
-#include <mutex>
+
+#include "NvInferRuntime.h"
 
 namespace deploy {
 
 /**
- * @brief TensorRT 日志记录器类
+ * @brief TensorRT 运行时管理器类，用于单例模式管理 TensorRT 的运行时环境和日志记录。
+ *
  */
-class TrtLogger : public nvinfer1::ILogger {
+class TRTManager {
 public:
     /**
-     * @brief 获取 TrtLogger 的单例实例
+     * @brief 获取 TensorRT 运行时对象。
      *
-     * @return TrtLogger* 返回 TrtLogger 的实例指针
+     * @return nvinfer1::IRuntime* 返回 TensorRT 的运行时实例。
      */
-    static TrtLogger* get() {
-        static TrtLogger logger;
-        return &logger;
-    }
+    static nvinfer1::IRuntime* getRuntime();
 
     /**
-     * @brief 设置日志记录的严重性级别
+     * @brief 引擎删除器，用于安全释放 TensorRT 引擎资源。
      *
-     * @param severity 日志记录的严重性级别，默认为警告级别
+     * @param engine 要释放的 TensorRT 引擎对象。
      */
-    void setLog(nvinfer1::ILogger::Severity severity = nvinfer1::ILogger::Severity::kWARNING) {
-        severity_ = severity;
-    }
-
-    /**
-     * @brief 记录日志信息
-     *
-     * @param severity 日志信息的严重性级别
-     * @param msg 日志信息的内容
-     */
-    void log(nvinfer1::ILogger::Severity severity, const char* msg) noexcept override {
-        if (severity > severity_) return;
-        std::ostream& stream = severity >= nvinfer1::ILogger::Severity::kINFO ? std::cout : std::cerr;
-        auto          it     = severity_map_.find(severity);
-        if (it != severity_map_.end()) {
-            stream << it->second << msg << '\n';
-        }
-    }
+    static void engineDeleter(nvinfer1::ICudaEngine* engine);
 
 private:
-    nvinfer1::ILogger::Severity                               severity_;      // < 日志记录的严重性级别
-    static std::map<nvinfer1::ILogger::Severity, std::string> severity_map_;  // < 日志严重性级别与描述的映射表
+    TRTManager();
+    ~TRTManager() = default;
 
-    TrtLogger() : severity_(nvinfer1::ILogger::Severity::kWARNING) {}         // < 构造函数，初始化日志严重性级别为警告级别
-};
+    TRTManager(const TRTManager&)            = delete;
+    TRTManager& operator=(const TRTManager&) = delete;
 
-/**
- * @brief TensorRT 运行时管理器类，用于全局管理 TensorRT 的运行时实例。
- */
-class TrtRuntimeManager {
-public:
-    /**
-     * @brief 获取 TensorRT 运行时实例的单例方法。
-     *
-     * 该方法通过线程安全的方式初始化 TensorRT 运行时实例，并确保全局只有一个实例。
-     * 在程序结束时，会自动释放运行时实例以释放资源。
-     *
-     * @return nvinfer1::IRuntime* 返回 TensorRT 运行时实例的指针。
-     */
-    static nvinfer1::IRuntime* getRuntime() {
-        static nvinfer1::IRuntime* runtime = nullptr;
-        static std::once_flag      init_flag;
+    struct TRTLogger;                             // < TensorRT 日志记录器
+    std::unique_ptr<TRTLogger>          logger;   // < 日志记录器实例
+    std::unique_ptr<nvinfer1::IRuntime> runtime;  // < TensorRT 运行时实例
 
-        // 使用 std::call_once 确保初始化逻辑的线程安全性
-        std::call_once(init_flag, []() {
-            runtime = nvinfer1::createInferRuntime(*TrtLogger::get());
-            if (!runtime) {
-                throw std::runtime_error("Failed to create TensorRT Runtime.");
-            }
-            atexit([]() {
-                if (runtime) {
-                    delete runtime;
-                }
-            });
-        });
-
-        return runtime;
-    }
+    static TRTManager&      instance();           // < 获取单例实例
+    static std::atomic<int> refCount;             // < 引用计数，用于管理运行时的释放时机
 };
 
 /**
