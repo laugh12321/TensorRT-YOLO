@@ -1,36 +1,28 @@
-# Build Cache
-.xmake/
+# Build and compilation directories
 build/
-
-# build libs
+bin/
 lib/
-tensorrt_yolo/libs/
+libs/
+.xmake/
+dist/
+*.egg-info/
 
-# VSCode Cache
-.vscode
+# IDE and editor-specific files
+.vscode/
 
-# Python Cache
+# Python cache and virtual environment
 __pycache__/
+.cache/
 venv/
 
-# python package
-dist/
-tensorrt_yolo.egg-info/
-tensorrt_yolo/c_lib_wrap.py
-
-# output Cache
+# Output and generated files
 output/
+outputs/
+*.pt
+*.onnx
+*.engine
 
-# example images
-examples/**/*.jpg
-examples/**/*.jpeg
-examples/**/*.png
-examples/**/*.gif
-examples/**/*.bmp
-examples/**/*.tiff
-examples/**/*.webp
+# Miscellaneous
+images/
 
-# example models
-examples/**/*.pt
-examples/**/*.onnx
-examples/**/*.engine
+python/tensorrt_yolo/c_lib_wrap.py

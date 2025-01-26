@@ -1,0 +1,187 @@
+[build-system]
+requires = ["setuptools >= 61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+# Project settings -----------------------------------------------------------------------------------------------------
+[project]
+version = "6.0.0"
+readme = "README.md"
+name = "tensorrt_yolo"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+maintainers = [{ name = "laugh12321" }]
+authors = [{ name = "laugh12321", email = "laugh12321@vip.qq.com" }]
+description = "Your YOLO Deployment Powerhouse. With the synergy of TensorRT Plugins, CUDA Kernels, and CUDA Graphs, experience lightning-fast inference speeds."
+keywords = ["machine-learning", "deep-learning", "computer-vision", "ML", "DL", "AI", "YOLO", "YOLOv3", "YOLOv5", "YOLOv6", "YOLOv7", "YOLOv8", "YOLOv9", "YOLOv10", "YOLO11", "PP-YOLOE", "TensorRT", "CUDA", "detection", "segmentation", "ONNX", "EfficientNMS"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Environment :: GPU :: NVIDIA CUDA",
+    "Environment :: GPU :: NVIDIA CUDA :: 11",
+    "Environment :: GPU :: NVIDIA CUDA :: 12",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Natural Language :: Chinese (Simplified)",
+    "Natural Language :: English",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
+
+# Required dependencies ------------------------------------------------------------------------------------------------
+dependencies = [
+    "loguru",
+    "rich_click",
+    "opencv-python",
+    "numpy>=1.23.5,<2.0.0",
+]
+
+# Optional dependencies ------------------------------------------------------------------------------------------------
+[project.optional-dependencies]
+export = [
+    "ultralytics",
+    "onnx>=1.12.0",
+    "onnx_graphsurgeon",
+    "onnxsim>=0.4.1"  # ONNX simplifier
+]
+
+[project.urls]
+"Bug Reports" = "https://github.com/laugh12321/TensorRT-YOLO/issues"
+"Funding" = "https://github.com/laugh12321"
+"Source" = "https://github.com/laugh12321/TensorRT-YOLO"
+
+[project.scripts]
+trtyolo = "tensorrt_yolo.cli:trtyolo"
+
+# Tools settings -------------------------------------------------------------------------------------------------------
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["tensorrt_yolo*"]
+
+[tool.setuptools.package-data]
+"tensorrt_yolo" = ["libs/*.pyd", "libs/*.so", "libs/*.dll", "libs/*.exp", "libs/*.lib"]
+
+[tool.ruff]
+line-length = 140
+
+[tool.ruff.format]
+# Prevent change to double quotes by some users use ruff format
+quote-style = "preserve"
+
+[tool.ruff.lint]
+select = [
+    # Pycodestyle
+    "E",
+    "W",
+
+    # Pyflakes
+    "F",
+
+    # Isort
+    "I",
+
+    # Comprehensions
+    "C4",
+
+    # Debugger
+    "T100",
+
+    # Pyupgrade
+    "UP",
+
+    # NumPy-specific rules
+    "NPY001",
+    "NPY003",
+    "NPY201",
+
+    # Bugbear
+    "B002",
+    "B003",
+    "B004",
+    "B009",
+    "B010",
+    "B011",
+    "B012",
+    "B013",
+    "B014",
+    "B015",
+    "B016",
+    "B017",
+    "B018",
+    "B019",
+    "B020",
+    "B021",
+    "B022",
+    "B025",
+    "B029",
+    "B032",
+
+    # Pylint
+    "PLE",
+    "PLC0414",
+    "PLC3002",
+    "PLR0206",
+    "PLR0402",
+    "PLR1701",
+    "PLR1711",
+    "PLR1722",
+    "PLW3301",
+
+    # Pygrep-hooks
+    "PGH004",
+
+    # Ruff-specific rules
+    "RUF100",
+]
+unfixable = [
+    "NPY001"
+]
+ignore = [
+    # Whitespace before ‘,’, ‘;’, or ‘:’, it is not compatible with black
+    "E203",
+    # Module level import not at top of file
+    "E402",
+    # Line too long (82 > 79 characters)
+    "E501",
+    # Do not compare types, use `isinstance()`
+    "E721",
+    # Do not use bare except, specify exception instead
+    "E722",
+    # Do not assign a lambda expression, use a def
+    "E731",
+    # Do not use variables named ‘l’, ‘O’, or ‘I’
+    "E741",
+    # `name` may be undefined, or defined from star imports: `module`
+    "F405",
+    # Local variable name is assigned to but never used
+    "F841",
+    # It not met the "Explicit is better than implicit" rule
+    "UP015",
+    # It will cause the performance regression on python3.10
+    "UP038",
+    "UP009",
+]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+known-first-party = ["pydantic"]
+
+[tool.ruff.pyupgrade]
+# Preserve types, even if a file imports `from __future__ import annotations`.
+keep-runtime-typing = true

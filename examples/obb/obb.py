@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*-coding:utf-8 -*-
 # ==============================================================================
-# Copyright (c) 2024 laugh12321 Authors. All Rights Reserved.
+# Copyright (c) 2025 laugh12321 Authors. All Rights Reserved.
 #
 # Licensed under the GNU General Public License v3.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   obb.py
-# Version :   1.0
+# Version :   6.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
-# Date    :   2024/11/12 22:00:17
-# Desc    :   YOLO Series Inference For OBB Detection.
+# Date    :   2025/01/23 14:57:17
+# Desc    :   OBB 示例
 # ==============================================================================
 import argparse
 import sys
@@ -29,8 +29,7 @@ from pathlib import Path
 import cv2
 from loguru import logger
 from rich.progress import track
-
-from tensorrt_yolo.infer import CpuTimer, DeployCGOBB, DeployOBB, GpuTimer, generate_labels, image_batches, visualize
+from tensorrt_yolo.infer import InferOption, OBBModel, generate_labels, image_batches, visualize
 
 
 def main():
@@ -40,9 +39,6 @@ def main():
     parser.add_argument('-o', '--output', type=str, default=None, help='Directory where to save the visualization results.')
     parser.add_argument(
         "-l", "--labels", default="./labels.txt", help="File to use for reading the class labels from, default: ./labels.txt"
-    )
-    parser.add_argument(
-        '--cudaGraph', action='store_true', help='Optimize inference using CUDA Graphs, compatible with static models only.'
     )
 
     args = parser.parse_args()
@@ -56,42 +52,27 @@ def main():
         output_dir.mkdir(parents=True, exist_ok=True)
         args.labels = generate_labels(args.labels)
 
-    model = DeployCGOBB(args.engine) if args.cudaGraph else DeployOBB(args.engine)
+    option = InferOption()
+    option.enable_swap_rb()
+    option.enable_performance_report()
 
-    batchs = image_batches(args.input, model.batch, args.cudaGraph)
+    model = OBBModel(args.engine, option)
 
-    if len(batchs) > 2:
-        cpu_timer = CpuTimer()
-        gpu_timer = GpuTimer()
+    batchs = image_batches(args.input, model.batch_size, True)
 
     logger.info(f"Infering data in {args.input}")
     for batch in track(batchs, description="[cyan]Processing batches", total=len(batchs)):
-        images = [cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2RGB) for image_path in batch]
-
-        if len(batchs) > 2:
-            cpu_timer.start()
-            gpu_timer.start()
+        images = [cv2.imread(image_path) for image_path in batch]
 
         results = model.predict(images)
-
-        if len(batchs) > 2:
-            cpu_timer.stop()
-            gpu_timer.stop()
 
         if args.output:
             for image_path, image, result in zip(batch, images, results):
                 vis_image = visualize(image, result, args.labels)
-                cv2.imwrite(str(output_dir / Path(image_path).name), cv2.cvtColor(vis_image, cv2.COLOR_RGB2BGR))
+                cv2.imwrite(str(output_dir / Path(image_path).name), vis_image)
 
+    model.performance_report()
     logger.success("Finished Inference.")
-
-    if len(batchs) > 2:
-        logger.success(
-            "Benchmark results include time for H2D and D2H memory copies, preprocessing, and postprocessing.\n"
-            f"    CPU Average Latency: {cpu_timer.milliseconds() / len(batchs):.3f} ms\n"
-            f"    GPU Average Latency: {gpu_timer.milliseconds() / len(batchs):.3f} ms\n"
-            "    Finished Inference."
-        )
 
 
 if __name__ == '__main__':

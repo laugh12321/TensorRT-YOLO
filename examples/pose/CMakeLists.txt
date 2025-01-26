@@ -1,20 +1,25 @@
 # 设置项目
-cmake_minimum_required(VERSION 3.15.0)
+cmake_minimum_required(VERSION 3.12)
 cmake_policy(SET CMP0091 NEW)
-cmake_policy(SET CMP0146 OLD)
 project(pose LANGUAGES CXX CUDA)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # 设置 C++ 标准
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# 添加依赖项
-find_package(CUDA REQUIRED)
-set(CMAKE_CUDA_ARCHITECTURES native)
-set(CUDA_PATH ${CUDA_TOOLKIT_ROOT_DIR})
+# 生成编译数据库，便于代码分析工具使用
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# 添加依赖项
 find_package(OpenCV REQUIRED)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
+    find_package(CUDAToolkit REQUIRED)
+    set(CUDA_INCLUDE_DIRS ${CUDAToolkit_INCLUDE_DIRS})
+    set(CUDA_LIBRARIES ${CUDAToolkit_LIBRARIES})
+else()
+    find_package(CUDA REQUIRED)
+endif()
+set(CMAKE_CUDA_ARCHITECTURES 89;86;75;70;61)  # CUDA 架构版本 8.9, 8.6, 7.5, 7.0, 6.1
 
 # 添加编译选项
 option(TENSORRT_PATH "TensorRT Path. Example: /usr/local/tensorrt" "")
@@ -35,7 +40,7 @@ target_include_directories(pose PRIVATE
     ${CUDA_INCLUDE_DIRS}
     ${TENSORRT_PATH}/include
     ${OpenCV_INCLUDE_DIRS}
-    ${DEPLOY_PATH}/include
+    ${DEPLOY_PATH}
 )
 
 # 链接库目录

@@ -41,11 +41,6 @@ trtexec --onnx=models/yolo11n-seg.onnx --saveEngine=models/yolo11n-seg.engine --
 
 ### Inference Using CLI
 
-> [!NOTE] 
-> The `--cudaGraph` command added from version 4.0 can further accelerate the inference process, but this feature only supports static models.
-> 
-> From version 4.3 and later, support for Instance Segmentation inference is added. The command `-m 2, --mode 2` is used to select the Instance Segmentation.
-
 1. Use the `trtyolo` command-line tool from the `tensorrt_yolo` library for inference. Run the following command to view help information:
 
     ```bash
@@ -55,7 +50,7 @@ trtexec --onnx=models/yolo11n-seg.onnx --saveEngine=models/yolo11n-seg.engine --
 2. Run the following command for inference:
 
     ```bash
-    trtyolo infer -e models/yolo11n-seg.engine -m 1 -i images -o output -l labels.txt --cudaGraph
+    trtyolo infer -e models/yolo11n-seg.engine -m 3 -i images -o output -l labels.txt
     ```
 
     The inference results will be saved in the `output` folder, and a visualization result will be generated.
@@ -66,7 +61,7 @@ trtexec --onnx=models/yolo11n-seg.onnx --saveEngine=models/yolo11n-seg.engine --
 2. Run the following command for inference:
 
     ```bash
-    python segment.py -e models/yolo11n-seg.engine -i images -o output -l labels.txt --cudaGraph
+    python segment.py -e models/yolo11n-seg.engine -i images -o output -l labels.txt
     ```
 
 ### Inference Using C++
@@ -80,9 +75,8 @@ trtexec --onnx=models/yolo11n-seg.onnx --saveEngine=models/yolo11n-seg.engine --
     xmake -P . -r
 
     # Compile using cmake
-    mkdir -p build && cd build
-    cmake -DTENSORRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO" .. 
-    cmake --build . -j8 --config Release
+    cmake -S . -B build -DTENSORRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO"
+    cmake --build build -j8 --config Release
     ```
 
     After compilation, the executable file will be generated in the `bin` folder of the project root directory.
@@ -91,10 +85,7 @@ trtexec --onnx=models/yolo11n-seg.onnx --saveEngine=models/yolo11n-seg.engine --
 
     ```bash
     cd bin
-    ./segment -e ../models/yolo11n-seg.engine -i ../images -o ../output -l ../labels.txt --cudaGraph
+    ./segment -e ../models/yolo11n-seg.engine -i ../images -o ../output -l ../labels.txt
     ```
-
-> [!IMPORTANT]  
-> When inferring with an OBB model built using the `--fp16` flag, there may be instances of duplicate anchor boxes. This issue is typically caused by a reduction in precision. Therefore, it is not recommended to build OBB models using the `--fp16` precision mode.
 
 Through the above methods, you can successfully complete model inference.

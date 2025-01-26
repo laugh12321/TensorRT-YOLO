@@ -1,10 +1,9 @@
+[English](README.en.md) | 简体中文
+
 <div align="center">
   <p>
       <img width="100%" src="assets/logo.png"></a>
   </p>
-
-[English](README.en.md) | 简体中文
-
 </div>
 
 ## <div align="center">🚀 TensorRT YOLO</div>
@@ -17,64 +16,57 @@
     <img alt="GitHub forks" src="https://img.shields.io/github/forks/laugh12321/TensorRT-YOLO?style=for-the-badge&color=%2320878f">
 </p>
 
-🚀TensorRT-YOLO 是一款专为 NVIDIA 设备设计的**易用灵活**、**极致高效**的**YOLO系列**推理部署工具。项目不仅集成了 TensorRT 插件以增强后处理效果，还使用了 CUDA 核函数以及 CUDA 图来加速推理。TensorRT-YOLO 提供了 C++ 和 Python 推理的支持，旨在提供📦**开箱即用**的部署体验。包括 [目标检测](examples/detect/)、[实例分割](examples/segment/)、[图像分类](examples/classify/)、[姿态识别](examples/pose/)、[旋转目标检测](examples/obb/)、[视频分析](examples/VideoPipe)等任务场景，满足开发者**多场景**的部署需求。
+<p align="center">
+    <a href="/docs/cn/build_and_install.md"><img src="https://img.shields.io/badge/-安装-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
+    <a href="/examples/"><img src="https://img.shields.io/badge/-使用示例-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
+    <a href="#quick-start"><img src="https://img.shields.io/badge/-快速开始-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
+    <a href=""><img src="https://img.shields.io/badge/-API文档-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
+    <a href="https://github.com/laugh12321/TensorRT-YOLO/releases"><img src="https://img.shields.io/badge/-更新日志-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
+</p>
 
+🚀 TensorRT-YOLO 是一款专为 NVIDIA 设备设计的**易用灵活**、**极致高效**的**YOLO系列**推理部署工具。项目不仅集成了 TensorRT 插件以增强后处理效果，还使用了 CUDA 核函数以及 CUDA 图来加速推理。TensorRT-YOLO 提供了 C++ 和 Python 推理的支持，旨在提供📦**开箱即用**的部署体验。包括 [目标检测](examples/detect/)、[实例分割](examples/segment/)、[图像分类](examples/classify/)、[姿态识别](examples/pose/)、[旋转目标检测](examples/obb/)、[视频分析](examples/VideoPipe)等任务场景，满足开发者**多场景**的部署需求。
 
 <div align="center">
-    <img src=assets/example.gif width="800">
-</div>
 
-<div align="center">
-    <table>
-        <tr>
-            <td>
-                <img src='assets/detect.jpg' height="300">
-                <center>Detect</center>
-            </td>
-            <td>
-                <img src='assets/segment.jpg' height="300">
-                <center>Segment</center>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <img src='assets/pose.jpg' height="300">
-                <center>Pose</center>
-            </td>
-            <td>
-                <img src='assets/obb.png' height="300">                                
-                <center>OBB</center>
-            </td>
-        </tr>
-    </table>
+[<img src='assets/obb.png' height="138px" width="190px">](examples/obb/)
+[<img src='assets/detect.jpg' height="138px" width="190px">](examples/detect/)
+[<img src='assets/segment.jpg' height="138px" width="190px">](examples/segment/)
+[<img src='assets/pose.jpg' height="138px" width="190px">](examples/pose/)
+[<img src='assets/example.gif' width="770px">](examples/videopipe)
+
 </div>
 
 ## <div align="center">✨ 主要特性</div>
 
-- **多样化的YOLO支持**：全面兼容YOLOv3至YOLOv11以及PP-YOLOE和PP-YOLOE+，满足不同版本需求。
-- **多场景应用**：提供[Detect](examples/detect/)、[Segment](examples/segment/)、[Classify](examples/classify/)、[Pose](examples/pose/)、[OBB](examples/obb/)等多样化场景的示例代码。
-- **模型优化与推理加速**：
-  - **ONNX支持**：支持ONNX模型的静态和动态导出，包括TensorRT自定义插件支持，简化模型部署流程。
-  - **TensorRT集成**：集成TensorRT插件，包括自定义插件，加速Detect, Segment, Pose, OBB等场景的后处理，提升推理效率。
-  - **CUDA加速**：利用CUDA核函数优化前处理，CUDA图技术加速推理流程，实现高性能计算。
-- **语言支持**：支持C++和Python（通过Pybind11映射，提升Python推理速度），满足不同编程语言需求。
-- **部署便捷性**：
-  - **动态库编译**：提供动态库编译支持，方便调用和部署。
-  - **无第三方依赖**：全部功能使用标准库实现，无需额外依赖，简化部署流程。
-- **快速开发与部署**：
-  - **CLI工具**：提供命令行界面（CLI）工具，实现快速模型导出和推理。
-  - **跨平台支持**：支持Windows、Linux、ARM、x86等多种设备，适应不同硬件环境。
-  - **Docker部署**：支持Docker一键部署，简化环境配置和部署流程。
-- **TensorRT兼容性**：兼容TensorRT 10.x版本，确保与最新技术兼容。
+### 🎯 多样化的 YOLO 支持
+- **全面兼容**：支持 YOLOv3 至 YOLOv11 全系列模型，以及 PP-YOLOE 和 PP-YOLOE+，满足多样化需求。
+- **灵活切换**：提供简洁易用的接口，支持不同版本 YOLO 模型的快速切换。
+- **多场景应用**：提供丰富的示例代码，涵盖[Detect](examples/detect/)、[Segment](examples/segment/)、[Classify](examples/classify/)、[Pose](examples/pose/)、[OBB](examples/obb/)等多种应用场景。
+
+### 🚀 性能优化
+- **CUDA 加速**：通过 CUDA 核函数优化前处理流程，并采用 CUDA 图技术加速推理过程。
+- **TensorRT 集成**：深度集成 TensorRT 插件，显著加速后处理，提升整体推理效率。
+- **多 Context 推理**：支持多 Context 并行推理，最大化硬件资源利用率。
+- **显存管理优化**：适配多架构显存优化策略（如 Jetson 的 Zero Copy 模式），提升显存效率。
+
+### 🛠️ 易用性
+- **开箱即用**：提供全面的 C++ 和 Python 推理支持，满足不同开发者需求。
+- **CLI 工具**：内置命令行工具，支持快速模型导出与推理，提升开发效率。
+- **Docker 支持**：提供 Docker 一键部署方案，简化环境配置与部署流程。
+- **无第三方依赖**：全部功能使用标准库实现，无需额外依赖，简化部署流程。
+- **部署便捷**：提供动态库编译支持，方便调用和部署。
+
+### 🌐 兼容性
+- **多平台支持**：全面兼容 Windows、Linux、ARM、x86 等多种操作系统与硬件平台。
+- **TensorRT 兼容**：完美适配 TensorRT 10.x 版本，确保与最新技术生态无缝衔接。
+
+### 🔧 灵活配置
+- **预处理参数自定义**：支持多种预处理参数灵活配置，包括 **通道交换 (SwapRB)**、**归一化参数**、**边界值填充**。
 
 ## <div align="center">🔮 文档教程</div>
 
-
-- **安装文档**
+- **安装指南**
     - [📦 快速编译安装](docs/cn/build_and_install.md)
-- **快速开始**
-    - [✴️ Python SDK快速使用](#quick-start-python)  
-    - [✴️ C++ SDK快速使用](#quick-start-cpp)
 - **使用示例**
     - [目标检测 示例](examples/detect/README.md)
     - [实例分割 示例](examples/segment/README.md)
@@ -82,6 +74,7 @@
     - [姿态识别 示例](examples/pose/README.md)
     - [旋转目标检测 示例](examples/obb/README.md)
     - [📹视频分析 示例](examples/VideoPipe/README.md)
+    - [多线程多进程 示例](examples/mutli_thread/README.md)
 - **API文档**
     - Python API文档（⚠️ 未实现）
     - C++ API文档（⚠️ 未实现）
@@ -90,95 +83,95 @@
 - **模型支持列表**
     - [🖥️ 模型支持列表](#support-models)
 
-## <div align="center">💨 快速开始</div>
+## <div align="center">💨 快速开始</div><div id="quick-start"></div>
 
-### 🔸 前置依赖
+### 1. 前置依赖
 
-- 推荐 CUDA 版本 >= 11.0.1 （CUDA 最低版本 11.0.1）
-- 推荐 TensorRT 版本 >= 8.6.1 （TensorRT 最低版本 8.6.1）
-- OS: Linux x86_64 (推荐) arm / Windows /
+- **CUDA**：推荐版本 ≥ 11.0.1
+- **TensorRT**：推荐版本 ≥ 8.6.1
+- **操作系统**：Linux (x86_64 或 arm)（推荐）；Windows 亦可支持
 
-### 🎆 快速安装
+### 2. 安装
 
-- 参考[📦 快速编译安装](docs/cn/build_and_install.md)文档
+- 参考 [📦 快速编译安装](docs/cn/build_and_install.md) 文档。
 
-> [!IMPORTANT]
-> 在进行推理之前，请参考[🔧 CLI 导出模型](/docs/cn/model_export.md)文档，导出适用于该项目推理的ONNX模型并构建为TensorRT引擎。
+### 3. 模型导出
 
-### Python SDK快速开始<div id="quick-start-python"></div>
+- 参考 [🔧 模型导出](docs/cn/model_export.md) 文档，导出适用于该项目推理的ONNX模型并构建为TensorRT引擎。
 
-#### Python CLI 推理示例
+### 4. 推理示例
 
-> [!NOTE] 
-> 使用 `--cudaGraph` 选项可以显著提升推理速度，但需知此功能仅适用于静态模型。
-> 
-> 通过 `-m, --mode` 参数可以选择不同的模型类型，其中 `0` 代表检测（Detect）、`1` 代表旋转边界框（OBB）、`2` 代表分割（Segment）、`3` 代表姿态估计（Pose）、`4` 代表图像分类（Classify）。
-
-1. 使用 `tensorrt_yolo` 库的 `trtyolo` 命令行工具进行推理。运行以下命令查看帮助信息：
-
-    ```bash
-    trtyolo infer --help
-    ```
-
-2. 运行以下命令进行推理：
-
-    ```bash
-    trtyolo infer -e models/yolo11n.engine -m 0 -i images -o output -l labels.txt --cudaGraph
-    ```
-
-    推理结果将保存至 `output` 文件夹，并生成可视化结果。
-
-#### Python 推理示例
-
-> [!NOTE] 
-> `DeployDet`、`DeployOBB`、`DeploySeg`、`DeployPose` 和 `DeployCls` 分别对应于检测（Detect）、方向边界框（OBB）、分割（Segment）、姿态估计（Pose）和图像分类（Classify）模型。
+> [!NOTE]
 >
-> 对于这些模型，`CG` 版本利用 CUDA Graph 来进一步加速推理过程，但请注意，这一功能仅限于静态模型。
+> `ClassifyModel`、`DetectModel`、`OBBModel`、`SegmentModel` 和 `PoseModel` 分别对应于图像分类（Classify）、检测（Detect）、方向边界框（OBB）、分割（Segment）、姿态估计（Pose）和模型。
 
-```python
-import cv2
-from tensorrt_yolo.infer import DeployDet, generate_labels, visualize
+- 使用 Python 进行推理：
 
-# 初始化模型
-model = DeployDet("yolo11n-with-plugin.engine")
-# 加载图片
-im = cv2.imread("test_image.jpg")
-# 模型预测
-result = model.predict(cv2.cvtColor(im, cv2.COLOR_BGR2RGB))
-print(f"==> detect result: {result}")
-# 可视化
-labels = generate_labels("labels.txt")
-vis_im = visualize(im, result, labels)
-cv2.imwrite("vis_image.jpg", vis_im)
-```
+  ```python
+  import cv2
+  from tensorrt_yolo.infer import InferOption, DetectModel, generate_labels, visualize
 
-### C++ SDK快速开始<div id="quick-start-cpp"></div>
+  # 配置推理选项
+  option = InferOption()
+  option.enable_swap_rb()
 
-> [!NOTE] 
-> `DeployDet`、`DeployOBB`、`DeploySeg`、`DeployPose` 和 `DeployCls` 分别对应于检测（Detect）、方向边界框（OBB）、分割（Segment）、姿态估计（Pose）和图像分类（Classify）模型。
->
-> 对于这些模型，`CG` 版本利用 CUDA Graph 来进一步加速推理过程，但请注意，这一功能仅限于静态模型。
+  # 初始化模型
+  model = DetectModel("yolo11n-with-plugin.engine", option)
 
-```cpp
-#include <opencv2/opencv.hpp>
-// 为了方便调用，模块除使用 CUDA、TensorRT 其余均使用标准库实现
-#include "deploy/vision/inference.hpp"
-#include "deploy/vision/result.hpp"
+  # 加载图片
+  im = cv2.imread("test_image.jpg")
 
-int main() {
-    // 初始化模型
-    auto model = deploy::DeployDet("yolo11n-with-plugin.engine");
-    // 加载图片
-    cv::Mat cvim = cv::imread("test_image.jpg");
-    cv::cvtColor(cvim, cvim, cv::COLOR_BGR2RGB);
-    deploy::Image im(cvim.data, cvim.cols, cvim.rows);
-    // 模型预测
-    deploy::DetResult result = model.predict(im);
-    // 可视化（代码省略）
-    // ...
-    return 0;
-}
-```
+  # 模型预测
+  result = model.predict(im)
+  print(f"==> detect result: {result}")
+
+  # 可视化检测结果
+  labels = generate_labels("labels.txt")
+  vis_im = visualize(im, result, labels)
+  cv2.imwrite("vis_image.jpg", vis_im)
+
+  # 克隆模型并进行预测
+  clone_model = model.clone()
+  clone_result = clone_model.predict(im)
+  print(f"==> detect clone result: {clone_result}")
+  ```
+
+- 使用 C++ 进行推理：
+
+  ```cpp
+  #include <memory>
+  #include <opencv2/opencv.hpp>
+
+  // 为了方便调用，模块除使用CUDA、TensorRT外，其余均使用标准库实现
+  #include "deploy/model.hpp"  // 包含模型推理相关的类定义
+  #include "deploy/option.hpp"  // 包含推理选项的配置类定义
+  #include "deploy/result.hpp"  // 包含推理结果的定义
+
+  int main() {
+      // 配置推理选项
+      deploy::InferOption option;
+      option.enableSwapRB();  // 启用通道交换（从BGR到RGB）
+
+      // 初始化模型
+      auto model = std::make_unique<deploy::DetectModel>("yolo11n-with-plugin.engine", option);
+
+      // 加载图片
+      cv::Mat cvim = cv::imread("test_image.jpg");
+      deploy::Image im(cvim.data, cvim.cols, cvim.rows);
+
+      // 模型预测
+      deploy::DetResult result = model->predict(im);
+
+      // 可视化（代码省略）
+      // ...  // 可视化部分代码未提供，可根据需要实现
+
+      // 克隆模型并进行预测
+      auto clone_model = model->clone();
+      deploy::DetResult clone_result = clone_model->predict(im);
+
+      return 0;  // 程序正常结束
+  }
+  ```
 
 更多部署案例请参考[模型部署示例](examples) .
 
@@ -334,16 +327,6 @@ int main() {
       <td>✅</td>
     </tr>
   </table>
-</div>
-
-## <div align="center">☕ 请作者喝杯咖啡</div>
-
-开源不易，如果本项目有帮助到你的话，可以考虑请作者喝杯咖啡，你的支持是开发者持续维护的最大动力~
-
-<div align="center">
-    <p>
-        <img width="500px" src="assets/sponsor.png"></a>
-    </p>
 </div>
 
 ## <div align="center">📄 许可证</div>

@@ -43,11 +43,6 @@ trtexec --onnx=models/yolo11n-obb.onnx --saveEngine=models/yolo11n-obb.engine --
 
 ### Inference Using CLI
 
-> [!NOTE] 
-> The `--cudaGraph` command added from version 4.0 can further accelerate the inference process, but this feature only supports static models.
-> 
-> From version 4.2, OBB model inference is supported, and the `-m, --mode` command is added to select between Detect and OBB.
-
 1. Use the `trtyolo` command-line tool from the `tensorrt_yolo` library for inference. Run the following command to view help information:
 
     ```bash
@@ -57,7 +52,7 @@ trtexec --onnx=models/yolo11n-obb.onnx --saveEngine=models/yolo11n-obb.engine --
 2. Run the following command for inference:
 
     ```bash
-    trtyolo infer -e models/yolo11n-obb.engine -m 1 -i images -o output -l labels.txt --cudaGraph
+    trtyolo infer -e models/yolo11n-obb.engine -m 2 -i images -o output -l labels.txt
     ```
 
     The inference results will be saved in the `output` folder, and a visualization result will be generated.
@@ -68,7 +63,7 @@ trtexec --onnx=models/yolo11n-obb.onnx --saveEngine=models/yolo11n-obb.engine --
 2. Run the following command for inference:
 
     ```bash
-    python obb.py -e models/yolo11n-obb.engine -i images -o output -l labels.txt --cudaGraph
+    python obb.py -e models/yolo11n-obb.engine -i images -o output -l labels.txt
     ```
 
 ### Inference Using C++
@@ -82,9 +77,8 @@ trtexec --onnx=models/yolo11n-obb.onnx --saveEngine=models/yolo11n-obb.engine --
     xmake -P . -r
 
     # Compile using cmake
-    mkdir -p build && cd build
-    cmake -DTENSORRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO" .. 
-    cmake --build . -j8 --config Release
+    cmake -S . -B build -DTENSORRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO"
+    cmake --build build -j8 --config Release
     ```
 
     After compilation, the executable file will be generated in the `bin` folder of the project root directory.
@@ -93,7 +87,7 @@ trtexec --onnx=models/yolo11n-obb.onnx --saveEngine=models/yolo11n-obb.engine --
 
     ```bash
     cd bin
-    ./obb -e ../models/yolo11n-obb.engine -i ../images -o ../output -l ../labels.txt --cudaGraph
+    ./obb -e ../models/yolo11n-obb.engine -i ../images -o ../output -l ../labels.txt
     ```
 
 Through the above methods, you can successfully complete model inference.

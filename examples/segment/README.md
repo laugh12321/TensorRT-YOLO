@@ -41,11 +41,6 @@ trtexec --onnx=models/yolo11n-seg.onnx --saveEngine=models/yolo11n-seg.engine --
 
 ### 使用 CLI 进行推理
 
-> [!NOTE] 
-> 从 4.0 版本开始新增的 `--cudaGraph` 指令可以进一步加速推理过程，但该功能仅支持静态模型。
-> 
-> 从 4.3 以后的版本开始，支持实例分割推理，指令 `-m 2, --mode 2` 用于选择实例分割。
-
 1. 使用 `tensorrt_yolo` 库的 `trtyolo` 命令行工具进行推理。运行以下命令查看帮助信息：
 
     ```bash
@@ -55,7 +50,7 @@ trtexec --onnx=models/yolo11n-seg.onnx --saveEngine=models/yolo11n-seg.engine --
 2. 运行以下命令进行推理：
 
     ```bash
-    trtyolo infer -e models/yolo11n-seg.engine -m 2 -i images -o output -l labels.txt --cudaGraph
+    trtyolo infer -e models/yolo11n-seg.engine -m 3 -i images -o output -l labels.txt
     ```
 
     推理结果将保存至 `output` 文件夹，并生成可视化结果。
@@ -66,7 +61,7 @@ trtexec --onnx=models/yolo11n-seg.onnx --saveEngine=models/yolo11n-seg.engine --
 2. 运行以下命令进行推理：
 
     ```bash
-    python segment.py -e models/yolo11n-seg.engine -i images -o output -l labels.txt --cudaGraph
+    python segment.py -e models/yolo11n-seg.engine -i images -o output -l labels.txt
     ```
 
 ### 使用 C++ 进行推理
@@ -80,9 +75,8 @@ trtexec --onnx=models/yolo11n-seg.onnx --saveEngine=models/yolo11n-seg.engine --
     xmake -P . -r
 
     # 使用 cmake 编译
-    mkdir -p build && cd build
-    cmake -DTENSORRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO" .. 
-    cmake --build . -j8 --config Release
+    cmake -S . -B build -DTENSORRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO"
+    cmake --build build -j8 --config Release
     ```
 
     编译完成后，可执行文件将生成在项目根目录的 `bin` 文件夹中。
@@ -91,7 +85,7 @@ trtexec --onnx=models/yolo11n-seg.onnx --saveEngine=models/yolo11n-seg.engine --
 
     ```bash
     cd bin
-    ./segment -e ../models/yolo11n-seg.engine -i ../images -o ../output -l ../labels.txt --cudaGraph
+    ./segment -e ../models/yolo11n-seg.engine -i ../images -o ../output -l ../labels.txt
     ```
 
 通过以上方式，您可以顺利完成模型推理。

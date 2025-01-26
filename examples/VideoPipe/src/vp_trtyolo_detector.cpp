@@ -1,21 +1,17 @@
+#include "deploy/option.hpp"
+#include "deploy/result.hpp"
 #include "vp_trtyolo_detector.h"
 
 namespace vp_nodes {
 
-vp_trtyolo_detector::vp_trtyolo_detector(std::string node_name, std::string model_path, std::string labels_path, bool cudagraph, int batch, int device_id)
-    : vp_primary_infer_node(node_name, "", "", labels_path, 0, 0, batch), use_cudagraph(cudagraph) {
-    // Initialize detector based on CUDA graph usage
-    if (use_cudagraph) {
-        detector = std::make_shared<deploy::DeployCGDet>(model_path, device_id);
-        if (detector->batch != batch) {
-            throw std::runtime_error("Batch size mismatch: expected " + std::to_string(batch) + ", but got " + std::to_string(detector->batch));
-        }
-    } else {
-        detector = std::make_shared<deploy::DeployDet>(model_path, device_id);
-        if (detector->batch < batch) {
-            throw std::runtime_error("Batch size too large: expected <= " + std::to_string(detector->batch) + ", but got " + std::to_string(batch));
-        }
-    }
+vp_trtyolo_detector::vp_trtyolo_detector(std::string node_name, std::string model_path, std::string labels_path, int batch, int device_id)
+    : vp_primary_infer_node(node_name, "", "", labels_path, 0, 0, batch) {
+    deploy::InferOption option;
+    option.enableSwapRB();
+    option.setDeviceId(device_id);
+    // option.setNormalizeParams({0.485, 0.456, 0.406}, {0.229, 0.224, 0.225}); // PP-YOLOE、PP-YOLOE+
+
+    detector = std::make_unique<deploy::DetectModel>(model_path, option);
 
     this->initialized();  // Mark node as initialized
 }
@@ -26,9 +22,6 @@ vp_trtyolo_detector::~vp_trtyolo_detector() {
 }
 
 void vp_trtyolo_detector::run_infer_combinations(const std::vector<std::shared_ptr<vp_objects::vp_frame_meta>>& frame_meta_with_batch) {
-    if (use_cudagraph)
-        assert(frame_meta_with_batch.size() == detector->batch);  // Assert batch size consistency if using CUDA graph
-
     std::vector<cv::Mat>       mats_to_infer;
     std::vector<deploy::Image> images_to_infer;
 
@@ -45,7 +38,7 @@ void vp_trtyolo_detector::run_infer_combinations(const std::vector<std::shared_p
     start_time = std::chrono::system_clock::now();
 
     // Perform inference on prepared images
-    std::vector<deploy::DetResult> detection_results = detector->predict(images_to_infer);
+    std::vector<deploy::DetectRes> detection_results = detector->predict(images_to_infer);
 
     // Process detection results and update frame metadata
     for (int i = 0; i < detection_results.size(); i++) {
