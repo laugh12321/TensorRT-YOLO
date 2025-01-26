@@ -75,9 +75,8 @@ trtexec --onnx=models/yolo11n.onnx --saveEngine=models/yolo11n.engine --fp16
     xmake -P . -r
 
     # 使用 cmake 编译
-    mkdir -p build && cd build
-    cmake -DTENSORRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO" .. 
-    cmake --build . -j8 --config Release
+    cmake -S . -B build -DTENSORRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO"
+    cmake --build build -j8 --config Release
     ```
 
     编译完成后，可执行文件将生成在项目根目录的 `bin` 文件夹中。

@@ -75,9 +75,8 @@ trtexec --onnx=models/yolo11n-pose.onnx --saveEngine=models/yolo11n-pose.engine 
     xmake -P . -r
 
     # Compile using cmake
-    mkdir -p build && cd build
-    cmake -DTENSORRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO" .. 
-    cmake --build . -j8 --config Release
+    cmake -S . -B build -DTENSORRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO"
+    cmake --build build -j8 --config Release
     ```
 
     After compilation, the executable file will be generated in the `bin` folder of the project root directory.
