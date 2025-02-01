@@ -11,9 +11,17 @@ English | [简体中文](README.md)
 <p align="center">
     <a href="./LICENSE"><img alt="GitHub License" src="https://img.shields.io/github/license/laugh12321/TensorRT-YOLO?style=for-the-badge"></a>
     <a href="https://github.com/laugh12321/TensorRT-YOLO/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/laugh12321/TensorRT-YOLO?style=for-the-badge"></a>
-    <a href="https://github.com/laugh12321/TensorRT-YOLO/commits"><img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/laugh12321/TensorRT-YOLO?style=for-the-badge&color=rgb(47%2C154%2C231)"></a>
-    <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/laugh12321/TensorRT-YOLO?style=for-the-badge&color=%2350e472">
-    <img alt="GitHub forks" src="https://img.shields.io/github/forks/laugh12321/TensorRT-YOLO?style=for-the-badge&color=%2320878f">
+    <a href="https://github.com/laugh12321/TensorRT-YOLO/commits"><img alt="GitHub Commit Activity" src="https://img.shields.io/github/commit-activity/m/laugh12321/TensorRT-YOLO?style=for-the-badge&color=rgb(47%2C154%2C231)"></a>
+    <img alt="GitHub Repo Stars" src="https://img.shields.io/github/stars/laugh12321/TensorRT-YOLO?style=for-the-badge&color=%2350e472">
+    <img alt="GitHub Forks" src="https://img.shields.io/github/forks/laugh12321/TensorRT-YOLO?style=for-the-badge&color=%2320878f">
+</p>
+
+<p align="center">
+    <img alt="Linux" src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black">
+    <img alt="Ubuntu" src="https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white">
+    <img alt="Architecture" src="https://img.shields.io/badge/Architecture-x86%20%7C%20ARM-0091BD?style=for-the-badge&logo=cpu&logoColor=white">
+    <img alt="NVIDIA" src="https://img.shields.io/badge/NVIDIA-%2376B900.svg?style=for-the-badge&logo=nvidia&logoColor=white">
+    <img alt="GPU Accelerated" src="https://img.shields.io/badge/GPU-Accelerated-76B900?style=for-the-badge&logo=nvidia&logoColor=white">
 </p>
 
 <p align="center">
@@ -36,18 +44,22 @@ English | [简体中文](README.md)
 
 </div>
 
+## <div align="center">🌠 Recent updates</div>
+
+- [Performance Leap! TensorRT-YOLO 6.0: Comprehensive Upgrade Analysis and Practical Guide](https://medium.com/@laugh12321/performance-leap-tensorrt-yolo-6-0-comprehensive-upgrade-analysis-and-practical-guide-9d19ad3b53f9) 🌟 NEW
+
 ## <div align="center">✨ Key Features</div>
 
 ### 🎯 Diverse YOLO Support
 - **Comprehensive Compatibility**: Supports YOLOv3 to YOLOv11 series models, as well as PP-YOLOE and PP-YOLOE+, meeting diverse needs.
-- **Flexible Switching**: Provides simple and easy-to-use interfaces for quick switching between different YOLO versions.
+- **Flexible Switching**: Provides simple and easy-to-use interfaces for quick switching between different YOLO versions. 🌟 NEW
 - **Multi-Scenario Applications**: Offers rich example codes covering [Detect](examples/detect/), [Segment](examples/segment/), [Classify](examples/classify/), [Pose](examples/pose/), [OBB](examples/obb/), and more.
 
 ### 🚀 Performance Optimization
 - **CUDA Acceleration**: Optimizes pre-processing through CUDA kernels and accelerates inference using CUDA graphs.
 - **TensorRT Integration**: Deeply integrates TensorRT plugins to significantly speed up post-processing and improve overall inference efficiency.
-- **Multi-Context Inference**: Supports multi-context parallel inference to maximize hardware resource utilization.
-- **Memory Management Optimization**: Adapts multi-architecture memory optimization strategies (e.g., Zero Copy mode for Jetson) to enhance memory efficiency.
+- **Multi-Context Inference**: Supports multi-context parallel inference to maximize hardware resource utilization. 🌟 NEW
+- **Memory Management Optimization**: Adapts multi-architecture memory optimization strategies (e.g., Zero Copy mode for Jetson) to enhance memory efficiency. 🌟 NEW
 
 ### 🛠️ Usability
 - **Out-of-the-Box**: Provides comprehensive C++ and Python inference support to meet different developers' needs.
@@ -61,7 +73,7 @@ English | [简体中文](README.md)
 - **TensorRT Compatibility**: Perfectly adapts to TensorRT 10.x versions, ensuring seamless integration with the latest technology ecosystem.
 
 ### 🔧 Flexible Configuration
-- **Customizable Preprocessing Parameters**: Supports flexible configuration of various preprocessing parameters, including **channel swapping (SwapRB)**, **normalization parameters**, and **border padding**.
+- **Customizable Preprocessing Parameters**: Supports flexible configuration of various preprocessing parameters, including **channel swapping (SwapRB)**, **normalization parameters**, and **border padding**. 🌟 NEW
 
 ## <div align="center">🔮 Documentation</div>
 
@@ -74,7 +86,7 @@ English | [简体中文](README.md)
     - [Pose Estimation Example](examples/pose/README.en.md)
     - [Oriented Object Detection Example](examples/obb/README.en.md)
     - [📹 Video Analysis Example](examples/VideoPipe/README.en.md)
-    - [Multi-threading and Multi-processing Example](examples/mutli_thread/README.en.md)
+    - [Multi-threading and Multi-processing Example](examples/mutli_thread/README.en.md) 🌟 NEW
 - **API Documentation**
     - Python API Documentation (⚠️ Not Implemented)
     - C++ API Documentation (⚠️ Not Implemented)
@@ -109,31 +121,53 @@ English | [简体中文](README.md)
 
   ```python
   import cv2
-  from tensorrt_yolo.infer import InferOption, DetectModel, generate_labels, visualize
-
-  # Configure inference options
-  option = InferOption()
-  option.enable_swap_rb()
-
-  # Initialize the model
-  model = DetectModel("yolo11n-with-plugin.engine", option)
-
-  # Load an image
-  im = cv2.imread("test_image.jpg")
-
-  # Model prediction
-  result = model.predict(im)
-  print(f"==> detect result: {result}")
-
-  # Visualize detection results
-  labels = generate_labels("labels.txt")
-  vis_im = visualize(im, result, labels)
-  cv2.imwrite("vis_image.jpg", vis_im)
-
-  # Clone the model and perform prediction
-  clone_model = model.clone()
-  clone_result = clone_model.predict(im)
-  print(f"==> detect clone result: {clone_result}")
+  from tensorrtyolo.infer import InferOption, DetectModel, generatelabels, visualize
+  
+  def main():
+      # -------------------- Initialization --------------------
+      # Configure inference settings
+      option = InferOption()
+      option.enableswaprb()  # Convert OpenCV's default BGR format to RGB
+      # Special model configuration example (uncomment for PP-YOLOE series)
+      # option.setnormalizeparams([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+  
+      # -------------------- Model Initialization --------------------
+      # Load TensorRT engine file (ensure the path is correct)
+      # Note: Initial engine loading may take longer due to optimization
+      model = DetectModel(engine_path="yolo11n-with-plugin.engine", 
+                        option=option)
+  
+      # -------------------- Data Preprocessing --------------------
+      # Load test image (add file existence check)
+      inputimg = cv2.imread("testimage.jpg")
+      if input_img is None:
+          raise FileNotFoundError("Failed to load test image. Check the file path.")
+  
+      # -------------------- Inference Execution --------------------
+      # Perform object detection (returns bounding boxes, confidence scores, and class labels)
+      detectionresult = model.predict(inputimg)
+      print(f"==> Detection Result: {detection_result}")
+  
+      # -------------------- Result Visualization --------------------
+      # Load class labels (ensure labels.txt matches the model)
+      classlabels = generate_labels(labelsfile="labels.txt")
+      # Generate visualized result
+      visualized_img = visualize(
+          image=input_img,
+          result=detection_result,
+          labels=class_labels,
+      )
+      cv2.imwrite("visimage.jpg", visualizedimg)
+  
+      # -------------------- Model Cloning Demo --------------------
+      # Clone model instance (for multi-threaded scenarios)
+      cloned_model = model.clone()  # Create an independent copy to avoid resource contention
+      # Verify cloned model inference consistency
+      clonedresult = cloned_model.predict(inputimg)
+      print(f"==> Cloned Result: {cloned_result}")
+  
+  if _name__ == "__main_":
+      main()
   ```
 
 - Inference using C++:
@@ -141,35 +175,63 @@ English | [简体中文](README.md)
   ```cpp
   #include <memory>
   #include <opencv2/opencv.hpp>
-
-  // For convenience, the module uses only CUDA and TensorRT, with the rest implemented using standard libraries
-  #include "deploy/model.hpp"  // Contains model inference-related class definitions
+  
+  // For ease of use, the module uses only CUDA and TensorRT, with the rest implemented in standard libraries
+  #include "deploy/model.hpp"  // Contains model inference class definitions
   #include "deploy/option.hpp"  // Contains inference option configuration class definitions
   #include "deploy/result.hpp"  // Contains inference result definitions
-
+  
   int main() {
-      // Configure inference options
-      deploy::InferOption option;
-      option.enableSwapRB();  // Enable channel swapping (from BGR to RGB)
-
-      // Initialize the model
-      auto model = std::make_unique<deploy::DetectModel>("yolo11n-with-plugin.engine", option);
-
-      // Load an image
-      cv::Mat cvim = cv::imread("test_image.jpg");
-      deploy::Image im(cvim.data, cvim.cols, cvim.rows);
-
-      // Model prediction
-      deploy::DetResult result = model->predict(im);
-
-      // Visualization (code omitted)
-      // ...  // Visualization code not provided, can be implemented as needed
-
-      // Clone the model and perform prediction
-      auto clone_model = model->clone();
-      deploy::DetResult clone_result = clone_model->predict(im);
-
-      return 0;  // Program ends normally
+      try {
+          // -------------------- Initialization --------------------
+          deploy::InferOption option;
+          option.enableSwapRB();  // BGR->RGB conversion
+          
+          // Special model parameter setup example
+          // const std::vector<float> mean{0.485f, 0.456f, 0.406f};
+          // const std::vector<float> std{0.229f, 0.224f, 0.225f};
+          // option.setNormalizeParams(mean, std);
+  
+          // -------------------- Model Initialization --------------------
+          auto detector = std::make_unique<deploy::DetectModel>(
+              "yolo11n-with-plugin.engine",  // Model path
+              option                         // Inference settings
+          );
+  
+          // -------------------- Data Loading --------------------
+          cv::Mat cvimage = cv::imread("testimage.jpg");
+          if (cv_image.empty()) {
+              throw std::runtime_error("Failed to load test image.");
+          }
+          
+          // Encapsulate image data (no pixel data copying)
+          deploy::Image input_image(
+              cv_image.data,     // Pixel data pointer
+              cv_image.cols,     // Image width
+              cv_image.rows,     // Image height
+          );
+  
+          // -------------------- Inference Execution --------------------
+          deploy::DetResult result = detector->predict(input_image);
+          std::cout << result << std::endl;
+  
+          // -------------------- Result Visualization (Example) --------------------
+          // Implement visualization logic in actual development, e.g.:
+          // cv::Mat visimage = visualize_detections(cvimage, result);
+          // cv::imwrite("visresult.jpg", visimage);
+  
+          // -------------------- Model Cloning Demo --------------------
+          auto cloned_detector = detector->clone();  // Create an independent instance
+          deploy::DetResult clonedresult = cloned_detector->predict(inputimage);
+  
+          // Verify result consistency
+          std::cout << cloned_result << std::endl;
+  
+      } catch (const std::exception& e) {
+          std::cerr << "Program Exception: " << e.what() << std::endl;
+          return EXIT_FAILURE;
+      }
+      return EXIT_SUCCESS;
   }
   ```
 

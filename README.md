@@ -11,9 +11,17 @@
 <p align="center">
     <a href="./LICENSE"><img alt="GitHub License" src="https://img.shields.io/github/license/laugh12321/TensorRT-YOLO?style=for-the-badge"></a>
     <a href="https://github.com/laugh12321/TensorRT-YOLO/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/laugh12321/TensorRT-YOLO?style=for-the-badge"></a>
-    <a href="https://github.com/laugh12321/TensorRT-YOLO/commits"><img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/laugh12321/TensorRT-YOLO?style=for-the-badge&color=rgb(47%2C154%2C231)"></a>
-    <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/laugh12321/TensorRT-YOLO?style=for-the-badge&color=%2350e472">
-    <img alt="GitHub forks" src="https://img.shields.io/github/forks/laugh12321/TensorRT-YOLO?style=for-the-badge&color=%2320878f">
+    <a href="https://github.com/laugh12321/TensorRT-YOLO/commits"><img alt="GitHub Commit Activity" src="https://img.shields.io/github/commit-activity/m/laugh12321/TensorRT-YOLO?style=for-the-badge&color=rgb(47%2C154%2C231)"></a>
+    <img alt="GitHub Repo Stars" src="https://img.shields.io/github/stars/laugh12321/TensorRT-YOLO?style=for-the-badge&color=%2350e472">
+    <img alt="GitHub Forks" src="https://img.shields.io/github/forks/laugh12321/TensorRT-YOLO?style=for-the-badge&color=%2320878f">
+</p>
+
+<p align="center">
+    <img alt="Linux" src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black">
+    <img alt="Ubuntu" src="https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white">
+    <img alt="Architecture" src="https://img.shields.io/badge/Architecture-x86%20%7C%20ARM-0091BD?style=for-the-badge&logo=cpu&logoColor=white">
+    <img alt="NVIDIA" src="https://img.shields.io/badge/NVIDIA-%2376B900.svg?style=for-the-badge&logo=nvidia&logoColor=white">
+    <img alt="GPU Accelerated" src="https://img.shields.io/badge/GPU-Accelerated-76B900?style=for-the-badge&logo=nvidia&logoColor=white">
 </p>
 
 <p align="center">
@@ -36,18 +44,23 @@
 
 </div>
 
+## <div align="center">🌠 近期更新</div>
+
+- [性能飞跃！TensorRT-YOLO 6.0 全面升级解析与实战指南](https://www.cnblogs.com/laugh12321/p/18693017) 🌟 NEW
+
+
 ## <div align="center">✨ 主要特性</div>
 
 ### 🎯 多样化的 YOLO 支持
 - **全面兼容**：支持 YOLOv3 至 YOLOv11 全系列模型，以及 PP-YOLOE 和 PP-YOLOE+，满足多样化需求。
-- **灵活切换**：提供简洁易用的接口，支持不同版本 YOLO 模型的快速切换。
+- **灵活切换**：提供简洁易用的接口，支持不同版本 YOLO 模型的快速切换。🌟 NEW
 - **多场景应用**：提供丰富的示例代码，涵盖[Detect](examples/detect/)、[Segment](examples/segment/)、[Classify](examples/classify/)、[Pose](examples/pose/)、[OBB](examples/obb/)等多种应用场景。
 
 ### 🚀 性能优化
 - **CUDA 加速**：通过 CUDA 核函数优化前处理流程，并采用 CUDA 图技术加速推理过程。
 - **TensorRT 集成**：深度集成 TensorRT 插件，显著加速后处理，提升整体推理效率。
-- **多 Context 推理**：支持多 Context 并行推理，最大化硬件资源利用率。
-- **显存管理优化**：适配多架构显存优化策略（如 Jetson 的 Zero Copy 模式），提升显存效率。
+- **多 Context 推理**：支持多 Context 并行推理，最大化硬件资源利用率。🌟 NEW
+- **显存管理优化**：适配多架构显存优化策略（如 Jetson 的 Zero Copy 模式），提升显存效率。🌟 NEW
 
 ### 🛠️ 易用性
 - **开箱即用**：提供全面的 C++ 和 Python 推理支持，满足不同开发者需求。
@@ -61,7 +74,7 @@
 - **TensorRT 兼容**：完美适配 TensorRT 10.x 版本，确保与最新技术生态无缝衔接。
 
 ### 🔧 灵活配置
-- **预处理参数自定义**：支持多种预处理参数灵活配置，包括 **通道交换 (SwapRB)**、**归一化参数**、**边界值填充**。
+- **预处理参数自定义**：支持多种预处理参数灵活配置，包括 **通道交换 (SwapRB)**、**归一化参数**、**边界值填充**。🌟 NEW
 
 ## <div align="center">🔮 文档教程</div>
 
@@ -74,7 +87,7 @@
     - [姿态识别 示例](examples/pose/README.md)
     - [旋转目标检测 示例](examples/obb/README.md)
     - [📹视频分析 示例](examples/VideoPipe/README.md)
-    - [多线程多进程 示例](examples/mutli_thread/README.md)
+    - [多线程多进程 示例](examples/mutli_thread/README.md) 🌟 NEW
 - **API文档**
     - Python API文档（⚠️ 未实现）
     - C++ API文档（⚠️ 未实现）
@@ -111,29 +124,51 @@
   import cv2
   from tensorrt_yolo.infer import InferOption, DetectModel, generate_labels, visualize
 
-  # 配置推理选项
-  option = InferOption()
-  option.enable_swap_rb()
+  def main():
+      # -------------------- 初始化配置 --------------------
+      # 配置推理设置
+      option = InferOption()
+      option.enable_swap_rb()  # 将OpenCV默认的BGR格式转为RGB格式
+      # 特殊模型配置示例（如PP-YOLOE系列需取消下方注释）
+      # option.set_normalize_params([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 
-  # 初始化模型
-  model = DetectModel("yolo11n-with-plugin.engine", option)
+      # -------------------- 模型初始化 --------------------
+      # 加载TensorRT引擎文件（注意检查文件路径）
+      # 提示：首次加载引擎可能需要较长时间进行优化
+      model = DetectModel(engine_path="yolo11n-with-plugin.engine", 
+                        option=option)
 
-  # 加载图片
-  im = cv2.imread("test_image.jpg")
+      # -------------------- 数据预处理 --------------------
+      # 加载测试图片（建议添加文件存在性检查）
+      input_img = cv2.imread("test_image.jpg")
+      if input_img is None:
+          raise FileNotFoundError("测试图片加载失败，请检查文件路径")
 
-  # 模型预测
-  result = model.predict(im)
-  print(f"==> detect result: {result}")
+      # -------------------- 执行推理 --------------------
+      # 执行目标检测（返回结果包含边界框、置信度、类别信息）
+      detection_result = model.predict(input_img)
+      print(f"==> detection_result: {detection_result}")
 
-  # 可视化检测结果
-  labels = generate_labels("labels.txt")
-  vis_im = visualize(im, result, labels)
-  cv2.imwrite("vis_image.jpg", vis_im)
+      # -------------------- 结果可视化 --------------------
+      # 加载类别标签（需确保labels.txt与模型匹配）
+      class_labels = generate_labels(labels_file="labels.txt")
+      # 生成可视化结果
+      visualized_img = visualize(
+          image=input_img,
+          result=detection_result,
+          labels=class_labels,
+      )
+      cv2.imwrite("vis_image.jpg", visualized_img)
 
-  # 克隆模型并进行预测
-  clone_model = model.clone()
-  clone_result = clone_model.predict(im)
-  print(f"==> detect clone result: {clone_result}")
+      # -------------------- 模型克隆演示 --------------------
+      # 克隆模型实例（适用于多线程场景）
+      cloned_model = model.clone()  # 创建独立副本，避免资源竞争
+      # 验证克隆模型推理一致性
+      cloned_result = cloned_model.predict(input_img)
+      print(f"==> cloned_result: {cloned_result}")
+
+  if __name__ == "__main__":
+      main()
   ```
 
 - 使用 C++ 进行推理：
@@ -148,28 +183,56 @@
   #include "deploy/result.hpp"  // 包含推理结果的定义
 
   int main() {
-      // 配置推理选项
-      deploy::InferOption option;
-      option.enableSwapRB();  // 启用通道交换（从BGR到RGB）
+      try {
+          // -------------------- 初始化配置 --------------------
+          deploy::InferOption option;
+          option.enableSwapRB();  // BGR->RGB转换
 
-      // 初始化模型
-      auto model = std::make_unique<deploy::DetectModel>("yolo11n-with-plugin.engine", option);
+          // 特殊模型参数设置示例
+          // const std::vector<float> mean{0.485f, 0.456f, 0.406f};
+          // const std::vector<float> std{0.229f, 0.224f, 0.225f};
+          // option.setNormalizeParams(mean, std);
 
-      // 加载图片
-      cv::Mat cvim = cv::imread("test_image.jpg");
-      deploy::Image im(cvim.data, cvim.cols, cvim.rows);
+          // -------------------- 模型初始化 --------------------
+          auto detector = std::make_unique<deploy::DetectModel>(
+              "yolo11n-with-plugin.engine",  // 模型路径
+              option                         // 推理设置
+          );
 
-      // 模型预测
-      deploy::DetResult result = model->predict(im);
+          // -------------------- 数据加载 --------------------
+          cv::Mat cv_image = cv::imread("test_image.jpg");
+          if (cv_image.empty()) {
+              throw std::runtime_error("无法加载测试图片");
+          }
 
-      // 可视化（代码省略）
-      // ...  // 可视化部分代码未提供，可根据需要实现
+          // 封装图像数据（不复制像素数据）
+          deploy::Image input_image(
+              cv_image.data,     // 像素数据指针
+              cv_image.cols,     // 图像宽度
+              cv_image.rows,     // 图像高度
+          );
 
-      // 克隆模型并进行预测
-      auto clone_model = model->clone();
-      deploy::DetResult clone_result = clone_model->predict(im);
+          // -------------------- 执行推理 --------------------
+          deploy::DetResult result = detector->predict(input_image);
+          std::cout << result << std::endl;
 
-      return 0;  // 程序正常结束
+          // -------------------- 结果可视化（示意） --------------------
+          // 实际开发需实现可视化逻辑，示例：
+          // cv::Mat vis_image = visualize_detections(cv_image, result);
+          // cv::imwrite("vis_result.jpg", vis_image);
+
+          // -------------------- 模型克隆演示 --------------------
+          auto cloned_detector = detector->clone();  // 创建独立实例
+          deploy::DetResult cloned_result = cloned_detector->predict(input_image);
+
+          // 验证结果一致性
+          std::cout << cloned_resul << std::endl;
+
+      } catch (const std::exception& e) {
+          std::cerr << "程序异常: " << e.what() << std::endl;
+          return EXIT_FAILURE;
+      }
+      return EXIT_SUCCESS;
   }
   ```
 
