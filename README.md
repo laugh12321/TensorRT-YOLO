@@ -1,36 +1,27 @@
 [English](README.en.md) | 简体中文
 
 <div align="center">
-  <p>
-      <img width="100%" src="assets/logo.png"></a>
+  <img width="75%" src="assets/logo.png">
+  
+  <p align="center">
+      <a href="./LICENSE"><img alt="GitHub License" src="https://img.shields.io/github/license/laugh12321/TensorRT-YOLO?style=for-the-badge&color=0074d9"></a>
+      <a href="https://github.com/laugh12321/TensorRT-YOLO/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/laugh12321/TensorRT-YOLO?style=for-the-badge&color=0074d9"></a>
+      <img alt="GitHub Repo Stars" src="https://img.shields.io/github/stars/laugh12321/TensorRT-YOLO?style=for-the-badge&color=3dd3ff">
+      <img alt="Linux" src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black">
+      <img alt="Arch" src="https://img.shields.io/badge/Arch-x86%20%7C%20ARM-0091BD?style=for-the-badge&logo=cpu&logoColor=white">
+      <img alt="NVIDIA" src="https://img.shields.io/badge/NVIDIA-%2376B900.svg?style=for-the-badge&logo=nvidia&logoColor=white">
+  </p>
+
+  <p align="center">
+      <a href="/docs/cn/build_and_install.md"><img src="https://img.shields.io/badge/-安装-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
+      <a href="/examples/"><img src="https://img.shields.io/badge/-使用示例-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
+      <a href="#quick-start"><img src="https://img.shields.io/badge/-快速开始-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
+      <a href=""><img src="https://img.shields.io/badge/-API文档-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
+      <a href="https://github.com/laugh12321/TensorRT-YOLO/releases"><img src="https://img.shields.io/badge/-更新日志-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
   </p>
 </div>
 
-## <div align="center">🚀 TensorRT YOLO</div>
-
-<p align="center">
-    <a href="./LICENSE"><img alt="GitHub License" src="https://img.shields.io/github/license/laugh12321/TensorRT-YOLO?style=for-the-badge"></a>
-    <a href="https://github.com/laugh12321/TensorRT-YOLO/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/laugh12321/TensorRT-YOLO?style=for-the-badge"></a>
-    <a href="https://github.com/laugh12321/TensorRT-YOLO/commits"><img alt="GitHub Commit Activity" src="https://img.shields.io/github/commit-activity/m/laugh12321/TensorRT-YOLO?style=for-the-badge&color=rgb(47%2C154%2C231)"></a>
-    <img alt="GitHub Repo Stars" src="https://img.shields.io/github/stars/laugh12321/TensorRT-YOLO?style=for-the-badge&color=%2350e472">
-    <img alt="GitHub Forks" src="https://img.shields.io/github/forks/laugh12321/TensorRT-YOLO?style=for-the-badge&color=%2320878f">
-</p>
-
-<p align="center">
-    <img alt="Linux" src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black">
-    <img alt="Ubuntu" src="https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white">
-    <img alt="Architecture" src="https://img.shields.io/badge/Architecture-x86%20%7C%20ARM-0091BD?style=for-the-badge&logo=cpu&logoColor=white">
-    <img alt="NVIDIA" src="https://img.shields.io/badge/NVIDIA-%2376B900.svg?style=for-the-badge&logo=nvidia&logoColor=white">
-    <img alt="GPU Accelerated" src="https://img.shields.io/badge/GPU-Accelerated-76B900?style=for-the-badge&logo=nvidia&logoColor=white">
-</p>
-
-<p align="center">
-    <a href="/docs/cn/build_and_install.md"><img src="https://img.shields.io/badge/-安装-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
-    <a href="/examples/"><img src="https://img.shields.io/badge/-使用示例-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
-    <a href="#quick-start"><img src="https://img.shields.io/badge/-快速开始-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
-    <a href=""><img src="https://img.shields.io/badge/-API文档-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
-    <a href="https://github.com/laugh12321/TensorRT-YOLO/releases"><img src="https://img.shields.io/badge/-更新日志-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
-</p>
+---
 
 🚀 TensorRT-YOLO 是一款专为 NVIDIA 设备设计的**易用灵活**、**极致高效**的**YOLO系列**推理部署工具。项目不仅集成了 TensorRT 插件以增强后处理效果，还使用了 CUDA 核函数以及 CUDA 图来加速推理。TensorRT-YOLO 提供了 C++ 和 Python 推理的支持，旨在提供📦**开箱即用**的部署体验。包括 [目标检测](examples/detect/)、[实例分割](examples/segment/)、[图像分类](examples/classify/)、[姿态识别](examples/pose/)、[旋转目标检测](examples/obb/)、[视频分析](examples/VideoPipe)等任务场景，满足开发者**多场景**的部署需求。
 
