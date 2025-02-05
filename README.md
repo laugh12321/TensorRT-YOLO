@@ -236,7 +236,20 @@
   }
   ```
 
-更多部署案例请参考[模型部署示例](examples) .
+### 5.推理流程图
+
+以下是`predict`方法的流程图，展示了从输入图片到输出结果的完整流程：
+
+<div>
+  <p>
+      <img width="100%" src="./assets/flowsheet.png"></a>
+  </p>
+</div>
+
+只需将待推理的图片传递给 `predict` 方法，`predict` 内部会自动完成预处理、模型推理和后处理，并输出推理结果，这些结果可进一步应用于下游任务（如可视化、目标跟踪等）。
+
+
+> 更多部署案例请参考[模型部署示例](examples) .
 
 ## <div align="center">🖥️ 模型支持列表</div><div id="support-models"></div>
 

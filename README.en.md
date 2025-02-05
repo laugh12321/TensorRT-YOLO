@@ -235,7 +235,19 @@ English | [简体中文](README.md)
   }
   ```
 
-For more deployment examples, please refer to the [Model Deployment Examples](examples) section.
+### 5. Inference Flowchart
+
+Below is the flowchart of the `predict` method, which illustrates the complete process from input image to output result:
+
+<div>
+  <p>
+      <img width="100%" src="./assets/flowsheet.png"></a>
+  </p>
+</div>
+
+Simply pass the image to be inferred to the `predict` method. The `predict` method will automatically complete preprocessing, model inference, and post-processing internally, and output the inference results. These results can be further applied to downstream tasks (such as visualization, object tracking, etc.).
+
+> For more deployment examples, please refer to the [Model Deployment Examples](examples) section.
 
 ## <div align="center">🖥️ Model Support List</div><div id="support-models"></div>
 
