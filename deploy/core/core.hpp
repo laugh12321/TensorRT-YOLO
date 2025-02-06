@@ -15,6 +15,7 @@
 
 #include <atomic>
 #include <memory>
+#include <string>
 
 #include "NvInferRuntime.h"
 

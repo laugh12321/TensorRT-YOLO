@@ -144,7 +144,7 @@ void TrtBackend::captureCudaGraph() {
     // Lambda: Calculate input size and device pointers
     auto calculate_input_size_and_device = [&](int idx, int input_width, int input_height) {
         size_t input_size   = input_height * input_width * max_shape.y;
-        void*  input_device = static_cast<u_char*>(inputs_buffer_->device()) + idx * input_size;
+        void*  input_device = static_cast<uint8_t*>(inputs_buffer_->device()) + idx * input_size;
         void*  infer_device = static_cast<float*>(tensor_infos.front().buffer->device()) + idx * infer_size_;
         return std::make_pair(input_device, infer_device);
     };
@@ -251,7 +251,7 @@ void TrtBackend::staticInfer(const std::vector<Image>& inputs) {
             }
         } else {
             for (auto idx = 0; idx < num; ++idx) {
-                std::memcpy(static_cast<u_char*>(inputs_buffer_->host()) + idx * input_size_, inputs[idx].ptr, input_size_);
+                std::memcpy(static_cast<uint8_t*>(inputs_buffer_->host()) + idx * input_size_, inputs[idx].ptr, input_size_);
             }
         }
     } else {
@@ -267,7 +267,7 @@ void TrtBackend::staticInfer(const std::vector<Image>& inputs) {
 
             // 在主机内存中分配空间并拷贝数据
             inputs_buffer_->allocate(total_size);
-            u_char* input_ptr = static_cast<u_char*>(inputs_buffer_->host());
+            uint8_t* input_ptr = static_cast<uint8_t*>(inputs_buffer_->host());
 
             for (int idx = 0; idx < num; ++idx) {
                 std::memcpy(input_ptr, inputs[idx].ptr, input_sizes[idx]);
@@ -281,7 +281,7 @@ void TrtBackend::staticInfer(const std::vector<Image>& inputs) {
         }
 
         // 更新 kernel 节点
-        u_char* input_ptr = !option.cuda_mem ? static_cast<u_char*>(inputs_buffer_->device()) : nullptr;
+        uint8_t* input_ptr = !option.cuda_mem ? static_cast<uint8_t*>(inputs_buffer_->device()) : nullptr;
         for (int idx = 0; idx < num; ++idx) {
             affine_transforms[idx].updateMatrix(inputs[idx].width, inputs[idx].height, max_shape.w, max_shape.z);
             // 计算 infer_device_ptr，避免重复计算
@@ -335,14 +335,14 @@ void TrtBackend::dynamicInfer(const std::vector<Image>& inputs) {
         // 2. 处理静态输入形状
         if (!option.cuda_mem) {
             for (int idx = 0; idx < num; ++idx) {
-                std::memcpy(static_cast<u_char*>(inputs_buffer_->host()) + idx * input_size_, inputs[idx].ptr, input_size_);
+                std::memcpy(static_cast<uint8_t*>(inputs_buffer_->host()) + idx * input_size_, inputs[idx].ptr, input_size_);
             }
             inputs_buffer_->hostToDevice(stream);
         }
 
         for (int idx = 0; idx < num; ++idx) {
             cudaWarpAffine(
-                option.cuda_mem ? inputs[idx].ptr : static_cast<u_char*>(inputs_buffer_->device()) + idx * input_size_,
+                option.cuda_mem ? inputs[idx].ptr : static_cast<uint8_t*>(inputs_buffer_->device()) + idx * input_size_,
                 inputs[idx].width,
                 inputs[idx].height,
                 static_cast<float*>(tensor_infos.front().buffer->device()) + idx * infer_size_,
@@ -367,7 +367,7 @@ void TrtBackend::dynamicInfer(const std::vector<Image>& inputs) {
         if (!option.cuda_mem) {
             // 在主机内存中分配空间并拷贝数据
             inputs_buffer_->allocate(total_size);
-            u_char* input_host = static_cast<u_char*>(inputs_buffer_->host());
+            uint8_t* input_host = static_cast<uint8_t*>(inputs_buffer_->host());
 
             // 拷贝输入数据到主机内存
             for (int idx = 0; idx < num; ++idx) {
@@ -379,7 +379,7 @@ void TrtBackend::dynamicInfer(const std::vector<Image>& inputs) {
             inputs_buffer_->hostToDevice(stream);
 
             // 在设备内存中进行 WarpAffine 操作
-            u_char* input_device = static_cast<u_char*>(inputs_buffer_->device());
+            uint8_t* input_device = static_cast<uint8_t*>(inputs_buffer_->device());
             for (int idx = 0; idx < num; ++idx) {
                 cudaWarpAffine(
                     input_device,
