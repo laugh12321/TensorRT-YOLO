@@ -11,13 +11,14 @@
 #pragma once
 
 #include <NvInferPlugin.h>
+#include <NvInferRuntime.h>
 #include <cuda_runtime.h>
 
 #include <atomic>
 #include <memory>
 #include <string>
 
-#include "NvInferRuntime.h"
+#include "deploy/core/macro.hpp"
 
 namespace deploy {
 
@@ -62,7 +63,7 @@ private:
  * 该类封装了 CUDA 图的相关操作，包括捕获、执行、初始化节点、更新节点参数等。
  * CUDA 图是一种高效的 CUDA 操作执行模型，可以显著提高一些重复性操作的性能。
  */
-class CudaGraph {
+class DEPLOYAPI CudaGraph {
 public:
     explicit CudaGraph() = default;
     ~CudaGraph() { destroy(); }

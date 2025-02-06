@@ -17,6 +17,8 @@
 #include <string>
 #include <vector>
 
+#include "deploy/core/macro.hpp"
+
 namespace deploy {
 
 /**
@@ -111,7 +113,7 @@ protected:
  * 该类继承自 TimerBase 类，实现了具体的 CPU 计时功能。
  * 它使用 C++ 标准库中的高精度时钟来记录时间。
  */
-class CpuTimer : public TimerBase {
+class DEPLOYAPI CpuTimer : public TimerBase {
 public:
     void start() override;                                                      // < 重写 start 方法，开始 CPU 计时
     void stop() override;                                                       // < 重写 stop 方法，停止 CPU 计时
@@ -126,7 +128,7 @@ private:
  * 该类继承自 TimerBase 类，实现了具体的 GPU 计时功能。
  * 它使用 CUDA 事件来记录 GPU 上的时间。
  */
-class GpuTimer : public TimerBase {
+class DEPLOYAPI GpuTimer : public TimerBase {
 public:
     explicit GpuTimer(cudaStream_t stream);  // < 构造函数，传入 CUDA 流
     ~GpuTimer();                             // < 析构函数
