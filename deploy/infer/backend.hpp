@@ -27,7 +27,7 @@ namespace deploy {
 /**
  * @brief TensorRT 后端类，用于执行推理操作。
  */
-class TrtBackend {
+class DEPLOYAPI TrtBackend {
 public:
     /**
      * @brief 构造函数，用于初始化 TrtBackend 对象。
