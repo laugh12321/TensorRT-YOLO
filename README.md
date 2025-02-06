@@ -67,6 +67,34 @@
 ### 🔧 灵活配置
 - **预处理参数自定义**：支持多种预处理参数灵活配置，包括 **通道交换 (SwapRB)**、**归一化参数**、**边界值填充**。🌟 NEW
 
+## <div align="center">🚀 性能对比</div>
+
+<div align="center">
+
+| Model | Official + trtexec (ms) | trtyolo + trtexec (ms) | TensorRT-YOLO Inference (ms)|
+|:-----:|:-----------------------:|:----------------------:|:---------------------------:|
+| YOLOv11n | 1.611 ± 0.061        | 1.428 ± 0.097          | 1.228 ± 0.048               |
+| YOLOv11s | 2.055 ± 0.147        | 1.886 ± 0.145          | 1.687 ± 0.047               |
+| YOLOv11m | 3.028 ± 0.167        | 2.865 ± 0.235          | 2.691 ± 0.085               |
+| YOLOv11l | 3.856 ± 0.287        | 3.682 ± 0.309          | 3.571 ± 0.102               |
+| YOLOv11x | 6.377 ± 0.487        | 6.195 ± 0.482          | 6.207 ± 0.231               |
+
+</div>
+
+> [!NOTE]
+>
+> **测试环境**
+> - **GPU**：NVIDIA RTX 2080 Ti 22GB
+> - **输入尺寸**：640×640 像素
+>
+> **测试工具**
+> - **Official**：使用 Ultralytics 官方导出的 ONNX 模型。
+> - **trtyolo**：使用 TensorRT-YOLO 提供的 CLI 工具 (trtyolo) 导出的带 EfficientNMS 插件的 ONNX 格式模型。
+> - **trtexec**：使用 NVIDIA 的 `trtexec` 工具将 ONNX 模型构建为引擎并进行推理测试。
+>   - **构建指令**：`trtexec --onnx=xxx.onnx --saveEngine=xxx.engine --fp16`
+>   - **测试指令**：`trtexec --avgRuns=1000 --useSpinWait --loadEngine=xxx.engine`
+> - **TensorRT-YOLO Inference**：使用 TensorRT-YOLO 框架对 **trtyolo + trtexec** 方式得到的引擎进行推理的延迟时间（包括前处理、推理和后处理）。
+
 ## <div align="center">🔮 文档教程</div>
 
 - **安装指南**
@@ -408,6 +436,6 @@ TensorRT-YOLO采用 **GPL-3.0许可证**，这个[OSI 批准](https://opensource
 
 ## <div align="center">🙏 致谢</div>
 
-<center>
+<div align="center">
 <a href="https://hellogithub.com/repository/942570b550824b1b9397e4291da3d17c" target="_blank"><img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=942570b550824b1b9397e4291da3d17c&claim_uid=2AGzE4dsO8ZUD9R&theme=neutral" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a>
-</center>
+</div>

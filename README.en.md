@@ -67,6 +67,34 @@ English | [简体中文](README.md)
 ### 🔧 Flexible Configuration
 - **Customizable Preprocessing Parameters**: Supports flexible configuration of various preprocessing parameters, including **channel swapping (SwapRB)**, **normalization parameters**, and **border padding**. 🌟 NEW
 
+## <div align="center">🚀 Performance</div>
+
+<div align="center">
+
+| Model | Official + trtexec (ms) | trtyolo + trtexec (ms) | TensorRT-YOLO Inference (ms)|
+|:-----:|:-----------------------:|:----------------------:|:---------------------------:|
+| YOLOv11n | 1.611 ± 0.061        | 1.428 ± 0.097          | 1.228 ± 0.048               |
+| YOLOv11s | 2.055 ± 0.147        | 1.886 ± 0.145          | 1.687 ± 0.047               |
+| YOLOv11m | 3.028 ± 0.167        | 2.865 ± 0.235          | 2.691 ± 0.085               |
+| YOLOv11l | 3.856 ± 0.287        | 3.682 ± 0.309          | 3.571 ± 0.102               |
+| YOLOv11x | 6.377 ± 0.487        | 6.195 ± 0.482          | 6.207 ± 0.231               |
+
+</div>
+
+> [!NOTE]
+>
+> **Testing Environment**
+> - **GPU**: NVIDIA RTX 2080 Ti 22GB
+> - **Input Size**: 640×640 pixels
+>
+> **Testing Tools**
+> - **Official**: Using the ONNX model exported by Ultralytics.
+> - **trtyolo**: Using the CLI tool (trtyolo) provided by TensorRT-YOLO to export the ONNX model with the EfficientNMS plugin.
+> - **trtexec**: Using NVIDIA's `trtexec` tool to build the ONNX model into an engine and perform inference testing.
+>   - **Build Command**: `trtexec --onnx=xxx.onnx --saveEngine=xxx.engine --fp16`
+>   - **Test Command**: `trtexec --avgRuns=1000 --useSpinWait --loadEngine=xxx.engine`
+> - **TensorRT-YOLO Inference**: Using the TensorRT-YOLO framework to measure the latency (including pre-processing, inference, and post-processing) of the engine obtained through the **trtyolo + trtexec** method.
+
 ## <div align="center">🔮 Documentation</div>
 
 - **Installation Guide**
@@ -407,6 +435,6 @@ For bug reports and feature requests regarding TensorRT-YOLO, please visit [GitH
 
 ## <div align="center">🙏 Thanks</div>
 
-<center>
+<div align="center">
 <a href="https://hellogithub.com/repository/942570b550824b1b9397e4291da3d17c" target="_blank"><img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=942570b550824b1b9397e4291da3d17c&claim_uid=2AGzE4dsO8ZUD9R&theme=neutral" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a>
-</center>
+</div>
