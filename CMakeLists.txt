@@ -90,13 +90,13 @@ set_target_properties(deploy PROPERTIES OUTPUT_NAME deploy)
 
 if(MSVC)
     set_target_properties(deploy PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/lib
-        ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/lib
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/lib
-        ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/lib
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/lib
+        ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/lib
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/lib
+        ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/lib
     )
 else()
-    set_target_properties(deploy PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+    set_target_properties(deploy PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 endif()
 
 # 定义目标 pydeploy（仅在BUILD_PYTHON为ON时编译）
@@ -109,11 +109,11 @@ if(BUILD_PYTHON)
 
     if(MSVC)
         set_target_properties(pydeploy PROPERTIES
-            LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/python/tensorrt_yolo/libs
-            LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/python/tensorrt_yolo/libs
+            LIBRARY_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/python/tensorrt_yolo/libs
+            LIBRARY_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/python/tensorrt_yolo/libs
         )
     else()
-        set_target_properties(pydeploy PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/python/tensorrt_yolo/libs)
+        set_target_properties(pydeploy PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/python/tensorrt_yolo/libs)
     endif()
 
     set_target_properties(pydeploy PROPERTIES
@@ -123,7 +123,7 @@ if(BUILD_PYTHON)
 
     # 配置文件
     configure_file(
-        ${CMAKE_SOURCE_DIR}/python/tensorrt_yolo/c_lib_wrap.py.in
-        ${CMAKE_SOURCE_DIR}/python/tensorrt_yolo/c_lib_wrap.py
+        ${PROJECT_SOURCE_DIR}/python/tensorrt_yolo/c_lib_wrap.py.in
+        ${PROJECT_SOURCE_DIR}/python/tensorrt_yolo/c_lib_wrap.py
     )
 endif()
