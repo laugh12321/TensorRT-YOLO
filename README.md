@@ -424,6 +424,30 @@
   </table>
 </div>
 
+## <div align="center">🌟 赞助与支持</div>
+
+开源不易，如果本项目对你有所帮助，欢迎通过赞助支持作者。你的支持是开发者持续维护的最大动力！
+
+<div align="center">
+  <a href="https://afdian.com/a/laugh12321">
+    <img width="200" src="https://pic1.afdiancdn.com/static/img/welcome/button-sponsorme.png" alt="赞助我">
+  </a>
+</div>
+
+---
+
+🙏 **衷心感谢以下支持者与赞助商的无私支持**：
+
+> [!NOTE]
+>
+> 以下是 GitHub Actions 自动生成的赞助者列表，每日更新 ✨。
+
+<div align="center">
+  <a target="_blank" href="https://afdian.com/a/laugh12321">
+    <img alt="赞助者列表" src="https://github.com/laugh12321/sponsor/blob/main/sponsors.svg?raw=true">
+  </a>
+</div>
+
 ## <div align="center">📄 许可证</div>
 
 TensorRT-YOLO采用 **GPL-3.0许可证**，这个[OSI 批准](https://opensource.org/licenses/)的开源许可证非常适合学生和爱好者，可以推动开放的协作和知识分享。请查看[LICENSE](https://github.com/laugh12321/TensorRT-YOLO/blob/master/LICENSE) 文件以了解更多细节。
