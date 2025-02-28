@@ -90,11 +90,15 @@ void DiscreteBuffer::allocate(size_t size) {
 }
 
 void DiscreteBuffer::free() {
-    if (host_) CHECK(cudaFreeHost(host_));  // < 释放主机内存
-    if (device_) CHECK(cudaFree(device_));  // < 释放设备内存
-    host_   = nullptr;
-    device_ = nullptr;
-    size_   = 0;
+    if (host_) {
+        CHECK(cudaFreeHost(host_));  // < 释放主机内存
+        host_ = nullptr;             // < 将指针置为 nullptr，避免双重释放
+    }
+    if (device_) {
+        CHECK(cudaFree(device_));    // < 释放设备内存
+        device_ = nullptr;           // < 将指针置为 nullptr，避免双重释放
+    }
+    size_ = 0;
 }
 
 void* DiscreteBuffer::device() {
