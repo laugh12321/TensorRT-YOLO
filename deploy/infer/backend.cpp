@@ -21,20 +21,18 @@ TrtBackend::TrtBackend(const std::string& trt_engine_file, const InferOption& in
     cudaSetDevice(option.device_id);   // < 设置设备
     CHECK(cudaStreamCreate(&stream));  // < 创建 stream
 
+    // 是否支持 Zero Copy
+    zero_copy_ = SupportsIntegratedZeroCopy(option.device_id);
+
+    // 创建 TRTManager 实例
+    manager_ = std::make_unique<TRTManager>();
+
     // 获取 Engine Buffer
     std::string engine_buffer;
     ReadBinaryFromFile(trt_engine_file, &engine_buffer);
 
-    // 反序列化 engine 并持有其引用
-    engine_ = std::shared_ptr<nvinfer1::ICudaEngine>(TRTManager::getRuntime()->deserializeCudaEngine(engine_buffer.data(), engine_buffer.size()), TRTManager::engineDeleter);
-    if (!engine_) throw std::runtime_error("Failed to call deserializeCudaEngine().");
-
-    // 创建 context
-    context_ = std::unique_ptr<nvinfer1::IExecutionContext>(engine_->createExecutionContext());
-    if (!context_) throw std::runtime_error("Failed to call createExecutionContext().");
-
-    // 是否支持 Zero Copy
-    zero_copy_ = SupportsIntegratedZeroCopy(option.device_id);
+    // 调用 initialize 方法进行初始化
+    manager_->initialize(engine_buffer.data(), engine_buffer.size());
 
     // 获取 TensorInfo
     getTensorInfo();
@@ -53,12 +51,10 @@ std::unique_ptr<TrtBackend> TrtBackend::clone() {
     cudaSetDevice(option.device_id);                  // < 设置设备
     CHECK(cudaStreamCreate(&clone_backend->stream));  // < 创建 stream
 
-    clone_backend->engine_  = engine_;
-    clone_backend->context_ = std::unique_ptr<nvinfer1::IExecutionContext>(clone_backend->engine_->createExecutionContext());
-    if (!clone_backend->context_) throw std::runtime_error("Failed to call createExecutionContext().");
-
     // 是否支持 Zero Copy
     clone_backend->zero_copy_ = zero_copy_;
+
+    clone_backend->manager_ = manager_->clone();
 
     // 获取 TensorInfo
     clone_backend->getTensorInfo();
@@ -82,19 +78,19 @@ TrtBackend::~TrtBackend() {
 void TrtBackend::getTensorInfo() {
     std::vector<TensorInfo>().swap(tensor_infos);
     buffer_type_     = option.enable_managed_memory ? BufferType::Unified : (zero_copy_ ? BufferType::Mapped : BufferType::Discrete);
-    auto num_tensors = engine_->getNbIOTensors();
+    auto num_tensors = manager_->getNbIOTensors();
     for (auto i = 0; i < num_tensors; ++i) {
-        std::string name  = std::string(engine_->getIOTensorName(i));
-        auto        shape = engine_->getTensorShape(name.c_str());
-        auto        dtype = engine_->getTensorDataType(name.c_str());
-        bool        input = (engine_->getTensorIOMode(name.c_str()) == nvinfer1::TensorIOMode::kINPUT);
+        std::string name  = std::string(manager_->getIOTensorName(i));
+        auto        shape = manager_->getTensorShape(name.c_str());
+        auto        dtype = manager_->getTensorDataType(name.c_str());
+        bool        input = (manager_->getTensorIOMode(name.c_str()) == nvinfer1::TensorIOMode::kINPUT);
 
         if (input) {
             dynamic = std::any_of(shape.d, shape.d + shape.nbDims, [](int val) { return val == -1; });
             if (dynamic) {
-                shape     = engine_->getProfileShape(name.c_str(), 0, nvinfer1::OptProfileSelector::kMIN);
+                shape     = manager_->getProfileShape(name.c_str(), 0, nvinfer1::OptProfileSelector::kMIN);
                 min_shape = make_int4(shape.d[0], shape.d[1], shape.d[2], shape.d[3]);
-                shape     = engine_->getProfileShape(name.c_str(), 0, nvinfer1::OptProfileSelector::kMAX);
+                shape     = manager_->getProfileShape(name.c_str(), 0, nvinfer1::OptProfileSelector::kMAX);
                 // < 打印接受范围
             }
             max_shape = make_int4(shape.d[0], shape.d[1], shape.d[2], shape.d[3]);
@@ -132,10 +128,10 @@ void TrtBackend::captureCudaGraph() {
     // Step 1: Pre-inference execution before graph capture
     {
         for (auto& tensor_info : tensor_infos) {
-            context_->setTensorAddress(tensor_info.name.c_str(), tensor_info.buffer->device());
+            manager_->setTensorAddress(tensor_info.name.c_str(), tensor_info.buffer->device());
         }
 
-        if (!context_->enqueueV3(stream)) {
+        if (!manager_->enqueueV3(stream)) {
             throw std::runtime_error("captureCudaGraph: EnqueueV3 failed before graph creation.");
         }
         CHECK(cudaStreamSynchronize(stream));
@@ -199,7 +195,7 @@ void TrtBackend::captureCudaGraph() {
     }
 
     // Step 4: Enqueue inference
-    if (!context_->enqueueV3(stream)) {
+    if (!manager_->enqueueV3(stream)) {
         throw std::runtime_error("captureCudaGraph: EnqueueV3 failed when graph creation.");
     }
 
@@ -325,9 +321,9 @@ void TrtBackend::dynamicInfer(const std::vector<Image>& inputs) {
     for (auto& tensor_info : tensor_infos) {
         tensor_info.shape.d[0] = num;
         tensor_info.update();
-        context_->setTensorAddress(tensor_info.name.c_str(), tensor_info.buffer->device());
+        manager_->setTensorAddress(tensor_info.name.c_str(), tensor_info.buffer->device());
         if (tensor_info.input) {
-            context_->setInputShape(tensor_info.name.c_str(), tensor_info.shape);
+            manager_->setInputShape(tensor_info.name.c_str(), tensor_info.shape);
         }
     }
 
@@ -411,7 +407,7 @@ void TrtBackend::dynamicInfer(const std::vector<Image>& inputs) {
     }
 
     // 推理
-    if (!context_->enqueueV3(stream)) {
+    if (!manager_->enqueueV3(stream)) {
         throw std::runtime_error("Infer Error.");
     }
 
