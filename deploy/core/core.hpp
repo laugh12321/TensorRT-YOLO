@@ -62,7 +62,7 @@ private:
  * @brief TensorRT 管理器类，用于管理 TensorRT 的上下文、引擎和运行时。
  * 提供初始化、克隆、设置张量地址、设置输入形状、执行推理等方法。
  */
-class TRTManager {
+class DEPLOYAPI TRTManager {
 public:
     /**
      * @brief 默认构造函数。
