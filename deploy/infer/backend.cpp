@@ -284,7 +284,7 @@ void TrtBackend::staticInfer(const std::vector<Image>& inputs) {
             auto infer_device_ptr = static_cast<float*>(tensor_infos.front().buffer->device()) + idx * infer_size_;
 
             void* kernelParams[] = {
-                option.cuda_mem ? (void*)&inputs[idx] : (void*)&input_ptr,
+                option.cuda_mem ? (void*)&inputs[idx].ptr : (void*)&input_ptr,
                 (void*)&inputs[idx].width,
                 (void*)&inputs[idx].height,
                 (void*)&infer_device_ptr,
