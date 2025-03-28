@@ -37,6 +37,14 @@
 
 ## <div align="center">🌠 近期更新</div>
 
+- 🔥 **实战课程｜TensorRT × Triton Inference Server 模型部署**  
+  - **平台**: [BiliBili 课堂](https://www.bilibili.com/cheese/play/ss193350134) | [微信公众号](https://mp.weixin.qq.com/s/DVEo6RB-Wt4yDIX_3u-7Gw) 🚀 **HOT**  
+  - **团队**: [laugh12321](https://space.bilibili.com/86034462) | [不归牛顿管的熊猫](https://space.bilibili.com/393625476)  
+  - 🛠 **硬核专题**:  
+    ▸ **自定义插件开发**（含Plugin注册全流程）  
+    ▸ **CUDA Graph 原理与工程实践**  
+    ▸ **Triton Inference Server 部署技巧**  
+
 - [性能飞跃！TensorRT-YOLO 6.0 全面升级解析与实战指南](https://www.cnblogs.com/laugh12321/p/18693017) 🌟 NEW
 
 
