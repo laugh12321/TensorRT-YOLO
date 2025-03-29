@@ -24,7 +24,7 @@ trtexec --onnx=workspace/yolo11n.onnx --saveEngine=workspace/yolo11n.engine --fp
 
 ## 项目运行
 
-1. 确保已按照 [`TensorRT-YOLO` 编译](../../docs/cn/build_and_install.md##rensorrt-yolo-编译) 和 [`VideoPipe` 编译和调试](https://github.com/sherlockchou86/VideoPipe/blob/master/README_CN.md#52-编译和调试) 对项目进行编译。
+1. 确保已按照 [`TensorRT-YOLO` 编译](../../docs/cn/build_and_install.md##rensorrt-yolo-编译) 和 [`VideoPipe` 编译和调试](https://github.com/sherlockchou86/VideoPipe/blob/master/README_CN.md#52-编译和调试) （只需要执行默认的五个步骤，不需要追加其他编译选项）对项目进行编译。
 
 2. 将项目编译为可执行文件：
 

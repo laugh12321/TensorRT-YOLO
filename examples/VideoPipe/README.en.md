@@ -25,7 +25,7 @@ trtexec --onnx=workspace/yolo11n.onnx --saveEngine=workspace/yolo11n.engine --fp
 ## Project Execution
 
 1. Ensure that the project has been compiled according to the [`TensorRT-YOLO` Compilation](../../docs/en/build_and_install.md#tensorrt-yolo-compile).
-1. Ensure that the project has been compiled following the instructions for [`TensorRT-YOLO` compilation](../../docs/en/build_and_install.md##tensorrt-yolo-compilation) and [`VideoPipe` compilation and debugging](https://github.com/sherlockchou86/VideoPipe/blob/master/README.md#compilation-and-debugging).
+1. Ensure that the project has been compiled following the instructions for [`TensorRT-YOLO` compilation](../../docs/en/build_and_install.md##tensorrt-yolo-compilation) and [`VideoPipe` compilation and debugging](https://github.com/sherlockchou86/VideoPipe/blob/master/README.md#compilation-and-debugging) (only the default five steps need to be executed, without adding any other compilation options).
 
 2. Compile the project into an executable:
 
