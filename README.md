@@ -45,6 +45,9 @@
     ▸ **CUDA Graph 原理与工程实践**  
     ▸ **Triton Inference Server 部署技巧**  
 
+
+- 2025-03-29: 添加对 [YOLO12](https://github.com/sunsmarterjie/yolov12) 的支持，包括分类、定向边界框、姿态估计以及实例分割，详见 [issues](https://github.com/sunsmarterjie/yolov12/issues/22)。🌟 NEW
+
 - [性能飞跃！TensorRT-YOLO 6.0 全面升级解析与实战指南](https://www.cnblogs.com/laugh12321/p/18693017) 🌟 NEW
 
 
@@ -348,6 +351,12 @@
     <tr>
       <td>Detect</td>
       <td><a href="https://github.com/THU-MIG/yolov10">THU-MIG/yolov10</a></td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Detect</td>
+      <td><a href="https://github.com/sunsmarterjie/yolov12">sunsmarterjie/yolov12</a></td>
       <td>✅</td>
       <td>✅</td>
     </tr>

@@ -48,20 +48,23 @@ HEADS = {
         "yolov5": YOLODetect,
         "yolov8": UltralyticsDetect,
         "yolo11": UltralyticsDetect,
+        "yolo12": UltralyticsDetect,
         "ultralytics": UltralyticsDetect,
     },
     "v10Detect": {"yolov10": v10Detect, "ultralytics": v10Detect},
-    "OBB": {"yolov8": UltralyticsOBB, "yolo11": UltralyticsOBB, "ultralytics": UltralyticsOBB},
+    "OBB": {"yolov8": UltralyticsOBB, "yolo11": UltralyticsOBB, "yolo12": UltralyticsOBB, "ultralytics": UltralyticsOBB},
     "Segment": {
         "yolov3": YOLOSegment,
         "yolov5": YOLOSegment,
         "yolov8": UltralyticsSegment,
         "yolo11": UltralyticsSegment,
+        "yolo12": UltralyticsSegment,
         "ultralytics": UltralyticsSegment,
     },
     "Pose": {
         "yolov8": UltralyticsPose,
         "yolo11": UltralyticsPose,
+        "yolo12": UltralyticsPose,
         "ultralytics": UltralyticsPose,
     },
     "Classify": {
@@ -69,6 +72,7 @@ HEADS = {
         "yolov5": YOLOClassify,
         "yolov8": UltralyticsClassify,
         "yolo11": UltralyticsClassify,
+        "yolo12": UltralyticsClassify,
         "ultralytics": UltralyticsClassify,
     },
 }
@@ -112,7 +116,7 @@ def load_model(version: str, weights: str, repo_dir: Optional[str] = None) -> Op
     Load YOLO model based on version and weights.
 
     Args:
-        version (str): YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, ultralytics.
+        version (str): YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, ultralytics.
         weights (str): Path to YOLO weights for PyTorch.
         repo_dir (Optional[str], optional): Directory containing the local repository (if using torch.hub.load). Defaults to None.
 
@@ -129,12 +133,21 @@ def load_model(version: str, weights: str, repo_dir: Optional[str] = None) -> Op
     if version in yolo_versions_with_repo:
         repo_dir = yolo_versions_with_repo[version] if repo_dir is None else repo_dir
         return torch.hub.load(repo_dir, 'custom', path=weights, source=source, _verbose=False)
-    elif version in ['yolov8', 'yolov10', 'yolo11', 'ultralytics']:
+    elif version in ['yolov8', 'yolov10', 'yolo11', 'yolo12', 'ultralytics']:
+        if version == "yolo12":
+            from packaging import version
+            from ultralytics import __version__ as ultralytics_version
+            if version.parse(ultralytics_version) < version.parse("8.3.78"):
+                logger.error(
+                    "For 'yolo12', 'ultralytics' version must be >= 8.3.78. "
+                    f"Current version is {ultralytics_version}."
+                )
+                return None
         return YOLO(model=weights, verbose=False).model
     else:
         logger.error(
             f"YOLO version '{version}' is unsupported for export with trtyolo CLI tool. "
-            "Please provide a valid version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, ultralytics."
+            "Please provide a valid version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, ultralytics."
         )
         if version in YOLO_EXPORT_INFO:
             logger.warning(
@@ -152,7 +165,7 @@ def update_model(
 
     Args:
         model (torch.nn.Module): YOLO model to be updated.
-        version (str): YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, ultralytics.
+        version (str): YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, ultralytics.
         dynamic (bool): Whether to use dynamic settings.
         max_boxes (int): Maximum number of detections to output per image.
         iou_thres (float): NMS IoU threshold for post-processing.
@@ -208,7 +221,7 @@ def torch_export(
     Args:
         weights (str): Path to YOLO weights for PyTorch.
         output (str): Directory path to save the exported model.
-        version (str): YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, ultralytics.
+        version (str): YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, ultralytics.
         imgsz (Optional[Sequence[int]], optional): Inference image size (height, width). Defaults to [640, 640].
         batch (Optional[int], optional): Total batch size for the model. Use -1 for dynamic batch size. Defaults to 1.
         max_boxes (Optional[int], optional): Maximum number of detections to output per image. Defaults to 100.

@@ -38,6 +38,8 @@ English | [简体中文](README.md)
 
 ## <div align="center">🌠 Recent updates</div>
 
+- 2025-03-29: Added support for [YOLO12](https://github.com/sunsmarterjie/yolov12), including classification, oriented bounding boxes, pose estimation, and instance segmentation. See [issues](https://github.com/sunsmarterjie/yolov12/issues/22) for details. 🌟 NEW
+
 - [Performance Leap! TensorRT-YOLO 6.0: Comprehensive Upgrade Analysis and Practical Guide](https://medium.com/@laugh12321/performance-leap-tensorrt-yolo-6-0-comprehensive-upgrade-analysis-and-practical-guide-9d19ad3b53f9) 🌟 NEW
 
 ## <div align="center">✨ Key Features</div>
@@ -339,6 +341,12 @@ Symbol legend: (1)  ✅ : Supported; (2) ❔: In progress; (3) ❎ : Not support
     <tr>
       <td>Detect</td>
       <td><a href="https://github.com/THU-MIG/yolov10">THU-MIG/yolov10</a></td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Detect</td>
+      <td><a href="https://github.com/sunsmarterjie/yolov12">sunsmarterjie/yolov12</a></td>
       <td>✅</td>
       <td>✅</td>
     </tr>
