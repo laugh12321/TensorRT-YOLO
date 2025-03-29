@@ -30,13 +30,7 @@ trtexec --onnx=workspace/yolo11n.onnx --saveEngine=workspace/yolo11n.engine --fp
 2. Compile the project into an executable:
 
     ```bash
-    # Compile using xmake
-    xmake f -P . --tensorrt="/path/to/your/TensorRT" --deploy="/path/to/your/TensorRT-YOLO" --videopipe="/path/to/your/VideoPipe"
-    xmake -P . -r
-
-    # Compile using cmake
-    mkdir -p build && cd build
-    cmake -DTENSORRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO" -DVIDEOPIPE_PATH="/path/to/your/VideoPipe" .. 
+    cmake -S . -B build -DTRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO" -DVIDEOPIPE_PATH="/path/to/your/VideoPipe"
     cmake --build . -j8 --config Release
     ```
 

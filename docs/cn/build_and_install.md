@@ -8,40 +8,29 @@
 
 - **Linux**: gcc/g++
 - **Windows**: MSVC
-- **构建工具**: CMake 或 Xmake
+- **构建工具**: CMake
 - **依赖库**: CUDA、cuDNN、TensorRT
 
 > [!NOTE]  
 > 如果您在 Windows 下进行开发，可以参考以下配置指南：
-> 
-> - [Windows 开发环境配置——NVIDIA 篇](https://www.cnblogs.com/laugh12321/p/17830096.html)  
-> - [Windows 开发环境配置——C++ 篇](https://www.cnblogs.com/laugh12321/p/17827624.html)  
+>
+> - [Windows 开发环境配置——NVIDIA 篇](https://www.cnblogs.com/laugh12321/p/17830096.html)
+> - [Windows 开发环境配置——C++ 篇](https://www.cnblogs.com/laugh12321/p/17827624.html)
 
-为了满足部署需求，您可以选择使用 Xmake 或 CMake 来编译动态库。以下是详细的编译指南：
+### 编译步骤
 
 首先，克隆 TensorRT-YOLO 仓库：
 
 ```bash
-git clone https://github.com/laugh12321/TensorRT-YOLO  
+git clone https://github.com/laugh12321/TensorRT-YOLO
 cd TensorRT-YOLO
 ```
 
-#### 使用 Xmake 编译
-
-如果您选择使用 Xmake，可以按照以下步骤操作：
-
-```bash
-xmake f --tensorrt=/path/to/tensorrt --build_python=true
-xmake -P . -r
-```
-
-#### 使用 CMake 编译
-
-如果您选择使用 CMake，可以按照以下步骤操作：
+然后使用 CMake，可以按照以下步骤操作：
 
 ```bash
 pip install "pybind11[global]"
-cmake -S . -B build -DTENSORRT_PATH=/usr/local/tensorrt -DBUILD_PYTHON=ON
+cmake -S . -B build -DTRT_PATH=/usr/local/tensorrt -DBUILD_PYTHON=ON
 cmake --build build -j$(nproc) --config Release
 ```
 
@@ -50,7 +39,7 @@ cmake --build build -j$(nproc) --config Release
 - 一个名为 `plugin` 的子文件夹，其中包含编译生成的 TensorRT 自定义插件动态库。
 
 > [!NOTE]  
-> 若不需要生成 Python 绑定，可以移除 `--build_python=true` 或 `-DBUILD_PYTHON=ON` 参数。
+> 若不需要生成 Python 绑定，可以移除 `-DBUILD_PYTHON=ON` 参数。
 
 ## 安装 `tensorrt_yolo`
 

@@ -19,7 +19,7 @@ Please download the required `yolo11n-obb.pt` model file and test images through
 > ```bash
 > pip install -U tensorrt_yolo
 > ```
-> 
+>
 > If you want to experience the same inference speed as C++, please refer to [Install-tensorrt_yolo](../../docs/en/build_and_install.md#install-tensorrt_yolo) to build the latest version of `tensorrt_yolo` yourself.
 
 Use the following command to export the ONNX format with the [EfficientRotatedNMS](../../plugin/efficientRotatedNMSPlugin/) plugin. For detailed `trtyolo` CLI export methods, please read [Model Export](../../docs/en/model_export.md):
@@ -72,12 +72,7 @@ trtexec --onnx=models/yolo11n-obb.onnx --saveEngine=models/yolo11n-obb.engine --
 2. Compile `detect.cpp` into an executable:
 
     ```bash
-    # Compile using xmake
-    xmake f -P . --tensorrt="/path/to/your/TensorRT" --deploy="/path/to/your/TensorRT-YOLO"
-    xmake -P . -r
-
-    # Compile using cmake
-    cmake -S . -B build -DTENSORRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO"
+    cmake -S . -B build -DTRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO"
     cmake --build build -j8 --config Release
     ```
 
