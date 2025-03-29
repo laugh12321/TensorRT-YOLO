@@ -1,129 +1,202 @@
-# 设置项目
-cmake_minimum_required(VERSION 3.12)
-cmake_policy(SET CMP0091 NEW)
-project(TensorRT-YOLO VERSION 6.0.0 LANGUAGES CXX CUDA)
+cmake_minimum_required(VERSION 3.17)
+cmake_policy(SET CMP0091 NEW)  # 确保 MSVC 运行时库策略正确
+
+#-------------------------------------------------------------------------------
+# 项目基础配置
+#-------------------------------------------------------------------------------
+project(TensorRT-YOLO
+    VERSION 6.1.0
+    LANGUAGES CXX CUDA
+    DESCRIPTION "🚀 Easier & Faster YOLO Deployment Toolkit for NVIDIA 🛠️"
+)
+
+# 生成编译数据库（供clangd等工具使用）
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # 设置 C++ 标准
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-# 生成编译数据库，便于代码分析工具使用
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+#-------------------------------------------------------------------------------
+# 依赖配置
+#-------------------------------------------------------------------------------
+# CUDA 配置
+find_package(CUDAToolkit REQUIRED)
 
-# 添加依赖项
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
-    find_package(CUDAToolkit REQUIRED)
-    set(CUDA_INCLUDE_DIRS ${CUDAToolkit_INCLUDE_DIRS})
-    set(CUDA_LIBRARIES ${CUDAToolkit_LIBRARIES})
+# 允许用户覆盖默认的 CUDA 架构
+if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+    set(CMAKE_CUDA_ARCHITECTURES "89;86;75;70;61")  # 默认支持架构
+endif()
+
+# TensorRT 路径配置
+set(TRT_PATH "" CACHE PATH "Path to TensorRT installation (e.g., /usr/local/tensorrt)")
+if(NOT TRT_PATH)
+    message(FATAL_ERROR "TensorRT path must be specified with -DTRT_PATH=/path/to/tensorrt")
+endif()
+
+# 定义 TensorRT 库的版本选择
+set(TRT_LIB_DIR "${TRT_PATH}/lib")
+if(MSVC AND EXISTS "${TRT_LIB_DIR}/nvinfer_10.dll")
+    set(TRT_LIBS nvinfer_10 nvinfer_plugin_10 nvonnxparser_10)
 else()
-    find_package(CUDA REQUIRED)
-endif()
-set(CMAKE_CUDA_ARCHITECTURES 89;86;75;70;61)  # CUDA 架构版本 8.9, 8.6, 7.5, 7.0, 6.1
-
-# 添加编译选项
-option(TENSORRT_PATH "TensorRT Path. Example: /usr/local/tensorrt" "")
-if(NOT TENSORRT_PATH)
-    message(FATAL_ERROR "TensorRT path is not set. Please specify the TensorRT path.")
+    set(TRT_LIBS nvinfer nvinfer_plugin nvonnxparser)
 endif()
 
-# 添加选项：是否编译Python版本
-option(BUILD_PYTHON "Build Python bindings" OFF)
+# Python 绑定选项
+option(BUILD_PYTHON "Build Python bindings with pybind11" OFF)
 if(BUILD_PYTHON)
-    message(STATUS "Python bindings will be built.")
-
-    # Pybind11 依赖
     set(PYBIND11_FINDPYTHON ON)
     find_package(Python COMPONENTS Interpreter Development REQUIRED)
     find_package(pybind11 CONFIG REQUIRED)
-else()
-    message(STATUS "Python bindings will NOT be built.")
 endif()
 
-# 配置CUDA和TensorRT的函数
-function(configure_cuda_trt target)
-    target_compile_definitions(${target} PRIVATE ${CUDA_DEFINITIONS})
-    target_include_directories(${target} PRIVATE ${CUDA_INCLUDE_DIRS})
-    target_link_libraries(${target} PRIVATE ${CUDA_cudart_LIBRARY})
+#-------------------------------------------------------------------------------
+# 编译工具链配置
+#-------------------------------------------------------------------------------
+function(set_target_compile_options target)
+    # MSVC 配置
+    if(MSVC)
+        # C++编译选项
+        target_compile_options(${target} PRIVATE
+            $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CXX>>:/O2 /Oi /fp:fast>
+            $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:/Od /Ob0 /Zi /RTC1>
+        )
 
-    target_include_directories(${target} PRIVATE ${TENSORRT_PATH}/include)
-    target_link_directories(${target} PRIVATE ${TENSORRT_PATH}/lib)
-    if(MSVC AND EXISTS ${TENSORRT_PATH}/lib/nvinfer_10.dll)
-        target_link_libraries(${target} PRIVATE nvinfer_10 nvinfer_plugin_10 nvonnxparser_10)
+        # CUDA编译选项
+        target_compile_options(${target} PRIVATE
+            $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CUDA>>:-Xcompiler=/O2 -O3>
+            $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CUDA>>:-Xcompiler=/Od -g -G>
+        )
+
+        set_target_properties(${target} PROPERTIES MSVC_RUNTIME_LIBRARY
+            "$<$<CONFIG:Debug>:MultiThreadedDebugDLL>$<$<CONFIG:Release>:MultiThreadedDLL>"
+        )
+
+    # GCC/Clang 配置
     else()
-        target_link_libraries(${target} PRIVATE nvinfer nvinfer_plugin nvonnxparser)
+        # C++编译选项
+        target_compile_options(${target} PRIVATE
+            $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CXX>>:-O3 -march=native -flto=auto -DNDEBUG>
+            $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:-O0 -g3 -fno-omit-frame-pointer -fno-inline>
+        )
+
+        # CUDA编译选项
+        target_compile_options(${target} PRIVATE
+            $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-Wno-deprecated-declarations>
+            $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CUDA>>:-O3>
+            $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CUDA>>:-g -G>
+        )
+
+        target_link_options(${target} PRIVATE
+            $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CXX>>:-O3 -flto=auto>
+            $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:-g3>
+        )
     endif()
+
+    # 跨平台宏定义
+    target_compile_definitions(${target} PRIVATE
+        $<$<CONFIG:Debug>:DEBUG>
+        $<$<NOT:$<CONFIG:Debug>>:NDEBUG>
+    )
 endfunction()
 
-# 添加源文件的函数
-function(add_compile_files target)
-    include_directories(${PROJECT_SOURCE_DIR}) 
-    file(GLOB_RECURSE SOURCES
-        ${PROJECT_SOURCE_DIR}/deploy/core/*.cpp
-        ${PROJECT_SOURCE_DIR}/deploy/utils/*.cpp
-        ${PROJECT_SOURCE_DIR}/deploy/infer/*.cpp
-        ${PROJECT_SOURCE_DIR}/deploy/infer/*.cu
-        ${PROJECT_SOURCE_DIR}/deploy/model.cpp
+#-------------------------------------------------------------------------------
+# TensorRT/CUDA 目标配置
+#-------------------------------------------------------------------------------
+function(configure_cuda_trt_target target)
+    # 包含目录
+    target_include_directories(${target} PRIVATE
+        ${TRT_PATH}/include
     )
+
+    # 链接目录
+    target_link_directories(${target} PRIVATE
+        ${TRT_LIB_DIR}
+    )
+
+    # 添加链接库
+    target_link_libraries(${target} PRIVATE
+        CUDA::cudart
+        ${TRT_LIBS}
+    )
+
+    # CUDA 特性
+    set_target_properties(${target} PROPERTIES
+        CUDA_SEPARABLE_COMPILATION ON
+        CUDA_RESOLVE_DEVICE_SYMBOLS ON
+    )
+endfunction()
+
+#-------------------------------------------------------------------------------
+# 收集源文件（使用 CONFIGURE_DEPENDS 自动更新）
+#-------------------------------------------------------------------------------
+function(add_target_compile_files target)
+    # 添加项目源码目录到目标的私有包含目录
+    target_include_directories(${target} PRIVATE ${PROJECT_SOURCE_DIR})
+
+    # 收集源文件
+    file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
+        "${PROJECT_SOURCE_DIR}/deploy/core/*.cpp"
+        "${PROJECT_SOURCE_DIR}/deploy/utils/*.cpp"
+        "${PROJECT_SOURCE_DIR}/deploy/infer/*.cpp"
+        "${PROJECT_SOURCE_DIR}/deploy/infer/*.cu"
+        "${PROJECT_SOURCE_DIR}/deploy/model.cpp"
+    )
+
+    # 将收集到的源文件添加到目标
     target_sources(${target} PRIVATE ${SOURCES})
 endfunction()
 
-# 设置编译选项的函数
-function(set_compile_options target)
-    if(MSVC)
-        target_compile_options(${target} PRIVATE $<$<CONFIG:Release>:-O2>)
-        set_property(TARGET ${target} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-    else()
-        target_compile_options(${target} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-O3 -flto=auto>)
-        target_link_options(${target} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-O3 -flto=auto>)
-    endif()
-endfunction()
-
-# 添加子目录
-add_subdirectory(${PROJECT_SOURCE_DIR}/plugin)
-
-# 定义目标 deploy
+#-------------------------------------------------------------------------------
+# 主库目标
+#-------------------------------------------------------------------------------
+# 创建主库
 add_library(deploy SHARED)
-add_compile_files(deploy)
-configure_cuda_trt(deploy)
-set_compile_options(deploy)
-set_target_properties(deploy PROPERTIES OUTPUT_NAME deploy)
+add_target_compile_files(deploy)
+configure_cuda_trt_target(deploy)
+set_target_compile_options(deploy)
 
-if(MSVC)
-    set_target_properties(deploy PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/lib
-        ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/lib
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/lib
-        ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/lib
-    )
-else()
-    set_target_properties(deploy PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
-endif()
+# 模块配置
+set_target_properties(deploy PROPERTIES
+    OUTPUT_NAME "deploy"
+    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/lib"
+    ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/lib"
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${PROJECT_SOURCE_DIR}/lib"
+    LIBRARY_OUTPUT_DIRECTORY_DEBUG "${PROJECT_SOURCE_DIR}/lib"
+    ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${PROJECT_SOURCE_DIR}/lib"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${PROJECT_SOURCE_DIR}/lib"
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${PROJECT_SOURCE_DIR}/lib"
+    ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${PROJECT_SOURCE_DIR}/lib"
+    CXX_VISIBILITY_PRESET "hidden"
+)
 
-# 定义目标 pydeploy（仅在BUILD_PYTHON为ON时编译）
+#-------------------------------------------------------------------------------
+# Python 绑定（可选）
+#-------------------------------------------------------------------------------
 if(BUILD_PYTHON)
     pybind11_add_module(pydeploy ${PROJECT_SOURCE_DIR}/deploy/pybind.cpp)
-    add_compile_files(pydeploy)
-    configure_cuda_trt(pydeploy)
-    set_compile_options(pydeploy)
-    set_target_properties(pydeploy PROPERTIES OUTPUT_NAME pydeploy)
+    add_target_compile_files(pydeploy)
+    configure_cuda_trt_target(pydeploy)
+    set_target_compile_options(pydeploy)
 
-    if(MSVC)
-        set_target_properties(pydeploy PROPERTIES
-            LIBRARY_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/python/tensorrt_yolo/libs
-            LIBRARY_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/python/tensorrt_yolo/libs
-        )
-    else()
-        set_target_properties(pydeploy PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/python/tensorrt_yolo/libs)
-    endif()
-
+    # Python 模块配置
     set_target_properties(pydeploy PROPERTIES
-        COMPILE_DEFINITIONS "CUDA_PATH=\"${CUDA_TOOLKIT_ROOT_DIR}\""
-        COMPILE_DEFINITIONS "TENSORRT_PATH=\"${TENSORRT_PATH}\""
+        OUTPUT_NAME "pydeploy"
+        LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/python/tensorrt_yolo/libs"
+        LIBRARY_OUTPUT_DIRECTORY_RELEASE "${PROJECT_SOURCE_DIR}/python/tensorrt_yolo/libs"
+        LIBRARY_OUTPUT_DIRECTORY_DEBUG "${PROJECT_SOURCE_DIR}/python/tensorrt_yolo/libs"
+        CXX_VISIBILITY_PRESET "hidden"
     )
 
-    # 配置文件
+    # Python 配置文件
     configure_file(
         ${PROJECT_SOURCE_DIR}/python/tensorrt_yolo/c_lib_wrap.py.in
         ${PROJECT_SOURCE_DIR}/python/tensorrt_yolo/c_lib_wrap.py
     )
 endif()
+
+#-------------------------------------------------------------------------------
+# 子项目
+#-------------------------------------------------------------------------------
+add_subdirectory(plugin)
