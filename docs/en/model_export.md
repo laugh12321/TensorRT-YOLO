@@ -29,6 +29,9 @@ trtyolo export -w yolov10s.pt -v yolov10 -o output --imgsz 1080 1920
 # Export a YOLO11 OBB model
 trtyolo export -w yolo11n-obb.pt -v yolo11 -o output
 
+# Export a YOLO12 Segment model
+trtyolo export -w yolo12n-seg.pt -v yolo12 -o output
+
 # Export PP-YOLOE and PP-YOLOE+ models
 trtyolo export --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output
 ```

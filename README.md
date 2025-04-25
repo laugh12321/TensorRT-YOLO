@@ -2,7 +2,7 @@
 
 <div align="center">
   <img width="75%" src="assets/logo.png">
-  
+
   <p align="center">
       <a href="./LICENSE"><img alt="GitHub License" src="https://img.shields.io/github/license/laugh12321/TensorRT-YOLO?style=for-the-badge&color=0074d9"></a>
       <a href="https://github.com/laugh12321/TensorRT-YOLO/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/laugh12321/TensorRT-YOLO?style=for-the-badge&color=0074d9"></a>
@@ -37,13 +37,16 @@
 
 ## <div align="center">🌠 近期更新</div>
 
-- 🔥 **实战课程｜TensorRT × Triton Inference Server 模型部署**  
-  - **平台**: [BiliBili 课堂](https://www.bilibili.com/cheese/play/ss193350134) | [微信公众号](https://mp.weixin.qq.com/s/DVEo6RB-Wt4yDIX_3u-7Gw) 🚀 **HOT**  
-  - **团队**: [laugh12321](https://space.bilibili.com/86034462) | [不归牛顿管的熊猫](https://space.bilibili.com/393625476)  
+- 🔥 **实战课程｜TensorRT × Triton Inference Server 模型部署**
+  - **平台**: [BiliBili 课堂](https://www.bilibili.com/cheese/play/ss193350134) | [微信公众号](https://mp.weixin.qq.com/s/DVEo6RB-Wt4yDIX_3u-7Gw) 🚀 **HOT**
+  - **团队**: [laugh12321](https://space.bilibili.com/86034462) | [不归牛顿管的熊猫](https://space.bilibili.com/393625476)
   - 🛠 **硬核专题**:  
     ▸ **自定义插件开发**（含Plugin注册全流程）  
     ▸ **CUDA Graph 原理与工程实践**  
     ▸ **Triton Inference Server 部署技巧**  
+
+
+- 2025-03-29: 添加对 [YOLO12](https://github.com/sunsmarterjie/yolov12) 的支持，包括分类、定向边界框、姿态估计以及实例分割，详见 [issues](https://github.com/sunsmarterjie/yolov12/issues/22)。🌟 NEW
 
 - [性能飞跃！TensorRT-YOLO 6.0 全面升级解析与实战指南](https://www.cnblogs.com/laugh12321/p/18693017) 🌟 NEW
 
@@ -162,7 +165,7 @@
       # -------------------- 模型初始化 --------------------
       # 加载TensorRT引擎文件（注意检查文件路径）
       # 提示：首次加载引擎可能需要较长时间进行优化
-      model = DetectModel(engine_path="yolo11n-with-plugin.engine", 
+      model = DetectModel(engine_file="yolo11n-with-plugin.engine",
                         option=option)
 
       # -------------------- 数据预处理 --------------------
@@ -236,11 +239,11 @@
           deploy::Image input_image(
               cv_image.data,     // 像素数据指针
               cv_image.cols,     // 图像宽度
-              cv_image.rows,     // 图像高度
+              cv_image.rows     // 图像高度
           );
 
           // -------------------- 执行推理 --------------------
-          deploy::DetResult result = detector->predict(input_image);
+          deploy::DetectRes result = detector->predict(input_image);
           std::cout << result << std::endl;
 
           // -------------------- 结果可视化（示意） --------------------
@@ -250,10 +253,10 @@
 
           // -------------------- 模型克隆演示 --------------------
           auto cloned_detector = detector->clone();  // 创建独立实例
-          deploy::DetResult cloned_result = cloned_detector->predict(input_image);
+          deploy::DetectRes cloned_result = cloned_detector->predict(input_image);
 
           // 验证结果一致性
-          std::cout << cloned_resul << std::endl;
+          std::cout << cloned_result << std::endl;
 
       } catch (const std::exception& e) {
           std::cerr << "程序异常: " << e.what() << std::endl;
@@ -298,7 +301,7 @@
                 <center>Pose</center>
             </td>
             <td>
-                <img src='assets/yolo-obb.jpeg' height="300">                                
+                <img src='assets/yolo-obb.jpeg' height="300">
                 <center>OBB</center>
             </td>
         </tr>
@@ -348,6 +351,12 @@
     <tr>
       <td>Detect</td>
       <td><a href="https://github.com/THU-MIG/yolov10">THU-MIG/yolov10</a></td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Detect</td>
+      <td><a href="https://github.com/sunsmarterjie/yolov12">sunsmarterjie/yolov12</a></td>
       <td>✅</td>
       <td>✅</td>
     </tr>

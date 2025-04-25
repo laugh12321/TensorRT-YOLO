@@ -17,7 +17,7 @@
 > ```bash
 > pip install -U tensorrt_yolo
 > ```
-> 
+>
 > 如果想体验与 C++ 同样的推理速度，则请参考 [安装-tensorrt_yolo](../../docs/cn/build_and_install.md#安装-tensorrt_yolo) 自行构建最新版本的 `tensorrt_yolo`。
 
 使用以下命令导出带 [EfficientRotatedNMS](../../plugin/efficientRotatedNMSPlugin/)  插件的 ONNX 格式，详细的 `trtyolo` CLI 导出方法请阅读 [模型导出](../../docs/cn/model_export.md)：
@@ -70,12 +70,7 @@ trtexec --onnx=models/yolo11n-seg.onnx --saveEngine=models/yolo11n-seg.engine --
 2. 将 `segment.cpp` 编译为可执行文件：
 
     ```bash
-    # 使用 xmake 编译
-    xmake f -P . --tensorrt="/path/to/your/TensorRT" --deploy="/path/to/your/TensorRT-YOLO"
-    xmake -P . -r
-
-    # 使用 cmake 编译
-    cmake -S . -B build -DTENSORRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO"
+    cmake -S . -B build -DTRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO"
     cmake --build build -j8 --config Release
     ```
 

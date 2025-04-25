@@ -2,7 +2,7 @@ English | [简体中文](README.md)
 
 <div align="center">
   <img width="75%" src="assets/logo.png">
-  
+
   <p align="center">
       <a href="./LICENSE"><img alt="GitHub License" src="https://img.shields.io/github/license/laugh12321/TensorRT-YOLO?style=for-the-badge&color=0074d9"></a>
       <a href="https://github.com/laugh12321/TensorRT-YOLO/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/laugh12321/TensorRT-YOLO?style=for-the-badge&color=0074d9"></a>
@@ -37,6 +37,8 @@ English | [简体中文](README.md)
 </div>
 
 ## <div align="center">🌠 Recent updates</div>
+
+- 2025-03-29: Added support for [YOLO12](https://github.com/sunsmarterjie/yolov12), including classification, oriented bounding boxes, pose estimation, and instance segmentation. See [issues](https://github.com/sunsmarterjie/yolov12/issues/22) for details. 🌟 NEW
 
 - [Performance Leap! TensorRT-YOLO 6.0: Comprehensive Upgrade Analysis and Practical Guide](https://medium.com/@laugh12321/performance-leap-tensorrt-yolo-6-0-comprehensive-upgrade-analysis-and-practical-guide-9d19ad3b53f9) 🌟 NEW
 
@@ -142,7 +144,7 @@ English | [简体中文](README.md)
   ```python
   import cv2
   from tensorrtyolo.infer import InferOption, DetectModel, generatelabels, visualize
-  
+
   def main():
       # -------------------- Initialization --------------------
       # Configure inference settings
@@ -150,24 +152,24 @@ English | [简体中文](README.md)
       option.enableswaprb()  # Convert OpenCV's default BGR format to RGB
       # Special model configuration example (uncomment for PP-YOLOE series)
       # option.setnormalizeparams([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-  
+
       # -------------------- Model Initialization --------------------
       # Load TensorRT engine file (ensure the path is correct)
       # Note: Initial engine loading may take longer due to optimization
-      model = DetectModel(engine_path="yolo11n-with-plugin.engine", 
+      model = DetectModel(engine_file="yolo11n-with-plugin.engine",
                         option=option)
-  
+
       # -------------------- Data Preprocessing --------------------
       # Load test image (add file existence check)
       inputimg = cv2.imread("testimage.jpg")
       if input_img is None:
           raise FileNotFoundError("Failed to load test image. Check the file path.")
-  
+
       # -------------------- Inference Execution --------------------
       # Perform object detection (returns bounding boxes, confidence scores, and class labels)
       detectionresult = model.predict(inputimg)
       print(f"==> Detection Result: {detection_result}")
-  
+
       # -------------------- Result Visualization --------------------
       # Load class labels (ensure labels.txt matches the model)
       classlabels = generate_labels(labelsfile="labels.txt")
@@ -178,14 +180,14 @@ English | [简体中文](README.md)
           labels=class_labels,
       )
       cv2.imwrite("visimage.jpg", visualizedimg)
-  
+
       # -------------------- Model Cloning Demo --------------------
       # Clone model instance (for multi-threaded scenarios)
       cloned_model = model.clone()  # Create an independent copy to avoid resource contention
       # Verify cloned model inference consistency
       clonedresult = cloned_model.predict(inputimg)
       print(f"==> Cloned Result: {cloned_result}")
-  
+
   if _name__ == "__main_":
       main()
   ```
@@ -195,58 +197,58 @@ English | [简体中文](README.md)
   ```cpp
   #include <memory>
   #include <opencv2/opencv.hpp>
-  
+
   // For ease of use, the module uses only CUDA and TensorRT, with the rest implemented in standard libraries
   #include "deploy/model.hpp"  // Contains model inference class definitions
   #include "deploy/option.hpp"  // Contains inference option configuration class definitions
   #include "deploy/result.hpp"  // Contains inference result definitions
-  
+
   int main() {
       try {
           // -------------------- Initialization --------------------
           deploy::InferOption option;
           option.enableSwapRB();  // BGR->RGB conversion
-          
+
           // Special model parameter setup example
           // const std::vector<float> mean{0.485f, 0.456f, 0.406f};
           // const std::vector<float> std{0.229f, 0.224f, 0.225f};
           // option.setNormalizeParams(mean, std);
-  
+
           // -------------------- Model Initialization --------------------
           auto detector = std::make_unique<deploy::DetectModel>(
               "yolo11n-with-plugin.engine",  // Model path
               option                         // Inference settings
           );
-  
+
           // -------------------- Data Loading --------------------
           cv::Mat cvimage = cv::imread("testimage.jpg");
           if (cv_image.empty()) {
               throw std::runtime_error("Failed to load test image.");
           }
-          
+
           // Encapsulate image data (no pixel data copying)
           deploy::Image input_image(
               cv_image.data,     // Pixel data pointer
               cv_image.cols,     // Image width
-              cv_image.rows,     // Image height
+              cv_image.rows     // Image height
           );
-  
+
           // -------------------- Inference Execution --------------------
-          deploy::DetResult result = detector->predict(input_image);
+          deploy::DetectRes result = detector->predict(input_image);
           std::cout << result << std::endl;
-  
+
           // -------------------- Result Visualization (Example) --------------------
           // Implement visualization logic in actual development, e.g.:
-          // cv::Mat visimage = visualize_detections(cvimage, result);
-          // cv::imwrite("visresult.jpg", visimage);
-  
+          // cv::Mat vis_image = visualize_detections(cv_image, result);
+          // cv::imwrite("vis_result.jpg", vis_image);
+
           // -------------------- Model Cloning Demo --------------------
           auto cloned_detector = detector->clone();  // Create an independent instance
-          deploy::DetResult clonedresult = cloned_detector->predict(inputimage);
-  
+          deploy::DetectRes cloned_result = cloned_detector->predict(input_image);
+
           // Verify result consistency
           std::cout << cloned_result << std::endl;
-  
+
       } catch (const std::exception& e) {
           std::cerr << "Program Exception: " << e.what() << std::endl;
           return EXIT_FAILURE;
@@ -289,7 +291,7 @@ Simply pass the image to be inferred to the `predict` method. The `predict` meth
                 <center>Pose</center>
             </td>
             <td>
-                <img src='assets/yolo-obb.jpeg' height="300">                                
+                <img src='assets/yolo-obb.jpeg' height="300">
                 <center>OBB</center>
             </td>
         </tr>
@@ -308,85 +310,91 @@ Symbol legend: (1)  ✅ : Supported; (2) ❔: In progress; (3) ❎ : Not support
     </tr>
     <tr>
       <td>Detect</td>
-      <td><a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a></td> 
+      <td><a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a></td>
       <td>✅</td>
       <td>✅</td>
     </tr>
     <tr>
       <td>Detect</td>
-      <td><a href="https://github.com/ultralytics/yolov5">ultralytics/yolov5</a></td> 
+      <td><a href="https://github.com/ultralytics/yolov5">ultralytics/yolov5</a></td>
       <td>✅</td>
       <td>✅</td>
     </tr>
     <tr>
       <td>Detect</td>
-      <td><a href="https://github.com/meituan/YOLOv6">meituan/YOLOv6</a></td> 
-      <td>❎ Refer to <a href="https://github.com/meituan/YOLOv6/tree/main/deploy/ONNX#tensorrt-backend-tensorrt-version-800">official export tutorial</a></td> 
+      <td><a href="https://github.com/meituan/YOLOv6">meituan/YOLOv6</a></td>
+      <td>❎ Refer to <a href="https://github.com/meituan/YOLOv6/tree/main/deploy/ONNX#tensorrt-backend-tensorrt-version-800">official export tutorial</a></td>
       <td>✅</td>
     </tr>
     <tr>
       <td>Detect</td>
-      <td><a href="https://github.com/WongKinYiu/yolov7">WongKinYiu/yolov7</a></td> 
-      <td>❎ Refer to <a href="https://github.com/WongKinYiu/yolov7#export">official export tutorial</a></td> 
+      <td><a href="https://github.com/WongKinYiu/yolov7">WongKinYiu/yolov7</a></td>
+      <td>❎ Refer to <a href="https://github.com/WongKinYiu/yolov7#export">official export tutorial</a></td>
       <td>✅</td>
     </tr>
     <tr>
       <td>Detect</td>
-      <td><a href="https://github.com/WongKinYiu/yolov9">WongKinYiu/yolov9</a></td> 
-      <td>❎ Refer to <a href="https://github.com/WongKinYiu/yolov9/issues/130#issue-2162045461">official export tutorial</a></td> 
+      <td><a href="https://github.com/WongKinYiu/yolov9">WongKinYiu/yolov9</a></td>
+      <td>❎ Refer to <a href="https://github.com/WongKinYiu/yolov9/issues/130#issue-2162045461">official export tutorial</a></td>
       <td>✅</td>
     </tr>
     <tr>
       <td>Detect</td>
-      <td><a href="https://github.com/THU-MIG/yolov10">THU-MIG/yolov10</a></td> 
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Detect</td>
-      <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td> 
+      <td><a href="https://github.com/THU-MIG/yolov10">THU-MIG/yolov10</a></td>
       <td>✅</td>
       <td>✅</td>
     </tr>
     <tr>
       <td>Detect</td>
-      <td><a href="https://github.com/PaddlePaddle/PaddleDetection">PaddleDetection/PP-YOLOE+</a></td> 
+      <td><a href="https://github.com/sunsmarterjie/yolov12">sunsmarterjie/yolov12</a></td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Detect</td>
+      <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Detect</td>
+      <td><a href="https://github.com/PaddlePaddle/PaddleDetection">PaddleDetection/PP-YOLOE+</a></td>
       <td>✅</td>
       <td>✅</td>
     </tr>
     <tr>
       <td>Segment</td>
-      <td><a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a></td> 
+      <td><a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a></td>
       <td>✅</td>
       <td>✅</td>
     </tr>
     <tr>
       <td>Segment</td>
-      <td><a href="https://github.com/ultralytics/yolov5">ultralytics/yolov5</a></td> 
+      <td><a href="https://github.com/ultralytics/yolov5">ultralytics/yolov5</a></td>
       <td>✅</td>
       <td>✅</td>
     </tr>
     <tr>
       <td>Segment</td>
-      <td><a href="https://github.com/meituan/YOLOv6/tree/yolov6-seg">meituan/YOLOv6-seg</a></td> 
+      <td><a href="https://github.com/meituan/YOLOv6/tree/yolov6-seg">meituan/YOLOv6-seg</a></td>
       <td>❎ Implement yourself referring to <a href="https://github.com/laugh12321/TensorRT-YOLO/blob/main/tensorrt_yolo/export/head.py">tensorrt_yolo/export/head.py</a></td>
       <td>🟢</td>
     </tr>
     <tr>
       <td>Segment</td>
-      <td><a href="https://github.com/WongKinYiu/yolov7">WongKinYiu/yolov7</a></td> 
+      <td><a href="https://github.com/WongKinYiu/yolov7">WongKinYiu/yolov7</a></td>
       <td>❎ Implement yourself referring to <a href="https://github.com/laugh12321/TensorRT-YOLO/blob/main/tensorrt_yolo/export/head.py">tensorrt_yolo/export/head.py</a></td>
       <td>🟢</td>
     </tr>
     <tr>
       <td>Segment</td>
-      <td><a href="https://github.com/WongKinYiu/yolov9">WongKinYiu/yolov9</a></td> 
+      <td><a href="https://github.com/WongKinYiu/yolov9">WongKinYiu/yolov9</a></td>
       <td>❎ Implement yourself referring to <a href="https://github.com/laugh12321/TensorRT-YOLO/blob/main/tensorrt_yolo/export/head.py">tensorrt_yolo/export/head.py</a></td>
       <td>🟢</td>
     </tr>
     <tr>
       <td>Segment</td>
-      <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td> 
+      <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
       <td>✅</td>
       <td>✅</td>
     </tr>

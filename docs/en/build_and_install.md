@@ -8,40 +8,29 @@ English | [中文](../cn/build_and_install.md)
 
 - **Linux**: gcc/g++
 - **Windows**: MSVC
-- **Build Tools**: CMake or Xmake
+- **Build Tools**: CMake
 - **Dependencies**: CUDA, cuDNN, TensorRT
 
 > [!NOTE]  
 > If you are developing on Windows, you can refer to the following setup guides:
-> 
-> - [Windows Development Environment Setup – NVIDIA](https://www.cnblogs.com/laugh12321/p/17830096.html)  
-> - [Windows Development Environment Setup – C++](https://www.cnblogs.com/laugh12321/p/17827624.html)  
+>
+> - [Windows Development Environment Setup – NVIDIA](https://www.cnblogs.com/laugh12321/p/17830096.html)
+> - [Windows Development Environment Setup – C++](https://www.cnblogs.com/laugh12321/p/17827624.html)
 
-To meet deployment requirements, you can choose to use Xmake or CMake to compile the dynamic library. Below are detailed build instructions:
+### Compiling Steps
 
 First, clone the TensorRT-YOLO repository:
 
 ```bash
-git clone https://github.com/laugh12321/TensorRT-YOLO  
+git clone https://github.com/laugh12321/TensorRT-YOLO
 cd TensorRT-YOLO
 ```
 
-#### Building with Xmake
-
-If you choose to use Xmake, follow these steps:
-
-```bash
-xmake f --tensorrt=/path/to/tensorrt --build_python=true
-xmake -P . -r
-```
-
-#### Building with CMake
-
-If you choose to use CMake, follow these steps:
+Then compile using CMake with the following steps:
 
 ```bash
 pip install "pybind11[global]"
-cmake -S . -B build -DTENSORRT_PATH=/usr/local/tensorrt -DBUILD_PYTHON=ON
+cmake -S . -B build -DTRT_PATH=/usr/local/tensorrt -DBUILD_PYTHON=ON
 cmake --build build -j$(nproc) --config Release
 ```
 
@@ -50,7 +39,7 @@ After compilation, a folder named `lib` will be created in the root directory, a
 - A subfolder named `plugin`, which contains the compiled TensorRT custom plugin dynamic libraries.
 
 > [!NOTE]  
-> If Python bindings are not needed, you can remove the `--build_python=true` or `-DBUILD_PYTHON=ON` parameter.
+> If Python bindings are not needed, you can remove the `-DBUILD_PYTHON=ON` parameter.
 
 ## Installing `tensorrt_yolo`
 

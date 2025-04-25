@@ -3,7 +3,6 @@ build/
 bin/
 lib/
 libs/
-.xmake/
 dist/
 *.egg-info/
 

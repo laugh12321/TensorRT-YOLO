@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 # Project settings -----------------------------------------------------------------------------------------------------
 [project]
-version = "6.0.0"
+version = "6.1.0"
 readme = "README.md"
 name = "tensorrt_yolo"
 requires-python = ">=3.8"
@@ -47,16 +47,17 @@ dependencies = [
     "loguru",
     "rich_click",
     "opencv-python",
-    "numpy>=1.23.5,<2.0.0",
+    "numpy",
 ]
 
 # Optional dependencies ------------------------------------------------------------------------------------------------
 [project.optional-dependencies]
 export = [
-    "ultralytics",
-    "onnx>=1.12.0",
+    "onnxsim>=0.4.1",
+    "onnxruntime>=1.6.0",
     "onnx_graphsurgeon",
-    "onnxsim>=0.4.1"  # ONNX simplifier
+    "onnx>=1.12.0",
+    "ultralytics",
 ]
 
 [project.urls]
