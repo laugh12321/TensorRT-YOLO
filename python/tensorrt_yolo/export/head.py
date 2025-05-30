@@ -28,7 +28,7 @@ from typing import Tuple
 import torch
 import torch.nn.functional as F
 from torch import Tensor, Value, nn
-from ultralytics.nn.modules import OBB, Classify, Conv, Detect, Pose, Proto, Segment, v10Detect
+from ultralytics.nn.modules import OBB, Classify, Conv, Detect, Pose, Proto, Segment, WorldDetect, v10Detect
 from ultralytics.nn.modules.conv import autopad
 from ultralytics.utils.checks import check_version
 from ultralytics.utils.tal import make_anchors
@@ -38,6 +38,7 @@ __all__ = [
     "YOLOSegment",
     "YOLOClassify",
     "YOLOV10Detect",
+    "YOLOWorldDetect",
     "UltralyticsDetect",
     "UltralyticsOBB",
     "UltralyticsSegment",
@@ -482,3 +483,22 @@ class YOLOV10Detect(v10Detect):
         i = torch.arange(batch_size)[..., None]  # batch indices
         nums = (scores >= conf_thres).sum(dim=1, keepdim=True).int()
         return nums, boxes[i, index // nc], scores, (index % nc).to(torch.int32)
+
+
+class YOLOWorldDetect(WorldDetect, BaseUltralyticsHead):
+    """Head for integrating YOLO detection models with semantic understanding from text embeddings."""
+
+    def forward(self, x, text):
+        x = [torch.cat((self.cv2[i](x[i]), self.cv4[i](self.cv3[i](x[i]), text)), 1) for i in range(self.nl)]
+
+        self.no = self.nc + self.reg_max * 4  # self.nc could be changed when inference with different texts
+        dbox, cls = self._new_inference(x)
+
+        # Using transpose for compatibility with EfficientNMS_TRT
+        return EfficientNMS_TRT.apply(
+            dbox.transpose(1, 2),
+            cls.transpose(1, 2),
+            self.conf_thres,
+            self.iou_thres,
+            self.max_det,
+        )
