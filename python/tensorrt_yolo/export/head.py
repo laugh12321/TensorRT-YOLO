@@ -28,7 +28,20 @@ from typing import Tuple
 import torch
 import torch.nn.functional as F
 from torch import Tensor, Value, nn
-from ultralytics.nn.modules import OBB, Classify, Conv, Detect, Pose, Proto, Segment, WorldDetect, v10Detect
+from ultralytics.nn.modules import (
+    OBB,
+    Classify,
+    Conv,
+    Detect,
+    LRPCHead,
+    Pose,
+    Proto,
+    Segment,
+    WorldDetect,
+    YOLOEDetect,
+    YOLOESegment,
+    v10Detect,
+)
 from ultralytics.nn.modules.conv import autopad
 from ultralytics.utils.checks import check_version
 from ultralytics.utils.tal import make_anchors
@@ -39,6 +52,8 @@ __all__ = [
     "YOLOClassify",
     "YOLOV10Detect",
     "YOLOWorldDetect",
+    "YOLOEDetectHead",
+    "YOLOESegmentHead",
     "UltralyticsDetect",
     "UltralyticsOBB",
     "UltralyticsSegment",
@@ -501,4 +516,114 @@ class YOLOWorldDetect(WorldDetect, BaseUltralyticsHead):
             self.conf_thres,
             self.iou_thres,
             self.max_det,
+        )
+
+
+class YOLOEDetectHead(YOLOEDetect, BaseUltralyticsHead):
+    """Head for integrating YOLO detection models with semantic understanding from text embeddings."""
+
+    segment = False
+
+    def forward_lrpc(self, x, return_mask=False):
+        masks = []
+        assert self.is_fused, "Prompt-free inference requires model to be fused!"
+        for i in range(self.nl):
+            cls_feat = self.cv3[i](x[i])
+            loc_feat = self.cv2[i](x[i])
+            assert isinstance(self.lrpc[i], LRPCHead)
+            x[i], mask = self.lrpc[i](cls_feat, loc_feat, 0 if not self.dynamic else getattr(self, "conf", 0.001))
+            masks.append(mask)
+        shape = x[0][0].shape
+        if self.dynamic or self.shape != shape:
+            self.anchors, self.strides = (x.transpose(0, 1) for x in make_anchors([b[0] for b in x], self.stride, 0.5))
+            self.shape = shape
+        box = torch.cat([xi[0].view(shape[0], self.reg_max * 4, -1) for xi in x], 2)
+        cls = torch.cat([xi[1] for xi in x], 2)
+        dbox = self.decode_bboxes(self.dfl(box), self.anchors.unsqueeze(0)) * self.strides
+        mask = torch.cat(masks)
+        if self.dynamic:
+            dbox = dbox[..., mask]
+
+        if return_mask:
+            return EfficientIdxNMS_TRT.apply(
+                dbox.transpose(1, 2),
+                cls.transpose(1, 2),
+                self.conf_thres,
+                self.iou_thres,
+                self.max_det,
+            ), mask
+        else:
+            if self.segment:
+                return EfficientIdxNMS_TRT.apply(
+                    dbox.transpose(1, 2),
+                    cls.transpose(1, 2),
+                    self.conf_thres,
+                    self.iou_thres,
+                    self.max_det,
+                )
+            else:
+                return EfficientNMS_TRT.apply(
+                    dbox.transpose(1, 2),
+                    cls.transpose(1, 2),
+                    self.conf_thres,
+                    self.iou_thres,
+                    self.max_det,
+                )
+
+    def forward(self, x, cls_pe, return_mask=False):
+        if hasattr(self, "lrpc"):  # for prompt-free inference
+            return self.forward_lrpc(x, return_mask)
+
+        x = [torch.cat((self.cv2[i](x[i]), self.cv4[i](self.cv3[i](x[i]), cls_pe)), 1) for i in range(self.nl)]
+
+        self.no = self.nc + self.reg_max * 4  # self.nc could be changed when inference with different texts
+        dbox, cls = self._new_inference(x)
+
+        if self.segment:
+            return EfficientIdxNMS_TRT.apply(
+                dbox.transpose(1, 2),
+                cls.transpose(1, 2),
+                self.conf_thres,
+                self.iou_thres,
+                self.max_det,
+            )
+        else:
+            return EfficientNMS_TRT.apply(
+                dbox.transpose(1, 2),
+                cls.transpose(1, 2),
+                self.conf_thres,
+                self.iou_thres,
+                self.max_det,
+            )
+
+
+class YOLOESegmentHead(YOLOESegment, YOLOEDetectHead):
+    """YOLO segmentation head with text embedding capabilities."""
+
+    segment = True
+
+    def forward(self, x, text):
+        p = self.proto(x[0])  # mask protos
+        bs, _, mask_h, mask_w = p.shape
+        mc = torch.cat([self.cv5[i](x[i]).view(bs, self.nm, -1) for i in range(self.nl)], 2)  # mask coefficients
+
+        if hasattr(self, "lrpc"):
+            (num_dets, det_boxes, det_scores, det_classes, det_indices), mask = YOLOEDetectHead.forward(self, x, text, return_mask=True)
+            mc = (mc * mask.int()) if not self.dynamic else mc[..., mask]
+        else:
+            num_dets, det_boxes, det_scores, det_classes, det_indices = YOLOEDetectHead.forward(self, x, text)
+
+        mc = mc.permute(0, 2, 1)
+
+        # Retrieve the corresponding masks using batch and detection indices.
+        bs_indices = torch.arange(bs, device=det_classes.device, dtype=det_classes.dtype).unsqueeze(1)
+        selected_mc = mc[bs_indices, det_indices]
+        det_masks = torch.einsum('b d n, b n h w -> b d h w', selected_mc, p).sigmoid()
+
+        return (
+            num_dets,
+            det_boxes,
+            det_scores,
+            det_classes,
+            F.interpolate(det_masks, size=(mask_h * 4, mask_w * 4), mode="bilinear", align_corners=False).gt_(0.5).to(torch.uint8),
         )

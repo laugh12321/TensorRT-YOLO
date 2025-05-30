@@ -30,6 +30,8 @@ class ModelExporter:
             UltralyticsSegment,
             YOLOClassify,
             YOLODetect,
+            YOLOEDetectHead,
+            YOLOESegmentHead,
             YOLOSegment,
             YOLOV10Detect,
             YOLOWorldDetect,
@@ -74,6 +76,16 @@ class ModelExporter:
                 "class_map": {"yolo-world": YOLOWorldDetect, "ultralytics": YOLOWorldDetect},
                 "output_names": self.__output_names,
                 "dynamic_axes": self.__dynamic_axes,
+            },
+            "YOLOEDetect": {
+                "class_map": {"yoloe": YOLOEDetectHead, "ultralytics": YOLOEDetectHead},
+                "output_names": self.__output_names,
+                "dynamic_axes": self.__dynamic_axes,
+            },
+            "YOLOESegment": {
+                "class_map": {"yoloe": YOLOESegmentHead, "ultralytics": YOLOESegmentHead},
+                "output_names": self.__output_names + ["det_masks"],
+                "dynamic_axes": {**self.__dynamic_axes, "det_masks": {0: "batch", 2: "height", 3: "width"}},
             },
             "OBB": {
                 "class_map": {
@@ -141,17 +153,20 @@ class ModelExporter:
         if version in yolo_versions_with_repo:
             repo_dir = yolo_versions_with_repo[version] if repo_dir is None else repo_dir
             self.__model = torch.hub.load(repo_dir, 'custom', path=weights, source=source, _verbose=False)
-        elif version in ['yolov8', 'yolov10', 'yolo11', 'yolo12', 'yolo-world', 'ultralytics']:
+        elif version in ['yolov8', 'yolov10', 'yolo11', 'yolo12', 'yolo-world', 'yoloe', 'ultralytics']:
             from ultralytics import YOLO
 
             self.__model = YOLO(model=weights, verbose=False).model
 
-            if custom_classes is not None and version == 'yolo-world':
-                self.__model.set_classes(custom_classes)
+            if custom_classes is not None:
+                if version == 'yolo-world':
+                    self.__model.set_classes(custom_classes)
+                elif version == 'yoloe':
+                    self.__model.set_classes(custom_classes, self.__model.get_text_pe(custom_classes))
         else:
             logger.error(
                 f"YOLO version '{version}' is unsupported for export with trtyolo CLI tool. "
-                "Please provide a valid version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, yolo-world, ultralytics."
+                "Please provide a valid version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, yolo-world, yoloe, ultralytics."
             )
             if version in self.__export_info:
                 logger.warning(
@@ -234,7 +249,7 @@ class ModelExporter:
                 preds[-1].shape[-2],
                 preds[-1].shape[-1],
             ]
-        elif self.__head_name == "Segment":
+        elif self.__head_name == "Segment" or self.__head_name == 'YOLOESegment':
             output_shapes['det_masks'] = [
                 "batch" if self.__dynamic else self.__batch,
                 self.__max_boxes,
@@ -285,7 +300,7 @@ def torch_export(
     Args:
         weights (str): Path to YOLO weights for PyTorch.
         output (str): Directory path to save the exported model.
-        version (str): YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, yolo-world, ultralytics.
+        version (str): YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, yolo-world, yoloe, ultralytics.
         imgsz (Optional[Sequence[int]], optional): Inference image size (height, width). Defaults to [640, 640].
         batch (Optional[int], optional): Total batch size for the model. Use -1 for dynamic batch size. Defaults to 1.
         max_boxes (Optional[int], optional): Maximum number of detections to output per image. Defaults to 100.
@@ -294,7 +309,7 @@ def torch_export(
         opset_version (Optional[int], optional): ONNX opset version. Defaults to 12.
         simplify (Optional[bool], optional): Whether to simplify the exported ONNX. Defaults to True.
         repo_dir (Optional[str], optional): Directory containing the local repository (if using torch.hub.load). Defaults to None.
-        custom_classes (Optional[Sequence[str]], optional): Custom class names for the yolo-world model. Defaults to None.
+        custom_classes (Optional[Sequence[str]], optional): Custom class names for the YOLO-World and YOLOE. Defaults to None.
     """
     exporter = ModelExporter()
     exporter.load(weights, version, repo_dir, custom_classes)
