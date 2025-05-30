@@ -45,6 +45,7 @@
     ▸ **CUDA Graph 原理与工程实践**  
     ▸ **Triton Inference Server 部署技巧**  
 
+- 2025-04-19: 添加对 [YOLO-World](https://docs.ultralytics.com/zh/models/yolo-world/),  [YOLOE](https://docs.ultralytics.com/zh/models/yoloe/) 的支持，包括分类、定向边界框、姿态估计以及实例分割，详见 [B站](https://www.bilibili.com/video/BV12N5bzkENV)。🌟 NEW
 
 - 2025-03-29: 添加对 [YOLO12](https://github.com/sunsmarterjie/yolov12) 的支持，包括分类、定向边界框、姿态估计以及实例分割，详见 [issues](https://github.com/sunsmarterjie/yolov12/issues/22)。🌟 NEW
 
@@ -54,7 +55,7 @@
 ## <div align="center">✨ 主要特性</div>
 
 ### 🎯 多样化的 YOLO 支持
-- **全面兼容**：支持 YOLOv3 至 YOLOv11 全系列模型，以及 PP-YOLOE 和 PP-YOLOE+，满足多样化需求。
+- **全面兼容**：支持 YOLOv3 至 YOLO12 全系列模型，以及 PP-YOLOE、PP-YOLOE+、YOLO-World 和 YOLOE 等多种变体，满足多样化需求，详见 [🖥️ 模型支持列表](#support-models)。
 - **灵活切换**：提供简洁易用的接口，支持不同版本 YOLO 模型的快速切换。🌟 NEW
 - **多场景应用**：提供丰富的示例代码，涵盖[Detect](examples/detect/)、[Segment](examples/segment/)、[Classify](examples/classify/)、[Pose](examples/pose/)、[OBB](examples/obb/)等多种应用场景。
 
@@ -362,6 +363,18 @@
     </tr>
     <tr>
       <td>Detect</td>
+      <td><a href="https://github.com/ultralytics/ultralytics">YOLO-World V2 (ultralytics)</a></td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Detect</td>
+      <td><a href="https://github.com/THU-MIG/yoloe">THU-MIG/yoloe</a></td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Detect</td>
       <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
       <td>✅</td>
       <td>✅</td>
@@ -401,6 +414,12 @@
       <td><a href="https://github.com/WongKinYiu/yolov9">WongKinYiu/yolov9</a></td>
       <td>❎ 参考<a href="https://github.com/laugh12321/TensorRT-YOLO/blob/main/tensorrt_yolo/export/head.py">tensorrt_yolo/export/head.py</a> 自行实现</td>
       <td>🟢</td>
+    </tr>
+    <tr>
+      <td>Segment</td>
+      <td><a href="https://github.com/THU-MIG/yoloe">THU-MIG/yoloe</a></td>
+      <td>✅</td>
+      <td>✅</td>
     </tr>
     <tr>
       <td>Segment</td>

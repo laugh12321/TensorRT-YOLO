@@ -38,6 +38,8 @@ English | [简体中文](README.md)
 
 ## <div align="center">🌠 Recent updates</div>
 
+- 2025-04-19: Added support for [YOLO-World](https://docs.ultralytics.com/zh/models/yolo-world/) and [YOLOE](https://docs.ultralytics.com/zh/models/yoloe/), including classification, oriented bounding boxes, pose estimation, and instance segmentation. See [Bilibili](https://www.bilibili.com/video/BV12N5bzkENV) for details. 🌟 NEW
+
 - 2025-03-29: Added support for [YOLO12](https://github.com/sunsmarterjie/yolov12), including classification, oriented bounding boxes, pose estimation, and instance segmentation. See [issues](https://github.com/sunsmarterjie/yolov12/issues/22) for details. 🌟 NEW
 
 - [Performance Leap! TensorRT-YOLO 6.0: Comprehensive Upgrade Analysis and Practical Guide](https://medium.com/@laugh12321/performance-leap-tensorrt-yolo-6-0-comprehensive-upgrade-analysis-and-practical-guide-9d19ad3b53f9) 🌟 NEW
@@ -45,7 +47,7 @@ English | [简体中文](README.md)
 ## <div align="center">✨ Key Features</div>
 
 ### 🎯 Diverse YOLO Support
-- **Comprehensive Compatibility**: Supports YOLOv3 to YOLOv11 series models, as well as PP-YOLOE and PP-YOLOE+, meeting diverse needs.
+- **Comprehensive Compatibility**: Supports YOLOv3 to YOLO12 series models, as well as PP-YOLOE, PP-YOLOE+, YOLO-World, and YOLOE, meeting diverse needs. See [🖥️ Supported Models List](#support-models) for details.
 - **Flexible Switching**: Provides simple and easy-to-use interfaces for quick switching between different YOLO versions. 🌟 NEW
 - **Multi-Scenario Applications**: Offers rich example codes covering [Detect](examples/detect/), [Segment](examples/segment/), [Classify](examples/classify/), [Pose](examples/pose/), [OBB](examples/obb/), and more.
 
@@ -143,13 +145,13 @@ English | [简体中文](README.md)
 
   ```python
   import cv2
-  from tensorrtyolo.infer import InferOption, DetectModel, generatelabels, visualize
+  from tensorrt_yolo.infer import InferOption, DetectModel, generate_labels, visualize
 
   def main():
       # -------------------- Initialization --------------------
       # Configure inference settings
       option = InferOption()
-      option.enableswaprb()  # Convert OpenCV's default BGR format to RGB
+      option.enable_swap_rb()  # Convert OpenCV's default BGR format to RGB
       # Special model configuration example (uncomment for PP-YOLOE series)
       # option.setnormalizeparams([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 
@@ -161,34 +163,34 @@ English | [简体中文](README.md)
 
       # -------------------- Data Preprocessing --------------------
       # Load test image (add file existence check)
-      inputimg = cv2.imread("testimage.jpg")
+      input_img = cv2.imread("test_image.jpg")
       if input_img is None:
           raise FileNotFoundError("Failed to load test image. Check the file path.")
 
       # -------------------- Inference Execution --------------------
       # Perform object detection (returns bounding boxes, confidence scores, and class labels)
-      detectionresult = model.predict(inputimg)
-      print(f"==> Detection Result: {detection_result}")
+      detection_result = model.predict(input_img)
+      print(f"==> detection_result: {detection_result}")
 
       # -------------------- Result Visualization --------------------
       # Load class labels (ensure labels.txt matches the model)
-      classlabels = generate_labels(labelsfile="labels.txt")
+      class_labels = generate_labels(labels_file="labels.txt")
       # Generate visualized result
       visualized_img = visualize(
           image=input_img,
           result=detection_result,
           labels=class_labels,
       )
-      cv2.imwrite("visimage.jpg", visualizedimg)
+      cv2.imwrite("vis_image.jpg", visualized_img)
 
       # -------------------- Model Cloning Demo --------------------
       # Clone model instance (for multi-threaded scenarios)
       cloned_model = model.clone()  # Create an independent copy to avoid resource contention
       # Verify cloned model inference consistency
-      clonedresult = cloned_model.predict(inputimg)
-      print(f"==> Cloned Result: {cloned_result}")
+      cloned_result = cloned_model.predict(input_img)
+      print(f"==> cloned_result: {cloned_result}")
 
-  if _name__ == "__main_":
+  if __name__ == "__main__":
       main()
   ```
 
@@ -221,7 +223,7 @@ English | [简体中文](README.md)
           );
 
           // -------------------- Data Loading --------------------
-          cv::Mat cvimage = cv::imread("testimage.jpg");
+          cv::Mat cv_image = cv::imread("test_image.jpg");
           if (cv_image.empty()) {
               throw std::runtime_error("Failed to load test image.");
           }
@@ -352,6 +354,18 @@ Symbol legend: (1)  ✅ : Supported; (2) ❔: In progress; (3) ❎ : Not support
     </tr>
     <tr>
       <td>Detect</td>
+      <td><a href="https://github.com/ultralytics/ultralytics">YOLO-World V2 (ultralytics)</a></td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Detect</td>
+      <td><a href="https://github.com/THU-MIG/yoloe">THU-MIG/yoloe</a></td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Detect</td>
       <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
       <td>✅</td>
       <td>✅</td>
@@ -391,6 +405,12 @@ Symbol legend: (1)  ✅ : Supported; (2) ❔: In progress; (3) ❎ : Not support
       <td><a href="https://github.com/WongKinYiu/yolov9">WongKinYiu/yolov9</a></td>
       <td>❎ Implement yourself referring to <a href="https://github.com/laugh12321/TensorRT-YOLO/blob/main/tensorrt_yolo/export/head.py">tensorrt_yolo/export/head.py</a></td>
       <td>🟢</td>
+    </tr>
+    <tr>
+      <td>Segment</td>
+      <td><a href="https://github.com/THU-MIG/yoloe">THU-MIG/yoloe</a></td>
+      <td>✅</td>
+      <td>✅</td>
     </tr>
     <tr>
       <td>Segment</td>
