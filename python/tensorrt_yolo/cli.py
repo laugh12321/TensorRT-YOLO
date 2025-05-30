@@ -37,12 +37,12 @@ def trtyolo():
     pass
 
 
-@trtyolo.command(help="Export models for TensorRT-YOLO. Supports YOLOv3, YOLOv5, YOLOv8, YOLOv10, YOLO11, PP-YOLOE and PP-YOLOE+.")
+@trtyolo.command(help="Export models for TensorRT-YOLO. Supports YOLOv3, YOLOv5, YOLOv8, YOLOv10, YOLO11, YOLO12, PP-YOLOE and PP-YOLOE+.")
 @click.option('--model_dir', help='Path to the directory containing the PaddleDetection PP-YOLOE model.', type=str)
 @click.option('--model_filename', help='The filename of the PP-YOLOE model.', type=str)
 @click.option('--params_filename', help='The filename of the PP-YOLOE parameters.', type=str)
 @click.option('-w', '--weights', help='Path to YOLO weights for PyTorch.', type=str)
-@click.option('-v', '--version', help='Torch YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, ultralytics.', type=str)
+@click.option('-v', '--version', help='Torch YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, ultralytics.', type=str)
 @click.option('--imgsz', nargs=2, default=[640, 640], help='Image size (height, width). Defaults to [640, 640].', type=int)
 @click.option('--repo_dir', default=None, help='Directory containing the local repository (if using torch.hub.load).', type=str)
 @click.option('-o', '--output', help='Directory path to save the exported model.', type=str, required=True)
@@ -50,7 +50,7 @@ def trtyolo():
 @click.option('--max_boxes', default=100, help='Maximum number of detections to output per image. Defaults to 100.', type=int)
 @click.option('--iou_thres', default=0.45, help='NMS IoU threshold for post-processing. Defaults to 0.45.', type=float)
 @click.option('--conf_thres', default=0.25, help='Confidence threshold for object detection. Defaults to 0.25.', type=float)
-@click.option('--opset_version', default=11, help='ONNX opset version. Defaults to 11.', type=int)
+@click.option('--opset_version', default=12, help='ONNX opset version. Defaults to 12.', type=int)
 @click.option('-s', '--simplify', is_flag=True, help='Whether to simplify the exported ONNX. Defaults is False.')
 def export(
     model_dir,
