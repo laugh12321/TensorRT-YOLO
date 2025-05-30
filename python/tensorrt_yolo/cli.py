@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   cli.py
-# Version :   6.0.0
+# Version :   6.2.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/07/05 14:26:53
@@ -37,12 +37,17 @@ def trtyolo():
     pass
 
 
-@trtyolo.command(help="Export models for TensorRT-YOLO. Supports YOLOv3, YOLOv5, YOLOv8, YOLOv10, YOLO11, YOLO12, PP-YOLOE and PP-YOLOE+.")
+@trtyolo.command(
+    help="Export models for TensorRT-YOLO. Supports YOLOv3, YOLOv5, YOLOv8, YOLOv10, YOLO11, YOLO12, YOLO-World, PP-YOLOE and PP-YOLOE+."
+)
 @click.option('--model_dir', help='Path to the directory containing the PaddleDetection PP-YOLOE model.', type=str)
 @click.option('--model_filename', help='The filename of the PP-YOLOE model.', type=str)
 @click.option('--params_filename', help='The filename of the PP-YOLOE parameters.', type=str)
 @click.option('-w', '--weights', help='Path to YOLO weights for PyTorch.', type=str)
-@click.option('-v', '--version', help='Torch YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, ultralytics.', type=str)
+@click.option(
+    '-v', '--version', help='Torch YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, yolo-world, ultralytics.', type=str
+)
+@click.option('-n', '--names', help='Custom class names for the YOLO-World model', type=click.STRING)
 @click.option('--imgsz', nargs=2, default=[640, 640], help='Image size (height, width). Defaults to [640, 640].', type=int)
 @click.option('--repo_dir', default=None, help='Directory containing the local repository (if using torch.hub.load).', type=str)
 @click.option('-o', '--output', help='Directory path to save the exported model.', type=str, required=True)
@@ -58,6 +63,7 @@ def export(
     params_filename,
     weights,
     version,
+    names,
     imgsz,
     repo_dir,
     output,
@@ -101,6 +107,7 @@ def export(
             opset_version=opset_version,
             simplify=simplify,
             repo_dir=repo_dir,
+            custom_classes=names.split(",") if names else None,
         )
     else:
         logger.error("Please provide correct export parameters.")

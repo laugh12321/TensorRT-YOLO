@@ -32,6 +32,7 @@ class ModelExporter:
             YOLODetect,
             YOLOSegment,
             YOLOV10Detect,
+            YOLOWorldDetect,
         )
 
         self.__batch = None
@@ -66,6 +67,11 @@ class ModelExporter:
             },
             "v10Detect": {
                 "class_map": {"yolov10": YOLOV10Detect, "ultralytics": YOLOV10Detect},
+                "output_names": self.__output_names,
+                "dynamic_axes": self.__dynamic_axes,
+            },
+            "WorldDetect": {
+                "class_map": {"yolo-world": YOLOWorldDetect, "ultralytics": YOLOWorldDetect},
                 "output_names": self.__output_names,
                 "dynamic_axes": self.__dynamic_axes,
             },
@@ -121,7 +127,7 @@ class ModelExporter:
         }
         logger.info("Starting export with Pytorch.")
 
-    def load(self, weights: str, version: str, repo_dir: Optional[str] = None) -> None:
+    def load(self, weights: str, version: str, repo_dir: Optional[str] = None, custom_classes: Optional[Sequence[str]] = None) -> None:
         self.__version = version
         self.__weight_name = Path(weights).stem
 
@@ -135,14 +141,17 @@ class ModelExporter:
         if version in yolo_versions_with_repo:
             repo_dir = yolo_versions_with_repo[version] if repo_dir is None else repo_dir
             self.__model = torch.hub.load(repo_dir, 'custom', path=weights, source=source, _verbose=False)
-        elif version in ['yolov8', 'yolov10', 'yolo11', 'yolo12', 'ultralytics']:
+        elif version in ['yolov8', 'yolov10', 'yolo11', 'yolo12', 'yolo-world', 'ultralytics']:
             from ultralytics import YOLO
 
             self.__model = YOLO(model=weights, verbose=False).model
+
+            if custom_classes is not None and version == 'yolo-world':
+                self.__model.set_classes(custom_classes)
         else:
             logger.error(
                 f"YOLO version '{version}' is unsupported for export with trtyolo CLI tool. "
-                "Please provide a valid version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, ultralytics."
+                "Please provide a valid version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, yolo-world, ultralytics."
             )
             if version in self.__export_info:
                 logger.warning(
@@ -268,6 +277,7 @@ def torch_export(
     opset_version: Optional[int] = 12,
     simplify: Optional[bool] = True,
     repo_dir: Optional[str] = None,
+    custom_classes: Optional[Sequence[str]] = None,
 ) -> None:
     """
     Export YOLO model to ONNX format using Torch.
@@ -275,7 +285,7 @@ def torch_export(
     Args:
         weights (str): Path to YOLO weights for PyTorch.
         output (str): Directory path to save the exported model.
-        version (str): YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, ultralytics.
+        version (str): YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, yolo-world, ultralytics.
         imgsz (Optional[Sequence[int]], optional): Inference image size (height, width). Defaults to [640, 640].
         batch (Optional[int], optional): Total batch size for the model. Use -1 for dynamic batch size. Defaults to 1.
         max_boxes (Optional[int], optional): Maximum number of detections to output per image. Defaults to 100.
@@ -284,9 +294,10 @@ def torch_export(
         opset_version (Optional[int], optional): ONNX opset version. Defaults to 12.
         simplify (Optional[bool], optional): Whether to simplify the exported ONNX. Defaults to True.
         repo_dir (Optional[str], optional): Directory containing the local repository (if using torch.hub.load). Defaults to None.
+        custom_classes (Optional[Sequence[str]], optional): Custom class names for the yolo-world model. Defaults to None.
     """
     exporter = ModelExporter()
-    exporter.load(weights, version, repo_dir)
+    exporter.load(weights, version, repo_dir, custom_classes)
     exporter.register(batch, max_boxes, iou_thres, conf_thres)
     exporter.export(output, imgsz, opset_version, simplify)
 
