@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.18)
 cmake_policy(SET CMP0091 NEW)  # 确保 MSVC 运行时库策略正确
 
 #-------------------------------------------------------------------------------
 # 项目基础配置
 #-------------------------------------------------------------------------------
 project(TensorRT-YOLO
-    VERSION 6.1.0
+    VERSION 6.2.0
     LANGUAGES CXX CUDA
     DESCRIPTION "🚀 Easier & Faster YOLO Deployment Toolkit for NVIDIA 🛠️"
 )
