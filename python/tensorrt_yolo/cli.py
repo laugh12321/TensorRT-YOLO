@@ -38,16 +38,19 @@ def trtyolo():
 
 
 @trtyolo.command(
-    help="Export models for TensorRT-YOLO. Supports YOLOv3, YOLOv5, YOLOv8, YOLOv10, YOLO11, YOLO12, YOLO-World, PP-YOLOE and PP-YOLOE+."
+    help="Export models for TensorRT-YOLO. Supports YOLOv3, YOLOv5, YOLOv8, YOLOv10, YOLO11, YOLO12, YOLO-World, YOLOE, PP-YOLOE and PP-YOLOE+."
 )
 @click.option('--model_dir', help='Path to the directory containing the PaddleDetection PP-YOLOE model.', type=str)
 @click.option('--model_filename', help='The filename of the PP-YOLOE model.', type=str)
 @click.option('--params_filename', help='The filename of the PP-YOLOE parameters.', type=str)
 @click.option('-w', '--weights', help='Path to YOLO weights for PyTorch.', type=str)
 @click.option(
-    '-v', '--version', help='Torch YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, yolo-world, ultralytics.', type=str
+    '-v',
+    '--version',
+    help='Torch YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, yolo-world, yoloe, ultralytics.',
+    type=str,
 )
-@click.option('-n', '--names', help='Custom class names for the YOLO-World model', type=click.STRING)
+@click.option('-n', '--names', help='Custom class names for the YOLO-World and YOLOE', type=click.STRING)
 @click.option('--imgsz', nargs=2, default=[640, 640], help='Image size (height, width). Defaults to [640, 640].', type=int)
 @click.option('--repo_dir', default=None, help='Directory containing the local repository (if using torch.hub.load).', type=str)
 @click.option('-o', '--output', help='Directory path to save the exported model.', type=str, required=True)
