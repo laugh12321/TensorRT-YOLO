@@ -24,11 +24,49 @@
 # ==============================================================================
 import sys
 from pathlib import Path
+from typing import List, Optional, Tuple
 
 import rich_click as click
 from loguru import logger
 
 logger.configure(handlers=[{'sink': sys.stdout, 'colorize': True, 'format': "<level>[{level.name[0]}]</level> <level>{message}</level>"}])
+
+
+def validate_imgsz(ctx: click.Context, param: click.Parameter, value: str) -> Tuple[int, int]:
+    """Validate and parse the imgsz parameter."""
+    try:
+        if ',' in value:
+            h, w = map(int, value.split(','))
+            return (h, w)
+        size = int(value)
+        return (size, size)
+    except ValueError:
+        raise click.BadParameter('Image size must be in format "size" or "height,width" (e.g., 640 or 640,480)')
+
+
+def validate_names(ctx: click.Context, param: click.Parameter, value: str) -> Optional[List[str]]:
+    """Validate and parse the names parameter."""
+    if value is None:
+        return None
+    return [name.strip() for name in value.split(',')]
+
+
+def validate_export_params(ctx: click.Context, param: click.Parameter, value: str) -> str:
+    """Validate the combination of export parameters."""
+    version = ctx.params.get('version')
+    model_dir = ctx.params.get('model_dir')
+    model_filename = ctx.params.get('model_filename')
+    params_filename = ctx.params.get('params_filename')
+    weights = ctx.params.get('weights')
+
+    if version == 'pp-yoloe':
+        if not all([model_dir, model_filename, params_filename]):
+            raise click.BadParameter('For PP-YOLOE, --model_dir, --model_filename and --params_filename are required')
+    elif version and version != 'pp-yoloe':
+        if not weights:
+            raise click.BadParameter('For non PP-YOLOE models, --weights is required')
+
+    return value
 
 
 @click.group()
@@ -38,53 +76,85 @@ def trtyolo():
 
 
 @trtyolo.command(
-    help="Export models for TensorRT-YOLO. Supports YOLOv3, YOLOv5, YOLOv8, YOLOv10, YOLO11, YOLO12, YOLO-World, YOLOE, PP-YOLOE and PP-YOLOE+."
+    help="Export YOLO models to ONNX format compatible with TensorRT-YOLO. Supports YOLOv3, YOLOv5, YOLOv8, YOLOv10, YOLO11, YOLO12, YOLO-World, YOLOE, PP-YOLOE, and PP-YOLOE+."
 )
-@click.option('--model_dir', help='Path to the directory containing the PaddleDetection PP-YOLOE model.', type=str)
-@click.option('--model_filename', help='The filename of the PP-YOLOE model.', type=str)
-@click.option('--params_filename', help='The filename of the PP-YOLOE parameters.', type=str)
-@click.option('-w', '--weights', help='Path to YOLO weights for PyTorch.', type=str)
 @click.option(
     '-v',
     '--version',
-    help='Torch YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, yolo-world, yoloe, ultralytics.',
+    help='Model version. Options include yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, yolo-world, yoloe, pp-yoloe, ultralytics.',
     type=str,
+    required=True,
+    callback=validate_export_params,
 )
-@click.option('-n', '--names', help='Custom class names for the YOLO-World and YOLOE', type=click.STRING)
-@click.option('--imgsz', nargs=2, default=[640, 640], help='Image size (height, width). Defaults to [640, 640].', type=int)
-@click.option('--repo_dir', default=None, help='Directory containing the local repository (if using torch.hub.load).', type=str)
-@click.option('-o', '--output', help='Directory path to save the exported model.', type=str, required=True)
+@click.option(
+    '-o',
+    '--output',
+    help='Directory path to save the exported model.',
+    type=click.Path(file_okay=False, dir_okay=True, path_type=str),
+    required=True,
+)
+@click.option(
+    '-w',
+    '--weights',
+    help='Path to PyTorch YOLO weights (required for non PP-YOLOE models).',
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=str),
+)
+@click.option(
+    '--model_dir',
+    help='Directory path containing the PaddleDetection PP-YOLOE model (required for PP-YOLOE).',
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=str),
+)
+@click.option('--model_filename', help='Filename of the PaddleDetection PP-YOLOE model (required for PP-YOLOE).', type=str)
+@click.option('--params_filename', help='Filename of the PaddleDetection PP-YOLOE parameters (required for PP-YOLOE).', type=str)
 @click.option('-b', '--batch', default=1, help='Total batch size for the model. Use -1 for dynamic batch size. Defaults to 1.', type=int)
-@click.option('--max_boxes', default=100, help='Maximum number of detections to output per image. Defaults to 100.', type=int)
+@click.option('--max_boxes', default=100, help='Maximum number of detections per image. Defaults to 100.', type=int)
 @click.option('--iou_thres', default=0.45, help='NMS IoU threshold for post-processing. Defaults to 0.45.', type=float)
 @click.option('--conf_thres', default=0.25, help='Confidence threshold for object detection. Defaults to 0.25.', type=float)
-@click.option('--opset_version', default=12, help='ONNX opset version. Defaults to 12.', type=int)
-@click.option('-s', '--simplify', is_flag=True, help='Whether to simplify the exported ONNX. Defaults is False.')
+@click.option(
+    '--imgsz',
+    default='640',
+    help='Image size (single value for square or "height,width"). Defaults to "640" (for non PP-YOLOE models).',
+    type=str,
+    callback=validate_imgsz,
+)
+@click.option(
+    '-n',
+    '--names',
+    help='Custom class names for YOLO-World and YOLOE (comma-separated, e.g., "person,car,dog"). Only applicable for YOLO-World and YOLOE models.',
+    type=str,
+    callback=validate_names,
+)
+@click.option(
+    '--repo_dir',
+    help='Directory containing the local repository (if using torch.hub.load). Only applicable for YOLOv3 and YOLOv5 models.',
+    type=str,
+)
+@click.option('--opset', default=12, help='ONNX opset version. Defaults to 12.', type=int)
+@click.option('-s', '--simplify', is_flag=True, help='Whether to simplify the exported ONNX model. Defaults to False.')
 def export(
-    model_dir,
-    model_filename,
-    params_filename,
-    weights,
-    version,
-    names,
-    imgsz,
-    repo_dir,
-    output,
-    batch,
-    max_boxes,
-    iou_thres,
-    conf_thres,
-    opset_version,
-    simplify,
+    version: str,
+    output: str,
+    weights: Optional[str],
+    model_dir: Optional[str],
+    model_filename: Optional[str],
+    params_filename: Optional[str],
+    imgsz: Tuple[int, int],
+    names: Optional[List[str]],
+    repo_dir: Optional[str],
+    batch: int,
+    max_boxes: int,
+    iou_thres: float,
+    conf_thres: float,
+    opset: int,
+    simplify: bool,
 ):
     """Export models for TensorRT-YOLO.
 
     This command allows exporting models for both PaddlePaddle and PyTorch frameworks to be used with TensorRT-YOLO.
     """
-
     from .export import paddle_export, torch_export
 
-    if model_dir and model_filename and params_filename:
+    if version == 'pp-yoloe':
         paddle_export(
             model_dir=model_dir,
             model_filename=model_filename,
@@ -94,10 +164,10 @@ def export(
             max_boxes=max_boxes,
             iou_thres=iou_thres,
             conf_thres=conf_thres,
-            opset_version=opset_version,
+            opset_version=opset,
             simplify=simplify,
         )
-    elif weights and version:
+    else:
         torch_export(
             weights=weights,
             output=output,
@@ -107,35 +177,51 @@ def export(
             max_boxes=max_boxes,
             iou_thres=iou_thres,
             conf_thres=conf_thres,
-            opset_version=opset_version,
+            opset_version=opset,
             simplify=simplify,
             repo_dir=repo_dir,
-            custom_classes=names.split(",") if names else None,
+            custom_classes=names,
         )
-    else:
-        logger.error("Please provide correct export parameters.")
+
+    logger.success("Export completed successfully!")
 
 
 @trtyolo.command(help="Perform inference with TensorRT-YOLO.")
-@click.option('-e', '--engine', help='Engine file for inference.', type=str, required=True)
 @click.option(
-    '-m', '--mode', help='Mode for inference: 0 for Classify, 1 for Detect, 2 for OBB, 3 for Segment, 4 for Pose.', type=int, required=True
+    '-e',
+    '--engine',
+    help='Engine file for inference.',
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=str),
+    required=True,
 )
-@click.option('-i', '--input', help='Input directory or file for inference.', type=str, required=True)
-@click.option('-o', '--output', help='Output directory for inference results.', type=str)
-@click.option('-l', '--labels', help='Labels file for inference.', type=str)
-def infer(engine, mode, input, output, labels):
+@click.option(
+    '-m',
+    '--mode',
+    help='Mode for inference: 0 for Classify, 1 for Detect, 2 for OBB, 3 for Segment, 4 for Pose.',
+    type=click.IntRange(0, 4),
+    required=True,
+)
+@click.option(
+    '-i',
+    '--input',
+    help='Input directory or file for inference.',
+    type=click.Path(exists=True, file_okay=True, dir_okay=True, path_type=str),
+    required=True,
+)
+@click.option(
+    '-o', '--output', help='Output directory for inference results.', type=click.Path(file_okay=False, dir_okay=True, path_type=str)
+)
+@click.option(
+    '-l', '--labels', help='Labels file for inference.', type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=str)
+)
+def infer(engine: str, mode: int, input: str, output: str, labels: str):
     """Perform inference with TensorRT-YOLO.
 
     This command performs inference using TensorRT-YOLO with the specified engine file and input source.
     """
-    if mode not in (0, 1, 2, 3, 4):
-        logger.error(f"Invalid mode: {mode}. Please use 0 for Classify, 1 for Detect, 2 for OBB, 3 for Segment, 4 for Pose.")
-        sys.exit(1)
-
     if output and not labels:
         logger.error("Please provide a labels file using -l or --labels.")
-        sys.exit(1)
+        raise click.Abort()
 
     if output:
         from .infer import generate_labels
@@ -188,3 +274,7 @@ def infer(engine, mode, input, output, labels):
 
     logger.success("Finished Inference.")
     model.performance_report()
+
+
+if __name__ == '__main__':
+    trtyolo()
