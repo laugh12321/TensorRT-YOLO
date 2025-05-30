@@ -4,15 +4,15 @@ build-backend = "setuptools.build_meta"
 
 # Project settings -----------------------------------------------------------------------------------------------------
 [project]
-version = "6.1.0"
+version = "6.2.0"
 readme = "README.md"
 name = "tensorrt_yolo"
 requires-python = ">=3.8"
 license = {file = "LICENSE"}
 maintainers = [{ name = "laugh12321" }]
 authors = [{ name = "laugh12321", email = "laugh12321@vip.qq.com" }]
-description = "Your YOLO Deployment Powerhouse. With the synergy of TensorRT Plugins, CUDA Kernels, and CUDA Graphs, experience lightning-fast inference speeds."
-keywords = ["machine-learning", "deep-learning", "computer-vision", "ML", "DL", "AI", "YOLO", "YOLOv3", "YOLOv5", "YOLOv6", "YOLOv7", "YOLOv8", "YOLOv9", "YOLOv10", "YOLO11", "PP-YOLOE", "TensorRT", "CUDA", "detection", "segmentation", "ONNX", "EfficientNMS"]
+description = "🚀 Easier & Faster YOLO Deployment Toolkit for NVIDIA 🛠️"
+keywords = ["ML", "DL", "AI", "YOLO", "YOLOv3", "YOLOv5", "YOLOv6", "YOLOv7", "YOLOv8", "YOLOv9", "YOLOv10", "YOLO11", "YOLO12", "YOLO-World", "YOLOE", "PP-YOLOE", "TensorRT", "CUDA", "ONNX", "computer-vision", "image-classification", "object-detection", "pose-estimation", "instance-segmentation", "rotated-object-detection", "ultralytics"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
