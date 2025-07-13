@@ -18,6 +18,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# 使用 CMake 提供的默认值
+set(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/include")
+
+# 修复 undefined symbol: fatbinData
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+
 #-------------------------------------------------------------------------------
 # 依赖配置
 #-------------------------------------------------------------------------------
@@ -48,7 +55,11 @@ option(BUILD_PYTHON "Build Python bindings with pybind11" OFF)
 if(BUILD_PYTHON)
     set(PYBIND11_FINDPYTHON ON)
     find_package(Python COMPONENTS Interpreter Development REQUIRED)
-    find_package(pybind11 CONFIG REQUIRED)
+    find_package(pybind11 CONFIG REQUIRED QUIET)
+    if(NOT pybind11_FOUND)
+        message(WARNING "pybind11 not found. Python bindings will not be built.")
+        set(BUILD_PYTHON OFF)
+    endif()
 endif()
 
 #-------------------------------------------------------------------------------
@@ -126,77 +137,17 @@ function(configure_cuda_trt_target target)
         CUDA_SEPARABLE_COMPILATION ON
         CUDA_RESOLVE_DEVICE_SYMBOLS ON
     )
-endfunction()
 
-#-------------------------------------------------------------------------------
-# 收集源文件（使用 CONFIGURE_DEPENDS 自动更新）
-#-------------------------------------------------------------------------------
-function(add_target_compile_files target)
-    # 添加项目源码目录到目标的私有包含目录
-    target_include_directories(${target} PRIVATE ${PROJECT_SOURCE_DIR})
-
-    # 收集源文件
-    file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
-        "${PROJECT_SOURCE_DIR}/deploy/core/*.cpp"
-        "${PROJECT_SOURCE_DIR}/deploy/utils/*.cpp"
-        "${PROJECT_SOURCE_DIR}/deploy/infer/*.cpp"
-        "${PROJECT_SOURCE_DIR}/deploy/infer/*.cu"
-        "${PROJECT_SOURCE_DIR}/deploy/model.cpp"
-    )
-
-    # 将收集到的源文件添加到目标
-    target_sources(${target} PRIVATE ${SOURCES})
+    # 确保目标使用正确的 C++ 标准
+    target_compile_features(${target} PRIVATE cxx_std_17)
 endfunction()
 
 #-------------------------------------------------------------------------------
 # 主库目标
 #-------------------------------------------------------------------------------
-# 创建主库
-add_library(deploy SHARED)
-add_target_compile_files(deploy)
-configure_cuda_trt_target(deploy)
-set_target_compile_options(deploy)
-
-# 模块配置
-set_target_properties(deploy PROPERTIES
-    OUTPUT_NAME "deploy"
-    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/lib"
-    ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${PROJECT_SOURCE_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY_DEBUG "${PROJECT_SOURCE_DIR}/lib"
-    ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${PROJECT_SOURCE_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${PROJECT_SOURCE_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${PROJECT_SOURCE_DIR}/lib"
-    ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${PROJECT_SOURCE_DIR}/lib"
-    CXX_VISIBILITY_PRESET "hidden"
-)
+add_subdirectory(modules/trtyolo)
 
 #-------------------------------------------------------------------------------
-# Python 绑定（可选）
+# 插件
 #-------------------------------------------------------------------------------
-if(BUILD_PYTHON)
-    pybind11_add_module(pydeploy ${PROJECT_SOURCE_DIR}/deploy/pybind.cpp)
-    add_target_compile_files(pydeploy)
-    configure_cuda_trt_target(pydeploy)
-    set_target_compile_options(pydeploy)
-
-    # Python 模块配置
-    set_target_properties(pydeploy PROPERTIES
-        OUTPUT_NAME "pydeploy"
-        LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/python/tensorrt_yolo/libs"
-        LIBRARY_OUTPUT_DIRECTORY_RELEASE "${PROJECT_SOURCE_DIR}/python/tensorrt_yolo/libs"
-        LIBRARY_OUTPUT_DIRECTORY_DEBUG "${PROJECT_SOURCE_DIR}/python/tensorrt_yolo/libs"
-        CXX_VISIBILITY_PRESET "hidden"
-    )
-
-    # Python 配置文件
-    configure_file(
-        ${PROJECT_SOURCE_DIR}/python/tensorrt_yolo/c_lib_wrap.py.in
-        ${PROJECT_SOURCE_DIR}/python/tensorrt_yolo/c_lib_wrap.py
-    )
-endif()
-
-#-------------------------------------------------------------------------------
-# 子项目
-#-------------------------------------------------------------------------------
-add_subdirectory(plugin)
+add_subdirectory(modules/plugin)
