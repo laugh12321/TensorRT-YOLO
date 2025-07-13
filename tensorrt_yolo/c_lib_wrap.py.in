@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   c_lib_wrap.py
-# Version :   6.1.0
+# Version :   6.3.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/07/03 13:12:29
@@ -38,6 +38,6 @@ if os.name == "nt":
             os.add_dll_directory(need_lib_dir)
 
 try:
-    from .libs.pydeploy import *
+    from .libs.py_trtyolo import *
 except Exception as e:
     raise RuntimeError(f"Deploy initialization failed! Error: {e}")

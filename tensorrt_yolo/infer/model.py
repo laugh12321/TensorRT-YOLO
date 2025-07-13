@@ -81,14 +81,14 @@ class BaseModel:
         self._model = deploy_class(engine_file, option)
 
     @property
-    def batch_size(self) -> int:
+    def batch(self) -> int:
         """
         Get the maximum batch size of the model.
 
         Returns:
             int: Batch size.
         """
-        return self._model.batch_size()
+        return self._model.batch()
 
     def performance_report(self) -> None:
         """
