@@ -57,7 +57,7 @@ __device__ bool in_bounds(int x, int y, int cols, int rows) {
     return (x >= 0 && x < cols && y >= 0 && y < rows);
 }
 
-__device__ void warp_affine_bilinear(const uint8_t* src, const int src_cols, const int src_rows,
+__device__ void warp_affine_bilinear(const uint8_t* src, const int src_cols, const int src_rows, const size_t src_pitch,
                                      float* dst, const int dst_cols, const int dst_rows,
                                      const float3 m0, const float3 m1, const ProcessConfig config, int element_x, int element_y) {
     if (element_x >= dst_cols || element_y >= dst_rows) {
@@ -85,14 +85,14 @@ __device__ void warp_affine_bilinear(const uint8_t* src, const int src_cols, con
     bool   flag3 = in_bounds(src_x1, src_y1, src_cols, src_rows);
 
     float3  border_value = make_float3(config.border_value, config.border_value, config.border_value);
-    uchar3* input        = (uchar3*)((uint8_t*)src + src_y0 * src_cols * 3);
+    uchar3* input        = (uchar3*)((uint8_t*)src + src_y0 * src_pitch);
     src_value0           = flag0 ? uchar3_to_float3(input[src_x0]) : border_value;
     src_value1           = flag1 ? uchar3_to_float3(input[src_x1]) : border_value;
     value0               = wx0 * wy0 * src_value0;
     value1               = wx1 * wy0 * src_value1;
     float3 sum           = value0 + value1;
 
-    input       = (uchar3*)((uint8_t*)src + src_y1 * src_cols * 3);
+    input       = (uchar3*)((uint8_t*)src + src_y1 * src_pitch);
     src_value0  = flag2 ? uchar3_to_float3(input[src_x0]) : border_value;
     src_value1  = flag3 ? uchar3_to_float3(input[src_x1]) : border_value;
     value0      = wx0 * wy1 * src_value0;
@@ -111,19 +111,19 @@ __device__ void warp_affine_bilinear(const uint8_t* src, const int src_cols, con
     output[2 * dst_cols * dst_rows] = sum.z * config.alpha.z + config.beta.z;
 }
 
-__global__ void gpuBilinearWarpAffine(const void* src, const int src_cols, const int src_rows,
+__global__ void gpuBilinearWarpAffine(const void* src, const int src_cols, const int src_rows, const size_t src_pitch,
                                       void* dst, const int dst_cols, const int dst_rows,
                                       const float3 m0, const float3 m1, const ProcessConfig config) {
     int element_x = blockDim.x * blockIdx.x + threadIdx.x;
     int element_y = blockDim.y * blockIdx.y + threadIdx.y;
 
-    warp_affine_bilinear(static_cast<const uint8_t*>(src), src_cols, src_rows,
+    warp_affine_bilinear(static_cast<const uint8_t*>(src), src_cols, src_rows, src_pitch,
                          static_cast<float*>(dst), dst_cols, dst_rows,
                          m0, m1, config,
                          element_x, element_y);
 }
 
-__global__ void gpuMutliBilinearWarpAffine(const void* src, const int src_cols, const int src_rows,
+__global__ void gpuMutliBilinearWarpAffine(const void* src, const int src_cols, const int src_rows, const size_t src_pitch,
                                            void* dst, const int dst_cols, const int dst_rows,
                                            const float3 m0, const float3 m1, const ProcessConfig config,
                                            int num_images) {
@@ -135,8 +135,8 @@ __global__ void gpuMutliBilinearWarpAffine(const void* src, const int src_cols, 
     int element_x = blockDim.x * blockIdx.x + threadIdx.x;
     int element_y = blockDim.y * blockIdx.y + threadIdx.y;
 
-    warp_affine_bilinear(static_cast<const uint8_t*>(src) + image_idx * src_rows * src_cols * 3,
-                         src_cols, src_rows,
+    warp_affine_bilinear(static_cast<const uint8_t*>(src) + image_idx * src_rows * src_pitch,
+                         src_cols, src_rows, src_pitch,
                          static_cast<float*>(dst) + image_idx * dst_rows * dst_cols * 3,
                          dst_cols, dst_rows,
                          m0, m1, config,
@@ -171,22 +171,22 @@ void AffineTransform::applyTransform(float x, float y, float* transformed_x, flo
     *transformed_y = matrix[1].x * x + matrix[1].y * y + matrix[1].z;
 }
 
-void cudaWarpAffine(const void* src, const int src_cols, const int src_rows,
+void cudaWarpAffine(const void* src, const int src_cols, const int src_rows, const size_t src_pitch,
                     void* dst, const int dst_cols, const int dst_rows,
                     const float3 matrix[2], const ProcessConfig config, cudaStream_t stream) {
     // launch kernel
     const dim3 blockDim(16, 16);
     const dim3 gridDim(iDivUp(dst_cols, blockDim.x), iDivUp(dst_rows, blockDim.y));
-    gpuBilinearWarpAffine<<<gridDim, blockDim, 0, stream>>>(src, src_cols, src_rows, dst, dst_cols, dst_rows, matrix[0], matrix[1], config);
+    gpuBilinearWarpAffine<<<gridDim, blockDim, 0, stream>>>(src, src_cols, src_rows, src_pitch, dst, dst_cols, dst_rows, matrix[0], matrix[1], config);
 }
 
-void cudaMutliWarpAffine(const void* src, const int src_cols, const int src_rows,
+void cudaMutliWarpAffine(const void* src, const int src_cols, const int src_rows, const size_t src_pitch,
                          void* dst, const int dst_cols, const int dst_rows,
                          const float3 matrix[2], const ProcessConfig config, int num_images, cudaStream_t stream) {
     // launch kernel
     const dim3 blockDim(16, 16);
     const dim3 gridDim(iDivUp(dst_cols, blockDim.x), iDivUp(dst_rows, blockDim.y), num_images);
-    gpuMutliBilinearWarpAffine<<<gridDim, blockDim, 0, stream>>>(src, src_cols, src_rows, dst, dst_cols, dst_rows, matrix[0], matrix[1], config, num_images);
+    gpuMutliBilinearWarpAffine<<<gridDim, blockDim, 0, stream>>>(src, src_cols, src_rows, src_pitch, dst, dst_cols, dst_rows, matrix[0], matrix[1], config, num_images);
 }
 
 }  // namespace deploy

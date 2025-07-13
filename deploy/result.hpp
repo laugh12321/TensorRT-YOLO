@@ -23,25 +23,47 @@ namespace deploy {
  * @brief 图像结构体，用于存储图像数据及其尺寸信息
  */
 struct DEPLOYAPI Image {
-    void* ptr;         // < 图像数据指针
-    int   width  = 0;  // < 图像宽度
-    int   height = 0;  // < 图像高度
+    void*  ptr;         // < 图像数据指针
+    int    width  = 0;  // < 图像宽度（像素数）
+    int    height = 0;  // < 图像高度（像素数）
+    size_t pitch  = 0;  // < 图像数据行距（字节数，包括可能的 padding）
 
     /**
-     * @brief 构造函数，初始化图像数据和尺寸
+     * @brief 构造函数（紧密排列，无 padding）
      *
      * @param data 图像数据指针
-     * @param width 图像宽度
-     * @param height 图像高度
+     * @param width 图像宽度（像素数）
+     * @param height 图像高度（像素数）
      */
-    Image(void* data, int width, int height) : ptr(data), width(width), height(height) {
+    Image(void* data, int width, int height)
+        : ptr(data), width(width), height(height), pitch(width * sizeof(uint8_t) * 3) {
         if (width <= 0 || height <= 0) {
             throw std::invalid_argument(MAKE_ERROR_MESSAGE("Image: width and height must be positive"));
         }
     }
 
+    /**
+     * @brief 构造函数（带 pitch，支持 padding）
+     * @param data 图像数据指针
+     * @param width 图像宽度（像素数）
+     * @param height 图像高度（像素数）
+     * @param pitch 每行的字节数（包括可能的 padding）
+     */
+    Image(void* data, int width, int height, size_t pitch)
+        : ptr(data), width(width), height(height), pitch(pitch) {
+        if (width <= 0 || height <= 0) {
+            throw std::invalid_argument(MAKE_ERROR_MESSAGE("Image: width and height must be positive"));
+        }
+        if (pitch < static_cast<size_t>(width * sizeof(uint8_t) * 3)) {
+            throw std::invalid_argument(MAKE_ERROR_MESSAGE("Image: pitch must >= width * 3"));
+        }
+    }
+
     friend std::ostream& operator<<(std::ostream& os, const Image& img) {
-        os << "Image(width=" << img.width << ", height=" << img.height << ", ptr=" << img.ptr << ")";
+        os << "Image(width=" << img.width
+           << ", height=" << img.height
+           << ", pitch=" << img.pitch
+           << ", ptr=" << img.ptr << ")";
         return os;
     }
 };

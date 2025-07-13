@@ -54,6 +54,7 @@ struct AffineTransform {
  * @param src 输入图像数据的指针
  * @param src_cols 输入图像的宽度
  * @param src_rows 输入图像的高度
+ * @param src_pitch 输入图像的行步长（每行字节数），用于处理不同宽度的图像
  * @param dst 输出图像数据的指针
  * @param dst_cols 输出图像的宽度
  * @param dst_rows 输出图像的高度
@@ -61,7 +62,7 @@ struct AffineTransform {
  * @param config 处理配置参数
  * @param stream 用于异步执行的 CUDA 流
  */
-void cudaWarpAffine(const void* src, const int src_cols, const int src_rows,
+void cudaWarpAffine(const void* src, const int src_cols, const int src_rows, const size_t src_pitch,
                     void* dst, const int dst_cols, const int dst_rows,
                     const float3 matrix[2], const ProcessConfig config, cudaStream_t stream);
 
@@ -74,6 +75,7 @@ void cudaWarpAffine(const void* src, const int src_cols, const int src_rows,
  * @param src 输入图像数据的指针数组，每个元素指向一张输入图像的首地址
  * @param src_cols 输入图像的宽度
  * @param src_rows 输入图像的高度
+ * @param src_pitch 输入图像的行步长（每行字节数），用于处理不同宽度的图像
  * @param dst 输出图像数据的指针数组，每个元素指向一张输出图像的首地址
  * @param dst_cols 输出图像的宽度
  * @param dst_rows 输出图像的高度
@@ -82,7 +84,7 @@ void cudaWarpAffine(const void* src, const int src_cols, const int src_rows,
  * @param num_images 图像数量，即 `src` 和 `dst` 数组的长度
  * @param stream 用于异步执行的 CUDA 流
  */
-void cudaMutliWarpAffine(const void* src, const int src_cols, const int src_rows,
+void cudaMutliWarpAffine(const void* src, const int src_cols, const int src_rows, const size_t src_pitch,
                          void* dst, const int dst_cols, const int dst_rows,
                          const float3 matrix[2], const ProcessConfig config, int num_images, cudaStream_t stream);
 
