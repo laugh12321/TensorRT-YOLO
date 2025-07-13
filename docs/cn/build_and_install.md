@@ -29,17 +29,20 @@ cd TensorRT-YOLO
 然后使用 CMake，可以按照以下步骤操作：
 
 ```bash
-pip install "pybind11[global]"
-cmake -S . -B build -DTRT_PATH=/usr/local/tensorrt -DBUILD_PYTHON=ON
-cmake --build build -j$(nproc) --config Release
+pip install "pybind11[global]" # 安装 pybind11，用于生成 Python 绑定
+cmake -S . -B build -D TRT_PATH=/your/tensorrt/dir -D BUILD_PYTHON=ON -D CMAKE_INSTALL_PREFIX=/your/tensorrt-yolo/install/dir
+cmake --build build -j$(nproc) --config Release --target install
 ```
 
-编译完成后，根目录下将生成一个名为 `lib` 的文件夹，同时在 `python/tensorrt_yolo/libs` 路径下生成相应的 Python 绑定。`lib` 文件夹包含以下内容：
-- 名为 `deploy` 的动态库文件。
-- 一个名为 `plugin` 的子文件夹，其中包含编译生成的 TensorRT 自定义插件动态库。
+执行上述指令后，`tensorrt-yolo` 库将被安装到指定的 `CMAKE_INSTALL_PREFIX` 路径中。其中，`include` 文件夹中包含头文件，`lib` 文件夹中包含 `trtyolo` 动态库和 `custom_plugins` 动态库（仅在使用 `trtexec` 构建 OBB、Segment 或 Pose 模型时需要）。如果在编译时启用了 `BUILD_PYTHON` 选项，则还会在 `tensorrt_yolo/libs` 路径下生成相应的 Python 绑定文件。
 
 > [!NOTE]  
-> 若不需要生成 Python 绑定，可以移除 `-DBUILD_PYTHON=ON` 参数。
+> 在使用 C++ 版本的 `tensorrt-yolo` 库之前，请确保将指定的 `CMAKE_INSTALL_PREFIX` 路径添加到环境变量中，以便 CMake 的 `find_package` 能够找到 `tensorrt-yolo-config.cmake` 文件。可以通过以下命令完成此操作：
+>
+> ```bash
+> export PATH=$PATH:/your/tensorrt-yolo/install/dir # linux
+> $env:PATH = "$env:PATH;C:\your\tensorrt-yolo\install\dir;C:\your\tensorrt-yolo\install\dir\bin" # windows
+> ```
 
 ## 安装 `tensorrt_yolo`
 
@@ -62,7 +65,6 @@ pip install -U tensorrt_yolo
 > 3. 避免系统中存在多个版本的 CUDA、cuDNN、TensorRT。
 
 ```bash
-cd TensorRT-YOLO/python
 pip install --upgrade build
 python -m build --wheel
 # 仅安装推理相关依赖

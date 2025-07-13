@@ -200,15 +200,12 @@ English | [简体中文](README.md)
   #include <memory>
   #include <opencv2/opencv.hpp>
 
-  // For ease of use, the module uses only CUDA and TensorRT, with the rest implemented in standard libraries
-  #include "deploy/model.hpp"  // Contains model inference class definitions
-  #include "deploy/option.hpp"  // Contains inference option configuration class definitions
-  #include "deploy/result.hpp"  // Contains inference result definitions
+  #include "trtyolo.hpp"
 
   int main() {
       try {
           // -------------------- Initialization --------------------
-          deploy::InferOption option;
+          trtyolo::InferOption option;
           option.enableSwapRB();  // BGR->RGB conversion
 
           // Special model parameter setup example
@@ -217,7 +214,7 @@ English | [简体中文](README.md)
           // option.setNormalizeParams(mean, std);
 
           // -------------------- Model Initialization --------------------
-          auto detector = std::make_unique<deploy::DetectModel>(
+          auto detector = std::make_unique<trtyolo::DetectModel>(
               "yolo11n-with-plugin.engine",  // Model path
               option                         // Inference settings
           );
@@ -229,14 +226,14 @@ English | [简体中文](README.md)
           }
 
           // Encapsulate image data (no pixel data copying)
-          deploy::Image input_image(
+          trtyolo::Image input_image(
               cv_image.data,     // Pixel data pointer
               cv_image.cols,     // Image width
               cv_image.rows     // Image height
           );
 
           // -------------------- Inference Execution --------------------
-          deploy::DetectRes result = detector->predict(input_image);
+          trtyolo::DetectRes result = detector->predict(input_image);
           std::cout << result << std::endl;
 
           // -------------------- Result Visualization (Example) --------------------
@@ -246,7 +243,7 @@ English | [简体中文](README.md)
 
           // -------------------- Model Cloning Demo --------------------
           auto cloned_detector = detector->clone();  // Create an independent instance
-          deploy::DetectRes cloned_result = cloned_detector->predict(input_image);
+          trtyolo::DetectRes cloned_result = cloned_detector->predict(input_image);
 
           // Verify result consistency
           std::cout << cloned_result << std::endl;
