@@ -58,7 +58,7 @@ def main():
 
     model = OBBModel(args.engine, option)
 
-    batchs = image_batches(args.input, model.batch_size, True)
+    batchs = image_batches(args.input, model.batch, True)
 
     logger.info(f"Infering data in {args.input}")
     for batch in track(batchs, description="[cyan]Processing batches", total=len(batchs)):

@@ -2,7 +2,7 @@
  * @file mutli_thread.cpp
  * @author laugh12321 (laugh12321@vip.qq.com)
  * @brief 多线程示例
- * @date 2025-01-21
+ * @date 2025-06-07
  *
  * @copyright Copyright (c) 2025 laugh12321. All Rights Reserved.
  *
@@ -14,9 +14,7 @@
 #include <thread>
 #include <vector>
 
-#include "deploy/model.hpp"
-#include "deploy/option.hpp"
-#include "deploy/result.hpp"
+#include "trtyolo.hpp"
 
 std::vector<std::vector<std::string>> get_images_list(const std::string& image_file_path, int thread_num) {
     std::vector<cv::String> images;
@@ -51,11 +49,11 @@ std::vector<std::vector<std::string>> get_images_list(const std::string& image_f
     return image_list;
 }
 
-void predict(deploy::DetectModel* model, int thread_id, const std::vector<std::string>& image_paths) {
-    auto batch_size = model->batch_size();
+void predict(trtyolo::DetectModel* model, int thread_id, const std::vector<std::string>& image_paths) {
+    auto batch_size = model->batch();
 
     for (size_t start_idx = 0; start_idx < image_paths.size(); start_idx += batch_size) {
-        std::vector<deploy::Image> img_batch;
+        std::vector<trtyolo::Image> img_batch;
 
         std::transform(image_paths.begin() + start_idx,
                        image_paths.begin() + std::min(start_idx + batch_size, image_paths.size()),
@@ -64,7 +62,7 @@ void predict(deploy::DetectModel* model, int thread_id, const std::vector<std::s
                            if (image.empty()) {
                                throw std::runtime_error("Failed to read image from path: " + image_path);
                            }
-                           return deploy::Image{image.data, image.cols, image.rows};
+                           return trtyolo::Image{image.data, image.cols, image.rows};
                        });
 
         auto results = model->predict(img_batch);
@@ -100,15 +98,15 @@ int main(int argc, char** argv) {
     std::cout << "Using " << thread_num << " threads (max supported: " << max_thread_num << ")." << std::endl;
 
     // 初始化模型选项
-    auto option = deploy::InferOption();
+    auto option = trtyolo::InferOption();
     option.enableSwapRB();
     option.enablePerformanceReport();
 
     // 加载模型
-    auto model = deploy::DetectModel(model_path, option);
+    auto model = trtyolo::DetectModel(model_path, option);
 
     // 克隆模型到多个线程
-    std::vector<std::unique_ptr<deploy::DetectModel>> models;
+    std::vector<std::unique_ptr<trtyolo::DetectModel>> models;
     models.reserve(thread_num);
     for (int i = 0; i < thread_num; ++i) {
         models.emplace_back(model.clone());

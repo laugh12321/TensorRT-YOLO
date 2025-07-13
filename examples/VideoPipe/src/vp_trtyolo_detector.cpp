@@ -1,17 +1,15 @@
-#include "deploy/option.hpp"
-#include "deploy/result.hpp"
 #include "vp_trtyolo_detector.h"
 
 namespace vp_nodes {
 
 vp_trtyolo_detector::vp_trtyolo_detector(std::string node_name, std::string model_path, std::string labels_path, int batch, int device_id)
     : vp_primary_infer_node(node_name, "", "", labels_path, 0, 0, batch) {
-    deploy::InferOption option;
+    trtyolo::InferOption option;
     option.enableSwapRB();
     option.setDeviceId(device_id);
     // option.setNormalizeParams({0.485, 0.456, 0.406}, {0.229, 0.224, 0.225}); // PP-YOLOE、PP-YOLOE+
 
-    detector = std::make_unique<deploy::DetectModel>(model_path, option);
+    detector = std::make_unique<trtyolo::DetectModel>(model_path, option);
 
     this->initialized();  // Mark node as initialized
 }
@@ -22,15 +20,15 @@ vp_trtyolo_detector::~vp_trtyolo_detector() {
 }
 
 void vp_trtyolo_detector::run_infer_combinations(const std::vector<std::shared_ptr<vp_objects::vp_frame_meta>>& frame_meta_with_batch) {
-    std::vector<cv::Mat>       mats_to_infer;
-    std::vector<deploy::Image> images_to_infer;
+    std::vector<cv::Mat>        mats_to_infer;
+    std::vector<trtyolo::Image> images_to_infer;
 
     auto start_time = std::chrono::system_clock::now();  // Start time for performance measurement
 
     // Prepare data for inference (same as base class)
     vp_primary_infer_node::prepare(frame_meta_with_batch, mats_to_infer);
     std::transform(mats_to_infer.begin(), mats_to_infer.end(), std::back_inserter(images_to_infer), [](cv::Mat& mat) {
-        return deploy::Image(mat.data, mat.cols, mat.rows);
+        return trtyolo::Image(mat.data, mat.cols, mat.rows);
     });
 
     auto prepare_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start_time);
@@ -38,7 +36,7 @@ void vp_trtyolo_detector::run_infer_combinations(const std::vector<std::shared_p
     start_time = std::chrono::system_clock::now();
 
     // Perform inference on prepared images
-    std::vector<deploy::DetectRes> detection_results = detector->predict(images_to_infer);
+    std::vector<trtyolo::DetectRes> detection_results = detector->predict(images_to_infer);
 
     // Process detection results and update frame metadata
     for (int i = 0; i < detection_results.size(); i++) {

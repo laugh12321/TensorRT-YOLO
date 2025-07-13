@@ -53,32 +53,29 @@ print(f"==> Cloned model detection result: {clone_result}")
 #include <memory>
 #include <opencv2/opencv.hpp>
 
-// For ease of use, the module uses standard libraries except for CUDA and TensorRT
-#include "deploy/model.hpp"  // Contains class definitions for model inference
-#include "deploy/option.hpp"  // Contains configuration classes for inference options
-#include "deploy/result.hpp"  // Contains definitions for inference results
+#include "trtyolo.hpp"
 
 int main() {
     // Configure inference options
-    deploy::InferOption option;
+    trtyolo::InferOption option;
     option.enableSwapRB();  // Enable channel swapping (BGR to RGB)
 
     // Initialize the model
-    auto model = std::make_unique<deploy::DetectModel>("yolo11n-with-plugin.engine", option);
+    auto model = std::make_unique<trtyolo::DetectModel>("yolo11n-with-plugin.engine", option);
 
     // Load an image
     cv::Mat cvim = cv::imread("test_image.jpg");
-    deploy::Image im(cvim.data, cvim.cols, cvim.rows);
+    trtyolo::Image im(cvim.data, cvim.cols, cvim.rows);
 
     // Perform model prediction
-    deploy::DetResult result = model->predict(im);
+    trtyolo::DetResult result = model->predict(im);
 
     // Visualization (code omitted)
     // ...  // Visualization code is not provided and can be implemented as needed
 
     // Clone the model and perform prediction
     auto clone_model = model->clone();
-    deploy::DetResult clone_result = clone_model->predict(im);
+    trtyolo::DetResult clone_result = clone_model->predict(im);
 
     return 0;  // Program ends successfully
 }

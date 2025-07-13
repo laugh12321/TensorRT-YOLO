@@ -70,7 +70,7 @@ trtexec --onnx=models/yolo11n-cls.onnx --saveEngine=models/yolo11n-cls.engine --
 2. 将 `classify.cpp` 编译为可执行文件：
 
     ```bash
-    cmake -S . -B build -DTRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO"
+    cmake -S . -B build
     cmake --build build -j8 --config Release
     ```
 

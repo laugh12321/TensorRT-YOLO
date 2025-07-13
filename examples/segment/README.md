@@ -29,7 +29,7 @@ trtyolo export -w models/yolo11n-seg.pt -v yolo11 -o models -s
 运行上述命令后，`models` 文件夹中将生成一个 `batch_size` 为 1 的 `yolo11n-seg.onnx` 文件。接下来，使用 `trtexec` 工具将 ONNX 文件转换为 TensorRT 引擎（fp16）：
 
 ```bash
-trtexec --onnx=models/yolo11n-seg.onnx --saveEngine=models/yolo11n-seg.engine --fp16 --staticPlugins=/path/to/your/TensorRT-YOLO/lib/plugin/libcustom_plugins.so --setPluginsToSerialize=/path/to/your/TensorRT-YOLO/lib/plugin/libcustom_plugins.so
+trtexec --onnx=models/yolo11n-seg.onnx --saveEngine=models/yolo11n-seg.engine --fp16 --staticPlugins=/your/tensorrt-yolo/install/dir/lib/libcustom_plugins.so --setPluginsToSerialize=/your/tensorrt-yolo/install/dir/lib/libcustom_plugins.so
 ```
 
 ## 模型推理
@@ -70,7 +70,7 @@ trtexec --onnx=models/yolo11n-seg.onnx --saveEngine=models/yolo11n-seg.engine --
 2. 将 `segment.cpp` 编译为可执行文件：
 
     ```bash
-    cmake -S . -B build -DTRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO"
+    cmake -S . -B build
     cmake --build build -j8 --config Release
     ```
 

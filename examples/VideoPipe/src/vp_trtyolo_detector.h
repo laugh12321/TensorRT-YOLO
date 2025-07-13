@@ -1,14 +1,14 @@
 #pragma once
 
-#include "deploy/model.hpp"
 #include "nodes/vp_primary_infer_node.h"
+#include "trtyolo.hpp"
 
 namespace vp_nodes {
 
 // TensorRT-YOLO detector node, based on vp_primary_infer_node
 class vp_trtyolo_detector : public vp_primary_infer_node {
 private:
-    std::unique_ptr<deploy::DetectModel> detector = nullptr;
+    std::unique_ptr<trtyolo::DetectModel> detector = nullptr;
 
 protected:
     // Override: Run inference logic for the whole batch of frames
