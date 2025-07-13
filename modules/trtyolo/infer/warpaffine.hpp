@@ -12,9 +12,9 @@
 
 #include <cuda_runtime_api.h>
 
-#include "deploy/option.hpp"
+#include "utils/common.hpp"
 
-namespace deploy {
+namespace trtyolo {
 
 /**
  * @brief 用于仿射变换的 2x3 变换矩阵的结构体
@@ -88,4 +88,4 @@ void cudaMutliWarpAffine(const void* src, const int src_cols, const int src_rows
                          void* dst, const int dst_cols, const int dst_rows,
                          const float3 matrix[2], const ProcessConfig config, int num_images, cudaStream_t stream);
 
-}  // namespace deploy
+}  // namespace trtyolo

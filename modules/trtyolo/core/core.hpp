@@ -11,15 +11,12 @@
 #pragma once
 
 #include <NvInferPlugin.h>
-#include <cuda_runtime.h>
 
 #include <map>
 #include <memory>
 #include <string>
 
-#include "deploy/core/macro.hpp"
-
-namespace deploy {
+namespace trtyolo {
 
 /**
  * @class TRTLogger
@@ -62,7 +59,7 @@ private:
  * @brief TensorRT 管理器类，用于管理 TensorRT 的上下文、引擎和运行时。
  * 提供初始化、克隆、设置张量地址、设置输入形状、执行推理等方法。
  */
-class DEPLOYAPI TRTManager {
+class TRTManager {
 public:
     /**
      * @brief 默认构造函数。
@@ -172,7 +169,7 @@ private:
  * 该类封装了 CUDA 图的相关操作，包括捕获、执行、初始化节点、更新节点参数等。
  * CUDA 图是一种高效的 CUDA 操作执行模型，可以显著提高一些重复性操作的性能。
  */
-class DEPLOYAPI CudaGraph {
+class CudaGraph {
 public:
     explicit CudaGraph() = default;
     ~CudaGraph() { destroy(); }
@@ -268,4 +265,4 @@ private:
     cudaGraphExec_t                    graphExec_ = nullptr;  // < 执行图句柄，默认初始化为 nullptr
 };
 
-}  // namespace deploy
+}  // namespace trtyolo

@@ -16,26 +16,26 @@
 #include <string>
 #include <vector>
 
-#include "deploy/core/buffer.hpp"
-#include "deploy/core/core.hpp"
-#include "deploy/infer/warpaffine.hpp"
-#include "deploy/option.hpp"
-#include "deploy/result.hpp"
+#include "core/buffer.hpp"
+#include "core/core.hpp"
+#include "trtyolo.hpp"
+#include "utils/common.hpp"
+#include "warpaffine.hpp"
 
-namespace deploy {
+namespace trtyolo {
 
 /**
  * @brief TensorRT 后端类，用于执行推理操作。
  */
-class DEPLOYAPI TrtBackend {
+class TrtBackend {
 public:
     /**
      * @brief 构造函数，用于初始化 TrtBackend 对象。
      *
      * @param trt_engine_file TensorRT 引擎文件路径。
-     * @param infer_option 推理选项指针。
+     * @param infer_config 推理配置指针。
      */
-    TrtBackend(const std::string& trt_engine_file, const InferOption& infer_option);
+    TrtBackend(const std::string& trt_engine_file, const InferConfig& infer_config);
 
     /**
      * @brief 默认构造函数。
@@ -62,7 +62,7 @@ public:
     void infer(const std::vector<Image>& inputs);
 
     cudaStream_t                 stream;             // < CUDA 流
-    InferOption                  option;             // < 推理选项
+    InferConfig                  infer_config;       // < 推理选项
     std::vector<TensorInfo>      tensor_infos;       // < 张量信息向量
     std::vector<AffineTransform> affine_transforms;  // < 仿射变换向量
     int4                         min_shape;          // < 最小形状
@@ -87,4 +87,4 @@ private:
     int infer_size_;                             // < 推理大小
 };
 
-}  // namespace deploy
+}  // namespace trtyolo

@@ -11,14 +11,12 @@
 #pragma once
 
 #include <NvInferRuntime.h>
-#include <cuda_runtime.h>
 
-#include <cstddef>
 #include <memory>
 #include <numeric>
 #include <string>
 
-namespace deploy {
+namespace trtyolo {
 
 /**
  * @brief 抽象基类 Buffer，用于管理内存操作
@@ -274,4 +272,4 @@ private:
     }
 };
 
-}  // namespace deploy
+}  // namespace trtyolo

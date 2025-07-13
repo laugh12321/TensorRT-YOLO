@@ -10,9 +10,9 @@
 
 #include <cstdint>
 
-#include "deploy/infer/warpaffine.hpp"
+#include "warpaffine.hpp"
 
-namespace deploy {
+namespace trtyolo {
 
 inline __device__ __host__ int iDivUp(int a, int b) {
     return (a % b != 0) ? (a / b + 1) : (a / b);
@@ -189,4 +189,4 @@ void cudaMutliWarpAffine(const void* src, const int src_cols, const int src_rows
     gpuMutliBilinearWarpAffine<<<gridDim, blockDim, 0, stream>>>(src, src_cols, src_rows, src_pitch, dst, dst_cols, dst_rows, matrix[0], matrix[1], config, num_images);
 }
 
-}  // namespace deploy
+}  // namespace trtyolo

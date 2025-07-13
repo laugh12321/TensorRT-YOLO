@@ -8,10 +8,10 @@
  *
  */
 
-#include "deploy/core/core.hpp"
-#include "deploy/core/macro.hpp"
+#include "core.hpp"
+#include "utils/common.hpp"
 
-namespace deploy {
+namespace trtyolo {
 
 // 定义日志级别与前缀的映射表
 const std::map<nvinfer1::ILogger::Severity, std::string> TRTLogger::severity_map_ = {
@@ -224,4 +224,4 @@ cudaGraphNodeType CudaGraph::getNodeType(size_t index) {
     return nodeType;
 }
 
-}  // namespace deploy
+}  // namespace trtyolo
