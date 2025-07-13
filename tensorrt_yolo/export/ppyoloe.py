@@ -253,7 +253,7 @@ class PPYOLOEGraphSurgeon:
             score_threshold=score_thresh,
             iou_threshold=nms_thresh,
             score_activation=False,
-            class_agnostic=True,
+            class_agnostic=False,
             box_coding=0,
         )
 

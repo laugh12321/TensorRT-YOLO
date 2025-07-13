@@ -103,7 +103,7 @@ class EfficientNMS_TRT(torch.autograd.Function):
             max_output_boxes_i=max_output_boxes,
             score_activation_i=score_activation,  # 1, 将 sigmoid 激活应用于 NMS 操作中的置信度得分
             background_class_i=-1,  # 没有背景类别
-            class_agnostic_i=1,  # 执行类无关的 NMS
+            class_agnostic_i=0,  # 执行类相关的 NMS
             box_coding_i=1,  # 输入边框为 BoxCenterSize 格式 (x, y, w, h)
             plugin_version_s='1',  # 插件版本为 1
         )
@@ -150,7 +150,7 @@ class EfficientRotatedNMS_TRT(torch.autograd.Function):
             max_output_boxes_i=max_output_boxes,
             score_activation_i=score_activation,  # 1, 将 sigmoid 激活应用于 NMS 操作中的置信度得分
             background_class_i=-1,  # 没有背景类别
-            class_agnostic_i=1,  # 执行类无关的 NMS
+            class_agnostic_i=0,  # 执行类相关的 NMS
             box_coding_i=1,  # 输入边框为 BoxCenterSize 格式 (x, y, w, h)
             plugin_version_s='1',  # 插件版本为 1
         )
@@ -198,7 +198,7 @@ class EfficientIdxNMS_TRT(torch.autograd.Function):
             max_output_boxes_i=max_output_boxes,
             score_activation_i=score_activation,  # 1, 将 sigmoid 激活应用于 NMS 操作中的置信度得分
             background_class_i=-1,  # 没有背景类别
-            class_agnostic_i=1,  # 执行类无关的 NMS
+            class_agnostic_i=0,  # 执行类相关的 NMS
             box_coding_i=1,  # 输入边框为 BoxCenterSize 格式 (x, y, w, h)
             plugin_version_s='1',  # 插件版本为 1
         )
