@@ -153,6 +153,7 @@ void TrtBackend::captureCudaGraph() {
                 inputs_buffer_->device(),
                 input_width,
                 input_height,
+                input_width * max_shape.y,
                 tensor_infos.front().buffer->device(),
                 max_shape.w,
                 max_shape.z,
@@ -168,6 +169,7 @@ void TrtBackend::captureCudaGraph() {
                     input_device,
                     input_width,
                     input_height,
+                    input_width * max_shape.y,
                     infer_device,
                     max_shape.w,
                     max_shape.z,
@@ -235,6 +237,7 @@ void TrtBackend::staticInfer(const std::vector<Image>& inputs) {
                     (void*)&inputs[idx].ptr,
                     (void*)&inputs[idx].width,
                     (void*)&inputs[idx].height,
+                    (void*)&inputs[idx].pitch,
                     (void*)&infer_device_ptr,
                     (void*)&max_shape.w,
                     (void*)&max_shape.z,
@@ -257,7 +260,7 @@ void TrtBackend::staticInfer(const std::vector<Image>& inputs) {
 
             // 计算输入大小，并累加总大小
             for (int idx = 0; idx < num; ++idx) {
-                input_sizes[idx]  = inputs[idx].width * inputs[idx].height * max_shape.y;
+                input_sizes[idx]  = inputs[idx].height * inputs[idx].pitch;
                 total_size       += input_sizes[idx];
             }
 
@@ -287,6 +290,7 @@ void TrtBackend::staticInfer(const std::vector<Image>& inputs) {
                 option.cuda_mem ? (void*)&inputs[idx].ptr : (void*)&input_ptr,
                 (void*)&inputs[idx].width,
                 (void*)&inputs[idx].height,
+                (void*)&inputs[idx].pitch,
                 (void*)&infer_device_ptr,
                 (void*)&max_shape.w,
                 (void*)&max_shape.z,
@@ -300,7 +304,7 @@ void TrtBackend::staticInfer(const std::vector<Image>& inputs) {
 
             // 更新 input_ptr 仅在 cuda_mem 为 false 时
             if (!option.cuda_mem) {
-                input_ptr += inputs[idx].width * inputs[idx].height * max_shape.y;
+                input_ptr += inputs[idx].height * inputs[idx].pitch;
             }
         }
     }
@@ -341,6 +345,7 @@ void TrtBackend::dynamicInfer(const std::vector<Image>& inputs) {
                 option.cuda_mem ? inputs[idx].ptr : static_cast<uint8_t*>(inputs_buffer_->device()) + idx * input_size_,
                 inputs[idx].width,
                 inputs[idx].height,
+                inputs[idx].pitch,
                 static_cast<float*>(tensor_infos.front().buffer->device()) + idx * infer_size_,
                 max_shape.w,
                 max_shape.z,
@@ -354,7 +359,7 @@ void TrtBackend::dynamicInfer(const std::vector<Image>& inputs) {
 
         // 计算输入大小，并累加总大小
         for (int idx = 0; idx < num; ++idx) {
-            input_sizes[idx]  = inputs[idx].width * inputs[idx].height * max_shape.y;
+            input_sizes[idx]  = inputs[idx].height * inputs[idx].pitch;
             total_size       += input_sizes[idx];
             affine_transforms[idx].updateMatrix(inputs[idx].width, inputs[idx].height, max_shape.w, max_shape.z);
         }
@@ -381,6 +386,7 @@ void TrtBackend::dynamicInfer(const std::vector<Image>& inputs) {
                     input_device,
                     inputs[idx].width,
                     inputs[idx].height,
+                    inputs[idx].pitch,
                     static_cast<float*>(tensor_infos.front().buffer->device()) + idx * infer_size_,
                     max_shape.w,
                     max_shape.z,
@@ -396,6 +402,7 @@ void TrtBackend::dynamicInfer(const std::vector<Image>& inputs) {
                     inputs[idx].ptr,
                     inputs[idx].width,
                     inputs[idx].height,
+                    inputs[idx].pitch,
                     static_cast<float*>(tensor_infos.front().buffer->device()) + idx * infer_size_,
                     max_shape.w,
                     max_shape.z,
