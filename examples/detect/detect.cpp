@@ -2,7 +2,7 @@
  * @file detect.cpp
  * @author laugh12321 (laugh12321@vip.qq.com)
  * @brief Detect C++ 示例
- * @date 2025-01-23
+ * @date 2025-06-07
  *
  * @copyright Copyright (c) 2025 laugh12321. All Rights Reserved.
  *
@@ -13,9 +13,7 @@
 #include <memory>
 #include <opencv2/opencv.hpp>
 
-#include "deploy/model.hpp"
-#include "deploy/option.hpp"
-#include "deploy/result.hpp"
+#include "trtyolo.hpp"
 
 namespace fs = std::filesystem;
 
@@ -56,7 +54,7 @@ std::vector<std::string> generate_labels(const std::string& label_file) {
 }
 
 // 在图像上可视化推理结果
-void visualize(cv::Mat& image, const deploy::DetectRes& result, const std::vector<std::string>& labels) {
+void visualize(cv::Mat& image, const trtyolo::DetectRes& result, const std::vector<std::string>& labels) {
     for (size_t i = 0; i < result.num; ++i) {
         const auto& box        = result.boxes[i];
         int         cls        = result.classes[i];
@@ -98,14 +96,14 @@ void parse_arguments(int argc, char** argv, std::string& engine_path, std::strin
 }
 
 // 处理单张图像
-void process_single_image(const std::string& image_path, const std::string& output_path, deploy::DetectModel& model, const std::vector<std::string>& labels) {
+void process_single_image(const std::string& image_path, const std::string& output_path, trtyolo::DetectModel& model, const std::vector<std::string>& labels) {
     cv::Mat image = cv::imread(image_path, cv::IMREAD_COLOR);
     if (image.empty()) {
         throw std::runtime_error("Failed to read image from path: " + image_path);
     }
 
-    deploy::Image img(image.data, image.cols, image.rows);
-    auto          result = model.predict(img);
+    trtyolo::Image img(image.data, image.cols, image.rows);
+    auto           result = model.predict(img);
 
     if (!output_path.empty()) {
         visualize(image, result, labels);
@@ -115,12 +113,12 @@ void process_single_image(const std::string& image_path, const std::string& outp
 }
 
 // 处理一批图像
-void process_batch_images(const std::vector<std::string>& image_paths, const std::string& output_path, deploy::DetectModel& model, const std::vector<std::string>& labels) {
-    const int batch_size = model.batch_size();
+void process_batch_images(const std::vector<std::string>& image_paths, const std::string& output_path, trtyolo::DetectModel& model, const std::vector<std::string>& labels) {
+    const int batch_size = model.batch();
     for (size_t i = 0; i < image_paths.size(); i += batch_size) {
-        std::vector<cv::Mat>       images;
-        std::vector<deploy::Image> img_batch;
-        std::vector<std::string>   img_name_batch;
+        std::vector<cv::Mat>        images;
+        std::vector<trtyolo::Image> img_batch;
+        std::vector<std::string>    img_name_batch;
 
         for (size_t j = i; j < i + batch_size && j < image_paths.size(); ++j) {
             cv::Mat image = cv::imread(image_paths[j], cv::IMREAD_COLOR);
@@ -168,7 +166,7 @@ int main(int argc, char** argv) {
             create_output_directory(output_path);
         }
 
-        deploy::InferOption option;
+        trtyolo::InferOption option;
         option.enableSwapRB();
         // option.setNormalizeParams({0.485, 0.456, 0.406}, {0.229, 0.224, 0.225}); // PP-YOLOE、PP-YOLOE+
 
@@ -176,7 +174,7 @@ int main(int argc, char** argv) {
             option.enablePerformanceReport();
         }
 
-        auto model = std::make_unique<deploy::DetectModel>(engine_path, option);
+        auto model = std::make_unique<trtyolo::DetectModel>(engine_path, option);
 
         if (fs::is_regular_file(input_path)) {
             process_single_image(input_path, output_path, *model, labels);
@@ -190,7 +188,7 @@ int main(int argc, char** argv) {
 
         std::cout << "Inference completed." << std::endl;
 
-        if (option.enable_performance_report) {
+        if (!fs::is_regular_file(input_path)) {
             auto [throughput_str, gpu_latency_str, cpu_latency_str] = model->performanceReport();
             std::cout << throughput_str << std::endl;
             std::cout << gpu_latency_str << std::endl;

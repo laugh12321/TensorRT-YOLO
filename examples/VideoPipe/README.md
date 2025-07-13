@@ -29,7 +29,7 @@ trtexec --onnx=workspace/yolo11n.onnx --saveEngine=workspace/yolo11n.engine --fp
 2. 将项目编译为可执行文件：
 
     ```bash
-    cmake -S . -B build -DTRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO" -DVIDEOPIPE_PATH="/path/to/your/VideoPipe"
+    cmake -S . -B build -D VIDEOPIPE_PATH="/path/to/your/VideoPipe"
     cmake --build . -j8 --config Release
     ```
 

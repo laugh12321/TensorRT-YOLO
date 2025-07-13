@@ -29,7 +29,7 @@ trtyolo export -w models/yolo11n-pose.pt -v yolo11 -o models -s
 After running the above command, a `yolo11n-pose.onnx` file with a `batch_size` of 1 will be generated in the `models` folder. Next, use the `trtexec` tool to convert the ONNX file to a TensorRT engine (fp16):
 
 ```bash
-trtexec --onnx=models/yolo11n-pose.onnx --saveEngine=models/yolo11n-pose.engine --fp16 --staticPlugins=/path/to/your/TensorRT-YOLO/lib/plugin/libcustom_plugins.so --setPluginsToSerialize=/path/to/your/TensorRT-YOLO/lib/plugin/libcustom_plugins.so
+trtexec --onnx=models/yolo11n-pose.onnx --saveEngine=models/yolo11n-pose.engine --fp16 --staticPlugins=/your/tensorrt-yolo/install/dir/lib/libcustom_plugins.so --setPluginsToSerialize=/your/tensorrt-yolo/install/dir/lib/libcustom_plugins.so
 ```
 
 ## Model Inference
@@ -70,7 +70,7 @@ trtexec --onnx=models/yolo11n-pose.onnx --saveEngine=models/yolo11n-pose.engine 
 2. Compile `pose.cpp` into an executable:
 
     ```bash
-    cmake -S . -B build -DTRT_PATH="/path/to/your/TensorRT" -DDEPLOY_PATH="/path/to/your/TensorRT-YOLO"
+    cmake -S . -B build
     cmake --build build -j8 --config Release
     ```
 
