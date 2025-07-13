@@ -1,19 +1,19 @@
 /**
- * @file utils.cpp
+ * @file common.cpp
  * @author laugh12321 (laugh12321@vip.qq.com)
- * @brief 提供一些实用的工具函数
- * @date 2025-01-15
+ * @brief 常用的工具函数、结构体和计时器类的实现
+ * @date 2025-06-02
  *
- * @copyright Copyright (c) 2025 laugh12321. All Rights Reserved.
+ * @copyright Copyright (c) 2025
  *
  */
+
 #include <algorithm>
 #include <fstream>
 
-#include "deploy/core/macro.hpp"
-#include "deploy/utils/utils.hpp"
+#include "common.hpp"
 
-namespace deploy {
+namespace trtyolo {
 
 void ReadBinaryFromFile(const std::string& file, std::string* contents) {
     std::ifstream fin(file, std::ios::in | std::ios::binary);
@@ -114,4 +114,4 @@ void GpuTimer::stop() {
     mMs.push_back(ms);
 }
 
-}  // namespace deploy
+}  // namespace trtyolo

@@ -1,8 +1,8 @@
 /**
- * @file utils.hpp
+ * @file common.hpp
  * @author laugh12321 (laugh12321@vip.qq.com)
- * @brief 提供一些实用的工具函数
- * @date 2025-01-15
+ * @brief 常用的工具函数、结构体和计时器类的定义
+ * @date 2025-06-02
  *
  * @copyright Copyright (c) 2025 laugh12321. All Rights Reserved.
  *
@@ -10,16 +10,77 @@
 
 #pragma once
 
-#include <cuda_runtime_api.h>
+#include <cuda_runtime.h>
 
+#include <cassert>
 #include <chrono>
+#include <iostream>
 #include <numeric>
-#include <string>
+#include <optional>
 #include <vector>
 
-#include "deploy/core/macro.hpp"
+namespace trtyolo {
 
-namespace deploy {
+/**
+ * @brief 检查 CUDA 错误并处理，通过打印错误消息。
+ *
+ * 此函数用于验证 CUDA API 调用的结果。如果发生错误，它将输出错误详情，包括文件名、行号和错误描述。
+ * 如果检测到 CUDA 错误，程序将终止。
+ *
+ * @param code CUDA API 调用返回的 CUDA 错误码。
+ * @param file 发生错误的文件名。
+ * @param line 发生错误的行号。
+ */
+inline void checkCudaError(cudaError_t code, const char* file, int line) {
+    if (code != cudaSuccess) {
+        std::cerr << "CUDA Failure at " << file << ":" << line << ": "
+                  << cudaGetErrorString(code) << std::endl;
+        exit(EXIT_FAILURE);
+    }
+}
+
+/**
+ * @brief 宏，用于简化 CUDA 错误检查。
+ *
+ * 此宏封装了 `checkCudaError` 函数，使检查 CUDA API 调用错误更加方便。如果 CUDA 调用返回错误，
+ * 宏会捕获发生错误的文件和行号，并输出错误消息。
+ *
+ * @param code 要检查错误的 CUDA API 调用。
+ */
+#define CHECK(code) checkCudaError((code), __FILE__, __LINE__)
+
+/**
+ * @brief 生成错误消息的宏。
+ *
+ * 此宏用于生成包含文件名、行号和函数名的错误消息，方便定位错误位置。
+ *
+ * @param msg 错误描述信息。
+ */
+#define MAKE_ERROR_MESSAGE(msg) (std::string("Error in ") + __FILE__ + ":" + std::to_string(__LINE__) + " (" + __FUNCTION__ + "): " + msg)
+
+/**
+ * @brief 图像预处理配置结构体
+ *
+ */
+struct ProcessConfig {
+    bool   swap_rb      = false;                                                  // < 是否交换 R 和 B 通道
+    float  border_value = 114.0f;                                                 // < 边界值，用于填充
+    float3 alpha        = make_float3(1.0 / 255.0f, 1.0 / 255.0f, 1.0 / 255.0f);  // < 归一化系数
+    float3 beta         = make_float3(0.0f, 0.0f, 0.0f);                          // < 偏移量
+};
+
+/**
+ * @brief 推理选项配置结构体
+ *
+ */
+struct InferConfig {
+    int                 device_id                 = 0;      // < GPU ID
+    bool                cuda_mem                  = false;  // < 推理数据是否已经在 CUDA 显存中
+    bool                enable_managed_memory     = false;  // < 是否启用统一内存
+    bool                enable_performance_report = false;  // < 是否启用性能报告
+    std::optional<int2> input_shape;                        // < 输入数据的高、宽，未设置时表示宽度可变（用于输入数据宽高确定的任务场景：监控视频分析，AI外挂等）
+    ProcessConfig       config;                             // < 图像预处理配置
+};
 
 /**
  * @brief 从文件中读取二进制数据并存储到指定的字符串中
@@ -113,7 +174,7 @@ protected:
  * 该类继承自 TimerBase 类，实现了具体的 CPU 计时功能。
  * 它使用 C++ 标准库中的高精度时钟来记录时间。
  */
-class DEPLOYAPI CpuTimer : public TimerBase {
+class CpuTimer : public TimerBase {
 public:
     void start() override;                                                      // < 重写 start 方法，开始 CPU 计时
     void stop() override;                                                       // < 重写 stop 方法，停止 CPU 计时
@@ -128,7 +189,7 @@ private:
  * 该类继承自 TimerBase 类，实现了具体的 GPU 计时功能。
  * 它使用 CUDA 事件来记录 GPU 上的时间。
  */
-class DEPLOYAPI GpuTimer : public TimerBase {
+class GpuTimer : public TimerBase {
 public:
     explicit GpuTimer(cudaStream_t stream);  // < 构造函数，传入 CUDA 流
     ~GpuTimer();                             // < 析构函数
@@ -141,4 +202,4 @@ private:
     cudaStream_t mStream;                    // < CUDA 流
 };
 
-}  // namespace deploy
+}  // namespace trtyolo

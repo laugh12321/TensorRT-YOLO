@@ -8,10 +8,10 @@
  *
  */
 
-#include "deploy/core/buffer.hpp"
-#include "deploy/core/macro.hpp"
+#include "buffer.hpp"
+#include "utils/common.hpp"
 
-namespace deploy {
+namespace trtyolo {
 
 DeviceBuffer::DeviceBuffer(DeviceBuffer&& other) noexcept
     : size_(other.size_), device_(other.device_) {
@@ -248,4 +248,4 @@ std::unique_ptr<BaseBuffer> BufferFactory::createBuffer(BufferType type) {
     }
 }
 
-}  // namespace deploy
+}  // namespace trtyolo
