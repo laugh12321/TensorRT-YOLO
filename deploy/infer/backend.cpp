@@ -151,8 +151,8 @@ void TrtBackend::captureCudaGraph() {
             // Multi-instance WarpAffine
             cudaMutliWarpAffine(
                 inputs_buffer_->device(),
-                input_height,
                 input_width,
+                input_height,
                 tensor_infos.front().buffer->device(),
                 max_shape.w,
                 max_shape.z,
@@ -166,8 +166,8 @@ void TrtBackend::captureCudaGraph() {
                 auto [input_device, infer_device] = calculate_input_size_and_device(idx, input_width, input_height);
                 cudaWarpAffine(
                     input_device,
-                    input_height,
                     input_width,
+                    input_height,
                     infer_device,
                     max_shape.w,
                     max_shape.z,
@@ -183,14 +183,14 @@ void TrtBackend::captureCudaGraph() {
 
     // Step 3: Perform memory transfer and WarpAffine based on configuration
     if (option.cuda_mem) {
-        int input_width  = option.input_shape ? option.input_shape->x : max_shape.w;
-        int input_height = option.input_shape ? option.input_shape->y : max_shape.z;
+        int input_width  = option.input_shape ? option.input_shape->y : max_shape.w;
+        int input_height = option.input_shape ? option.input_shape->x : max_shape.z;
         warp_affine(false, input_width, input_height);
     } else {
         inputs_buffer_->hostToDevice(stream);
 
-        int input_width  = option.input_shape ? option.input_shape->x : max_shape.w;
-        int input_height = option.input_shape ? option.input_shape->y : max_shape.z;
+        int input_width  = option.input_shape ? option.input_shape->y : max_shape.w;
+        int input_height = option.input_shape ? option.input_shape->x : max_shape.z;
         warp_affine(option.input_shape.has_value(), input_width, input_height);
     }
 
