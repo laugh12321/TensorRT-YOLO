@@ -29,17 +29,20 @@ cd TensorRT-YOLO
 Then compile using CMake with the following steps:
 
 ```bash
-pip install "pybind11[global]"
-cmake -S . -B build -DTRT_PATH=/usr/local/tensorrt -DBUILD_PYTHON=ON
-cmake --build build -j$(nproc) --config Release
+pip install "pybind11[global]" # Install pybind11 to generate Python bindings
+cmake -S . -B build -D TRT_PATH=/your/tensorrt/dir -D BUILD_PYTHON=ON -D CMAKE_INSTALL_PREFIX=/your/tensorrt-yolo/install/dir
+cmake --build build -j$(nproc) --config Release --target install
 ```
 
-After compilation, a folder named `lib` will be created in the root directory, and the corresponding Python bindings will be generated under `python/tensorrt_yolo/libs`. The `lib` folder contains the following:
-- A dynamic library file named `deploy`.
-- A subfolder named `plugin`, which contains the compiled TensorRT custom plugin dynamic libraries.
+After executing the above commands, the `tensorrt-yolo` library will be installed in the specified `CMAKE_INSTALL_PREFIX` directory. The `include` folder will contain the header files, and the `lib` folder will contain the `trtyolo` dynamic library and the `custom_plugins` dynamic library (only needed when building OBB, Segment, or Pose models with `trtexec`). If the `BUILD_PYTHON` option is enabled during compilation, the corresponding Python binding files will also be generated in the `tensorrt_yolo/libs` path.
 
 > [!NOTE]  
-> If Python bindings are not needed, you can remove the `-DBUILD_PYTHON=ON` parameter.
+> Before using the C++ version of the `tensorrt-yolo` library, ensure that the specified `CMAKE_INSTALL_PREFIX` path is added to the environment variables so that CMake's `find_package` can locate the `tensorrt-yolo-config.cmake` file. This can be done using the following command:
+>
+> ```bash
+> export PATH=$PATH:/your/tensorrt-yolo/install/dir # linux
+> $env:PATH = "$env:PATH;C:\your\tensorrt-yolo\install\dir;C:\your\tensorrt-yolo\install\dir\bin" # windows
+> ```
 
 ## Installing `tensorrt_yolo`
 

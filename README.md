@@ -45,6 +45,8 @@
     ▸ **CUDA Graph 原理与工程实践**  
     ▸ **Triton Inference Server 部署技巧**  
 
+- 2025-06-09: C++仅引单头文件 `trtyolo.hpp`，零第三方依赖（使用模块时无需链接 CUDA 和 TensorRT），增加对带图像间距（Pitch）数据结构的支持，详见 [B站](https://www.bilibili.com/video/BV1e2N1zjE3L)。🌟 NEW
+
 - 2025-04-19: 添加对 [YOLO-World](https://docs.ultralytics.com/zh/models/yolo-world/),  [YOLOE](https://docs.ultralytics.com/zh/models/yoloe/) 的支持，包括分类、定向边界框、姿态估计以及实例分割，详见 [B站](https://www.bilibili.com/video/BV12N5bzkENV)。🌟 NEW
 
 - 2025-03-29: 添加对 [YOLO12](https://github.com/sunsmarterjie/yolov12) 的支持，包括分类、定向边界框、姿态估计以及实例分割，详见 [issues](https://github.com/sunsmarterjie/yolov12/issues/22)。🌟 NEW
@@ -208,15 +210,12 @@
   #include <memory>
   #include <opencv2/opencv.hpp>
 
-  // 为了方便调用，模块除使用CUDA、TensorRT外，其余均使用标准库实现
-  #include "deploy/model.hpp"  // 包含模型推理相关的类定义
-  #include "deploy/option.hpp"  // 包含推理选项的配置类定义
-  #include "deploy/result.hpp"  // 包含推理结果的定义
+  #include "trtyolo.hpp"
 
   int main() {
       try {
           // -------------------- 初始化配置 --------------------
-          deploy::InferOption option;
+          trtyolo::InferOption option;
           option.enableSwapRB();  // BGR->RGB转换
 
           // 特殊模型参数设置示例
@@ -225,7 +224,7 @@
           // option.setNormalizeParams(mean, std);
 
           // -------------------- 模型初始化 --------------------
-          auto detector = std::make_unique<deploy::DetectModel>(
+          auto detector = std::make_unique<trtyolo::DetectModel>(
               "yolo11n-with-plugin.engine",  // 模型路径
               option                         // 推理设置
           );
@@ -237,14 +236,14 @@
           }
 
           // 封装图像数据（不复制像素数据）
-          deploy::Image input_image(
+          trtyolo::Image input_image(
               cv_image.data,     // 像素数据指针
               cv_image.cols,     // 图像宽度
               cv_image.rows     // 图像高度
           );
 
           // -------------------- 执行推理 --------------------
-          deploy::DetectRes result = detector->predict(input_image);
+          trtyolo::DetectRes result = detector->predict(input_image);
           std::cout << result << std::endl;
 
           // -------------------- 结果可视化（示意） --------------------
@@ -254,7 +253,7 @@
 
           // -------------------- 模型克隆演示 --------------------
           auto cloned_detector = detector->clone();  // 创建独立实例
-          deploy::DetectRes cloned_result = cloned_detector->predict(input_image);
+          trtyolo::DetectRes cloned_result = cloned_detector->predict(input_image);
 
           // 验证结果一致性
           std::cout << cloned_result << std::endl;
