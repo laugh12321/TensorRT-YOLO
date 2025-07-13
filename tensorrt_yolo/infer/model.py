@@ -22,7 +22,10 @@
 # Date    :   2025/01/19 17:50:16
 # Desc    :   Define base model class and factory function for model creation and prediction
 # ==============================================================================
-from typing import Sequence, Type, TypeAlias, Union
+from __future__ import annotations
+
+from collections.abc import Sequence
+from typing import Type, Union
 
 from cv2.typing import MatLike
 from loguru import logger
@@ -49,19 +52,19 @@ __all__ = [
 ]
 
 # Define type aliases
-Mask: TypeAlias = C.result.Mask
-KeyPoint: TypeAlias = C.result.KeyPoint
-Box: TypeAlias = C.result.Box
-RotatedBox: TypeAlias = C.result.RotatedBox
-ClassifyRes: TypeAlias = C.result.ClassifyRes
-DetectRes: TypeAlias = C.result.DetectRes
-OBBRes: TypeAlias = C.result.OBBRes
-SegmentRes: TypeAlias = C.result.SegmentRes
-PoseRes: TypeAlias = C.result.PoseRes
-InferOption: TypeAlias = C.option.InferOption
+Mask: C.result.Mask = C.result.Mask
+KeyPoint: C.result.KeyPoint = C.result.KeyPoint
+Box: C.result.Box = C.result.Box
+RotatedBox: C.result.RotatedBox = C.result.RotatedBox
+ClassifyRes: C.result.ClassifyRes = C.result.ClassifyRes
+DetectRes: C.result.DetectRes = C.result.DetectRes
+OBBRes: C.result.OBBRes = C.result.OBBRes
+SegmentRes: C.result.SegmentRes = C.result.SegmentRes
+PoseRes: C.result.PoseRes = C.result.PoseRes
+InferOption: C.option.InferOption = C.option.InferOption
 
 # Define union type
-ResultType: TypeAlias = Union[ClassifyRes, DetectRes, OBBRes, SegmentRes, PoseRes]
+ResultType = Union[ClassifyRes, DetectRes, OBBRes, SegmentRes, PoseRes]
 
 
 class BaseModel:
@@ -116,7 +119,7 @@ class BaseModel:
         """
         return self._model.predict(images)
 
-    def clone(self) -> 'BaseModel':
+    def clone(self) -> BaseModel:
         """
         Clone the current model.
 

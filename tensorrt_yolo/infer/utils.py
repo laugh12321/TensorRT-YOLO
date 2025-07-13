@@ -22,6 +22,8 @@
 # Date    :   2024/07/05 14:06:46
 # Desc    :   Utility functions for visualizing infernce results on images.
 # ==============================================================================
+from __future__ import annotations
+
 import os
 import sys
 from collections.abc import Sequence, Set
