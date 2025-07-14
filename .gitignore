@@ -1,7 +1,6 @@
 # Build and compilation directories
 build/
 bin/
-lib/
 libs/
 dist/
 *.egg-info/
@@ -23,5 +22,7 @@ outputs/
 
 # Miscellaneous
 images/
-
-python/tensorrt_yolo/c_lib_wrap.py
+models/
+workspace/
+cmake/tensorrt-yolo-config.cmake
+tensorrt_yolo/c_lib_wrap.py
