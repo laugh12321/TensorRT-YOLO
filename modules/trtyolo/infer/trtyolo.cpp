@@ -10,7 +10,6 @@
 
 #include <cassert>
 #include <cstring>
-#include <iostream>
 #include <memory>
 #include <sstream>
 #include <vector_functions.hpp>
@@ -41,99 +40,6 @@ Mask::Mask(int width, int height) : width(width), height(height) {
         throw std::invalid_argument(MAKE_ERROR_MESSAGE("Mask: width and height must be positive"));
     }
     data.resize(width * height);
-}
-
-std::ostream& operator<<(std::ostream& os, const Image& img) {
-    os << "Image(width=" << img.width
-       << ", height=" << img.height
-       << ", pitch=" << img.pitch
-       << ", ptr=" << img.ptr << ")";
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const Mask& mask) {
-    os << "Mask(width=" << mask.width << ", height=" << mask.height << ", data size=" << mask.data.size() << ")";
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const KeyPoint& kp) {
-    os << "KeyPoint(x=" << kp.x << ", y=" << kp.y;
-    if (kp.conf) {
-        os << ", conf=" << *kp.conf;
-    }
-    os << ")";
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const Box& box) {
-    os << "Box(left=" << box.left << ", top=" << box.top << ", right=" << box.right << ", bottom=" << box.bottom << ")";
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const RotatedBox& rbox) {
-    os << "RotatedBox(left=" << rbox.left << ", top=" << rbox.top << ", right=" << rbox.right << ", bottom=" << rbox.bottom << ", theta=" << rbox.theta << ")";
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const ClassifyRes& res) {
-    os << "ClassifyRes(\n    num=" << res.num << ",\n    classes=[";
-    for (const auto& c : res.classes) os << c << ", ";
-    os << "],\n    scores=[";
-    for (const auto& s : res.scores) os << s << ", ";
-    os << "]\n)";
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const DetectRes& res) {
-    os << "DetectRes(\n    num=" << res.num << ",\n    classes=[";
-    for (const auto& c : res.classes) os << c << ", ";
-    os << "],\n    scores=[";
-    for (const auto& s : res.scores) os << s << ", ";
-    os << "],\n    boxes=[\n";
-    for (const auto& box : res.boxes) os << "        " << box << ",\n";
-    os << "    ]\n)";
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const OBBRes& res) {
-    os << "OBBRes(\n    num=" << res.num << ",\n    classes=[";
-    for (const auto& c : res.classes) os << c << ", ";
-    os << "],\n    scores=[";
-    for (const auto& s : res.scores) os << s << ", ";
-    os << "],\n    boxes=[\n";
-    for (const auto& box : res.boxes) os << "        " << box << ",\n";
-    os << "    ]\n)";
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const SegmentRes& res) {
-    os << "SegmentRes(\n    num=" << res.num << ",\n    classes=[";
-    for (const auto& c : res.classes) os << c << ", ";
-    os << "],\n    scores=[";
-    for (const auto& s : res.scores) os << s << ", ";
-    os << "],\n    boxes: [\n";
-    for (const auto& box : res.boxes) os << "        " << box << ",\n";
-    os << "],\n    masks: [\n";
-    for (const auto& mask : res.masks) os << "        " << mask << "\n";
-    os << "    ]\n)";
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const PoseRes& res) {
-    os << "PoseRes(\n    num=" << res.num << ",\n    classes=[";
-    for (const auto& c : res.classes) os << c << ", ";
-    os << "],\n    scores=[";
-    for (const auto& s : res.scores) os << s << ", ";
-    os << "],\n    boxes=[\n";
-    for (const auto& box : res.boxes) os << "        " << box << "\n";
-    os << "],\n    kpts=[\n";
-    for (const auto& kp_list : res.kpts) {
-        os << "        [ ";
-        for (const auto& kp : kp_list) os << "            " << kp << ", ";
-        os << "        ],\n";
-    }
-    os << "    ]\n)";
-    return os;
 }
 
 class InferOption::Impl {
