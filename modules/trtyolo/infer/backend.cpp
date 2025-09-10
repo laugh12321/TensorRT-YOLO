@@ -428,6 +428,8 @@ void TrtBackend::dynamicInfer(const std::vector<Image>& inputs) {
 }
 
 void TrtBackend::infer(const std::vector<Image>& inputs) {
+    cudaSetDevice(infer_config.device_id);  // 推理前切换设备
+
     if (dynamic) {
         dynamicInfer(inputs);
     } else {
