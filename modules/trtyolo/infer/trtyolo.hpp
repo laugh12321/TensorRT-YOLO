@@ -16,6 +16,7 @@
 #define TRTYOLOAPI __attribute__((visibility("default")))
 #endif
 
+#include <iostream>
 #include <memory>
 #include <optional>
 #include <string>
@@ -52,7 +53,13 @@ struct TRTYOLOAPI Image {
      */
     Image(void* data, int width, int height, size_t pitch);
 
-    friend std::ostream& operator<<(std::ostream& os, const Image& img);
+    friend std::ostream& operator<<(std::ostream& os, const Image& img) {
+        os << "Image(width=" << img.width
+           << ", height=" << img.height
+           << ", pitch=" << img.pitch
+           << ", ptr=" << img.ptr << ")";
+        return os;
+    }
 };
 
 /**
@@ -71,7 +78,10 @@ struct TRTYOLOAPI Mask {
      */
     Mask(int width, int height);
 
-    friend std::ostream& operator<<(std::ostream& os, const Mask& mask);
+    friend std::ostream& operator<<(std::ostream& os, const Mask& mask) {
+        os << "Mask(width=" << mask.width << ", height=" << mask.height << ", data size=" << mask.data.size() << ")";
+        return os;
+    }
 };
 
 /**
@@ -92,7 +102,14 @@ struct TRTYOLOAPI KeyPoint {
     KeyPoint(float x, float y, std::optional<float> conf = std::nullopt)
         : x(x), y(y), conf(conf) {}
 
-    friend std::ostream& operator<<(std::ostream& os, const KeyPoint& kp);
+    friend std::ostream& operator<<(std::ostream& os, const KeyPoint& kp) {
+        os << "KeyPoint(x=" << kp.x << ", y=" << kp.y;
+        if (kp.conf) {
+            os << ", conf=" << *kp.conf;
+        }
+        os << ")";
+        return os;
+    }
 };
 
 /**
@@ -115,7 +132,10 @@ struct TRTYOLOAPI Box {
     Box(float left, float top, float right, float bottom)
         : left(left), top(top), right(right), bottom(bottom) {}
 
-    friend std::ostream& operator<<(std::ostream& os, const Box& box);
+    friend std::ostream& operator<<(std::ostream& os, const Box& box) {
+        os << "Box(left=" << box.left << ", top=" << box.top << ", right=" << box.right << ", bottom=" << box.bottom << ")";
+        return os;
+    }
 };
 
 /**
@@ -136,7 +156,10 @@ struct TRTYOLOAPI RotatedBox : public Box {
     RotatedBox(float left, float top, float right, float bottom, float theta)
         : Box(left, top, right, bottom), theta(theta) {}
 
-    friend std::ostream& operator<<(std::ostream& os, const RotatedBox& rbox);
+    friend std::ostream& operator<<(std::ostream& os, const RotatedBox& rbox) {
+        os << "RotatedBox(left=" << rbox.left << ", top=" << rbox.top << ", right=" << rbox.right << ", bottom=" << rbox.bottom << ", theta=" << rbox.theta << ")";
+        return os;
+    }
 };
 
 /**
@@ -170,7 +193,14 @@ struct TRTYOLOAPI BaseRes {
 struct TRTYOLOAPI ClassifyRes : public BaseRes {
     // 无需额外的构造函数，继承自 BaseRes 的默认构造函数已经足够
 
-    friend std::ostream& operator<<(std::ostream& os, const ClassifyRes& res);
+    friend std::ostream& operator<<(std::ostream& os, const ClassifyRes& res) {
+        os << "ClassifyRes(\n    num=" << res.num << ",\n    classes=[";
+        for (const auto& c : res.classes) os << c << ", ";
+        os << "],\n    scores=[";
+        for (const auto& s : res.scores) os << s << ", ";
+        os << "]\n)";
+        return os;
+    }
 };
 
 /**
@@ -196,7 +226,16 @@ struct TRTYOLOAPI DetectRes : public BaseRes {
     DetectRes(int num, const std::vector<int>& classes, const std::vector<float>& scores, const std::vector<Box>& boxes)
         : BaseRes(num, classes, scores), boxes(boxes) {}
 
-    friend std::ostream& operator<<(std::ostream& os, const DetectRes& res);
+    friend std::ostream& operator<<(std::ostream& os, const DetectRes& res) {
+        os << "DetectRes(\n    num=" << res.num << ",\n    classes=[";
+        for (const auto& c : res.classes) os << c << ", ";
+        os << "],\n    scores=[";
+        for (const auto& s : res.scores) os << s << ", ";
+        os << "],\n    boxes=[\n";
+        for (const auto& box : res.boxes) os << "        " << box << ",\n";
+        os << "    ]\n)";
+        return os;
+    }
 };
 
 /**
@@ -222,7 +261,16 @@ struct TRTYOLOAPI OBBRes : public BaseRes {
     OBBRes(int num, const std::vector<int>& classes, const std::vector<float>& scores, const std::vector<RotatedBox>& boxes)
         : BaseRes(num, classes, scores), boxes(boxes) {}
 
-    friend std::ostream& operator<<(std::ostream& os, const OBBRes& res);
+    friend std::ostream& operator<<(std::ostream& os, const OBBRes& res) {
+        os << "OBBRes(\n    num=" << res.num << ",\n    classes=[";
+        for (const auto& c : res.classes) os << c << ", ";
+        os << "],\n    scores=[";
+        for (const auto& s : res.scores) os << s << ", ";
+        os << "],\n    boxes=[\n";
+        for (const auto& box : res.boxes) os << "        " << box << ",\n";
+        os << "    ]\n)";
+        return os;
+    }
 };
 
 /**
@@ -250,7 +298,18 @@ struct TRTYOLOAPI SegmentRes : public BaseRes {
     SegmentRes(int num, const std::vector<int>& classes, const std::vector<float>& scores, const std::vector<Box>& boxes, const std::vector<Mask>& masks)
         : BaseRes(num, classes, scores), boxes(boxes), masks(masks) {}
 
-    friend std::ostream& operator<<(std::ostream& os, const SegmentRes& res);
+    friend std::ostream& operator<<(std::ostream& os, const SegmentRes& res) {
+        os << "SegmentRes(\n    num=" << res.num << ",\n    classes=[";
+        for (const auto& c : res.classes) os << c << ", ";
+        os << "],\n    scores=[";
+        for (const auto& s : res.scores) os << s << ", ";
+        os << "],\n    boxes: [\n";
+        for (const auto& box : res.boxes) os << "        " << box << ",\n";
+        os << "],\n    masks: [\n";
+        for (const auto& mask : res.masks) os << "        " << mask << "\n";
+        os << "    ]\n)";
+        return os;
+    }
 };
 
 /**
@@ -278,7 +337,22 @@ struct TRTYOLOAPI PoseRes : public BaseRes {
     PoseRes(int num, const std::vector<int>& classes, const std::vector<float>& scores, const std::vector<Box>& boxes, const std::vector<std::vector<KeyPoint>>& kpts)
         : BaseRes(num, classes, scores), boxes(boxes), kpts(kpts) {}
 
-    friend std::ostream& operator<<(std::ostream& os, const PoseRes& res);
+    friend std::ostream& operator<<(std::ostream& os, const PoseRes& res) {
+        os << "PoseRes(\n    num=" << res.num << ",\n    classes=[";
+        for (const auto& c : res.classes) os << c << ", ";
+        os << "],\n    scores=[";
+        for (const auto& s : res.scores) os << s << ", ";
+        os << "],\n    boxes=[\n";
+        for (const auto& box : res.boxes) os << "        " << box << "\n";
+        os << "],\n    kpts=[\n";
+        for (const auto& kp_list : res.kpts) {
+            os << "        [ ";
+            for (const auto& kp : kp_list) os << "            " << kp << ", ";
+            os << "        ],\n";
+        }
+        os << "    ]\n)";
+        return os;
+    }
 };
 
 /**
