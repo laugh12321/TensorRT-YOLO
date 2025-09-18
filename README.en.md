@@ -276,21 +276,21 @@ Simply pass the image to be inferred to the `predict` method. The `predict` meth
     <table>
         <tr>
             <td>
-                <img src='assets/yolo-detect.jpeg' height="300">
+                <img src='assets/yolo-detect.png' height="300">
                 <center>Detect</center>
             </td>
             <td>
-                <img src='assets/yolo-segment.jpeg' height="300">
+                <img src='assets/yolo-segment.png' height="300">
                 <center>Segment</center>
             </td>
         </tr>
         <tr>
             <td>
-                <img src='assets/yolo-pose.jpeg' height="300">
+                <img src='assets/yolo-pose.png' height="300">
                 <center>Pose</center>
             </td>
             <td>
-                <img src='assets/yolo-obb.jpeg' height="300">
+                <img src='assets/yolo-obb.png' height="300">
                 <center>OBB</center>
             </td>
         </tr>
