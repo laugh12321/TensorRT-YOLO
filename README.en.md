@@ -272,29 +272,10 @@ Simply pass the image to be inferred to the `predict` method. The `predict` meth
 
 ## <div align="center">🖥️ Model Support List</div><div id="support-models"></div>
 
-<div align="center">
-    <table>
-        <tr>
-            <td>
-                <img src='assets/yolo-detect.jpeg' height="300">
-                <center>Detect</center>
-            </td>
-            <td>
-                <img src='assets/yolo-segment.jpeg' height="300">
-                <center>Segment</center>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <img src='assets/yolo-pose.jpeg' height="300">
-                <center>Pose</center>
-            </td>
-            <td>
-                <img src='assets/yolo-obb.jpeg' height="300">
-                <center>OBB</center>
-            </td>
-        </tr>
-    </table>
+<div>
+  <p>
+      <img width="100%" src="./assets/model-banner.png"></a>
+  </p>
 </div>
 
 Symbol legend: (1)  ✅ : Supported; (2) ❔: In progress; (3) ❎ : Not supported; (4) ❎ : Self-implemented export required for inference. <br>

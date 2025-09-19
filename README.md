@@ -283,29 +283,10 @@
 
 ## <div align="center">🖥️ 模型支持列表</div><div id="support-models"></div>
 
-<div align="center">
-    <table>
-        <tr>
-            <td>
-                <img src='assets/yolo-detect.jpeg' height="300">
-                <center>Detect</center>
-            </td>
-            <td>
-                <img src='assets/yolo-segment.jpeg' height="300">
-                <center>Segment</center>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <img src='assets/yolo-pose.jpeg' height="300">
-                <center>Pose</center>
-            </td>
-            <td>
-                <img src='assets/yolo-obb.jpeg' height="300">
-                <center>OBB</center>
-            </td>
-        </tr>
-    </table>
+<div>
+  <p>
+      <img width="100%" src="./assets/model-banner.png"></a>
+  </p>
 </div>
 
 符号说明: (1)  ✅ : 已经支持; (2) ❔: 正在进行中; (3) ❎ : 暂不支持; (4) 🟢 : 导出自行实现，即可推理. <br>
