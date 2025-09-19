@@ -4,21 +4,18 @@ build-backend = "setuptools.build_meta"
 
 # Project settings -----------------------------------------------------------------------------------------------------
 [project]
-version = "6.3.0"
+version = "1.0.0"
 readme = "README.md"
-name = "tensorrt_yolo"
+name = "trtyolo_export"
 requires-python = ">=3.8"
 license = {file = "LICENSE"}
 maintainers = [{ name = "laugh12321" }]
 authors = [{ name = "laugh12321", email = "laugh12321@vip.qq.com" }]
-description = "🚀 Easier & Faster YOLO Deployment Toolkit for NVIDIA 🛠️"
+description = "🛠️ TensorRT-YOLO official exporter: one-click ONNX export for TensorRT-YOLO"
 keywords = ["ML", "DL", "AI", "YOLO", "YOLOv3", "YOLOv5", "YOLOv6", "YOLOv7", "YOLOv8", "YOLOv9", "YOLOv10", "YOLO11", "YOLO12", "YOLO-World", "YOLOE", "PP-YOLOE", "TensorRT", "CUDA", "ONNX", "computer-vision", "image-classification", "object-detection", "pose-estimation", "instance-segmentation", "rotated-object-detection", "ultralytics"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
-    "Environment :: GPU :: NVIDIA CUDA",
-    "Environment :: GPU :: NVIDIA CUDA :: 11",
-    "Environment :: GPU :: NVIDIA CUDA :: 12",
     "Intended Audience :: Developers",
     "Intended Audience :: Education",
     "Intended Audience :: Science/Research",
@@ -46,13 +43,7 @@ classifiers = [
 dependencies = [
     "loguru",
     "rich_click",
-    "opencv-python",
     "numpy",
-]
-
-# Optional dependencies ------------------------------------------------------------------------------------------------
-[project.optional-dependencies]
-export = [
     "onnxsim>=0.4.1",
     "onnxruntime>=1.6.0",
     "onnx_graphsurgeon",
@@ -63,20 +54,17 @@ export = [
 [project.urls]
 "Bug Reports" = "https://github.com/laugh12321/TensorRT-YOLO/issues"
 "Funding" = "https://github.com/laugh12321"
-"Source" = "https://github.com/laugh12321/TensorRT-YOLO"
+"Source" = "https://github.com/laugh12321/TensorRT-YOLO/tree/trtyolo-export"
 
 [project.scripts]
-trtyolo = "tensorrt_yolo.cli:trtyolo"
+trtyolo = "trtyolo_export.cli:trtyolo"
 
 # Tools settings -------------------------------------------------------------------------------------------------------
 [tool.setuptools]
 include-package-data = true
 
 [tool.setuptools.packages.find]
-include = ["tensorrt_yolo*"]
-
-[tool.setuptools.package-data]
-"tensorrt_yolo" = ["libs/*.pyd", "libs/*.so", "libs/*.dll", "libs/*.exp", "libs/*.lib"]
+include = ["trtyolo_export*"]
 
 [tool.ruff]
 line-length = 140

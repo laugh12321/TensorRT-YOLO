@@ -1,7 +1,5 @@
 # Build and compilation directories
 build/
-bin/
-libs/
 dist/
 *.egg-info/
 
@@ -12,17 +10,3 @@ dist/
 __pycache__/
 .cache/
 venv/
-
-# Output and generated files
-output/
-outputs/
-*.pt
-*.onnx
-*.engine
-
-# Miscellaneous
-images/
-models/
-workspace/
-cmake/tensorrt-yolo-config.cmake
-tensorrt_yolo/c_lib_wrap.py
