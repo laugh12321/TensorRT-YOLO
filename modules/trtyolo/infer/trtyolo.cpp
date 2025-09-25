@@ -44,29 +44,27 @@ Mask::Mask(int width, int height) : width(width), height(height) {
 
 class InferOption::Impl {
 public:
-    InferConfig   getInferConfig() const { return infer_config; }
-    ProcessConfig getProcessConfig() const { return process_config; }
-    void          setDeviceId(int id) { infer_config.device_id = id; }
-    void          enableCudaMem() { infer_config.cuda_mem = true; }
-    void          enableManagedMemory() { infer_config.enable_managed_memory = true; }
-    void          enablePerformanceReport() { infer_config.enable_performance_report = true; }
-    void          setInputDimensions(int width, int height) { infer_config.input_shape = make_int2(height, width); }
-    void          enableSwapRB() { process_config.swap_rb = true; }
-    void          setBorderValue(float value) { process_config.border_value = value; }
-    void          setNormalizeParams(const std::vector<float>& mean, const std::vector<float>& std) {
+    InferConfig getInferConfig() const { return infer_config; }
+    void        setDeviceId(int id) { infer_config.device_id = id; }
+    void        enableCudaMem() { infer_config.cuda_mem = true; }
+    void        enableManagedMemory() { infer_config.enable_managed_memory = true; }
+    void        enablePerformanceReport() { infer_config.enable_performance_report = true; }
+    void        setInputDimensions(int width, int height) { infer_config.input_shape = make_int2(height, width); }
+    void        enableSwapRB() { infer_config.config.swap_rb = true; }
+    void        setBorderValue(float value) { infer_config.config.border_value = value; }
+    void        setNormalizeParams(const std::vector<float>& mean, const std::vector<float>& std) {
         assert(mean.size() == 3 && std.size() == 3 && "ProcessConfig: requires the size of mean and std to be 3.");
 
-        process_config.alpha.x = 1.0 / 255.0f / std[0];
-        process_config.alpha.y = 1.0 / 255.0f / std[1];
-        process_config.alpha.z = 1.0 / 255.0f / std[2];
-        process_config.beta.x  = -mean[0] / std[0];
-        process_config.beta.y  = -mean[1] / std[1];
-        process_config.beta.z  = -mean[2] / std[2];
+        infer_config.config.alpha.x = 1.0 / 255.0f / std[0];
+        infer_config.config.alpha.y = 1.0 / 255.0f / std[1];
+        infer_config.config.alpha.z = 1.0 / 255.0f / std[2];
+        infer_config.config.beta.x  = -mean[0] / std[0];
+        infer_config.config.beta.y  = -mean[1] / std[1];
+        infer_config.config.beta.z  = -mean[2] / std[2];
     }
 
 private:
-    InferConfig   infer_config;    // < 推理选项配置
-    ProcessConfig process_config;  // < 图像预处理配置
+    InferConfig infer_config;  // < 推理选项配置
 };
 
 InferOption::InferOption() : impl_(std::make_unique<InferOption::Impl>()) {}
