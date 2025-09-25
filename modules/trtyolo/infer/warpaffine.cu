@@ -148,22 +148,12 @@ void AffineTransform::updateMatrix(int src_width, int src_height, int dst_width,
     last_src_width_  = src_width;
     last_src_height_ = src_height;
 
-    double scale  = std::min(static_cast<double>(dst_width) / src_width, static_cast<double>(dst_height) / src_height);
-    double offset = 0.5 * scale - 0.5;
+    float scale = std::min(static_cast<float>(dst_width) / src_width, static_cast<float>(dst_height) / src_height);
+    matrix[0] = make_float3(1 / scale, 0.0, 0.5 * (src_width - dst_width / scale));
+    matrix[1] = make_float3(0.0, 1 / scale, 0.5 * (src_height - dst_height / scale));
 
-    double scale_from_width  = -0.5 * scale * src_width;
-    double scale_from_height = -0.5 * scale * src_height;
-    double half_dst_width    = 0.5 * dst_width;
-    double half_dst_height   = 0.5 * dst_height;
-
-    double inv_d = (scale != 0.0) ? 1.0 / (scale * scale) : 0.0;
-    double a     = scale * inv_d;
-
-    matrix[0] = make_float3(a, 0.0, -a * (scale_from_width + half_dst_width + offset));
-    matrix[1] = make_float3(0.0, a, -a * (scale_from_height + half_dst_height + offset));
-
-    dst_offset_x = int(dst_width * 0.5 + scale_from_width);
-    dst_offset_y = int(dst_height * 0.5 + scale_from_height);
+    dst_offset_x = int(dst_width * 0.5 - 0.5 * scale * src_width);
+    dst_offset_y = int(dst_height * 0.5 -0.5 * scale * src_height);
 }
 
 void AffineTransform::applyTransform(float x, float y, float* transformed_x, float* transformed_y) const {
