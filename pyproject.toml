@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 [project]
 version = "1.0.0"
 readme = "README.md"
-name = "trtyolo_export"
+name = "trtyolo-export"
 requires-python = ">=3.8"
 license = {file = "LICENSE"}
 maintainers = [{ name = "laugh12321" }]
@@ -54,7 +54,7 @@ dependencies = [
 [project.urls]
 "Bug Reports" = "https://github.com/laugh12321/TensorRT-YOLO/issues"
 "Funding" = "https://github.com/laugh12321"
-"Source" = "https://github.com/laugh12321/TensorRT-YOLO/tree/trtyolo-export"
+"Source" = "https://github.com/laugh12321/TensorRT-YOLO/tree/export"
 
 [project.scripts]
 trtyolo = "trtyolo_export.cli:trtyolo"
