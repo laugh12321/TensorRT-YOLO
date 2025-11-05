@@ -1,0 +1,227 @@
+{
+    "key_": "nndeploy.dag.Graph",
+    "name_": "TensorRT-YOLO",
+    "developer_": "laugh12321",
+    "source_": "https://github.com/laugh12321/TensorRT-YOLO",
+    "desc_": "TensorRT-YOLO workflow supporting task scenarios including object detection, instance segmentation, image classification, pose recognition, and rotated object detection.",
+    "device_type_": "kDeviceTypeCodeCpu:0",
+    "version_": "6.3.2",
+    "required_params_": [],
+    "ui_params_": [],
+    "io_params_": [],
+    "dropdown_params_": {},
+    "is_dynamic_input_": false,
+    "inputs_": [],
+    "is_dynamic_output_": false,
+    "outputs_": [],
+    "is_graph_": true,
+    "parallel_type_": "kParallelTypeNone",
+    "is_inner_": false,
+    "node_type_": "Intermediate",
+    "is_time_profile_": false,
+    "is_debug_": false,
+    "is_external_stream_": false,
+    "is_graph_node_share_stream_": true,
+    "queue_max_size_": 16,
+    "queue_overflow_policy_": "kQueueOverflowPolicyNodeBackpressure",
+    "queue_drop_count_": 1,
+    "is_loop_max_flag_": true,
+    "loop_count_": -1,
+    "unused_node_names_": [],
+    "image_url_": [
+        "template[http,modelscope]@https://template.cn/template.jpg"
+    ],
+    "video_url_": [
+        "template[http,modelscope]@https://template.cn/template.mp4"
+    ],
+    "audio_url_": [
+        "template[http,modelscope]@https://template.cn/template.mp3"
+    ],
+    "model_url_": [
+        "template[http,modelscope]@https://template.cn/template.onnx"
+    ],
+    "other_url_": [
+        "template[http,modelscope]@https://template.cn/template.txt"
+    ],
+    "node_repository_": [
+        {
+            "key_": "nndeploy::codec::OpenCvImageDecode",
+            "name_": "OpenCvImageDecode Node",
+            "developer_": "",
+            "source_": "",
+            "desc_": "Decode image using OpenCV, from image path to cv::Mat, default color space is BGR",
+            "device_type_": "kDeviceTypeCodeCpu:0",
+            "version_": "1.0.0",
+            "required_params_": [
+                "path_"
+            ],
+            "ui_params_": [],
+            "io_params_": [],
+            "dropdown_params_": {},
+            "is_dynamic_input_": false,
+            "inputs_": [],
+            "is_dynamic_output_": false,
+            "outputs_": [
+                {
+                    "desc_": "output_0",
+                    "name_": "OpenCvImageDecode Node@output_0",
+                    "type_": "ndarray"
+                }
+            ],
+            "node_type_": "Input",
+            "io_type_": "Image",
+            "path_": "",
+            "node_repository_": []
+        },
+        {
+            "key_": "nndeploy.trtyolo.TRTYOLO",
+            "name_": "TRTYOLO Node",
+            "developer_": "laugh12321",
+            "source_": "https://github.com/laugh12321/TensorRT-YOLO",
+            "desc_": "TensorRT-YOLO Node",
+            "device_type_": "kDeviceTypeCodeCpu:0",
+            "version_": "6.3.2",
+            "required_params_": [],
+            "ui_params_": [],
+            "io_params_": [],
+            "dropdown_params_": {},
+            "is_dynamic_input_": false,
+            "inputs_": [
+                {
+                    "desc_": "input_0",
+                    "name_": "OpenCvImageDecode Node@output_0",
+                    "type_": "ndarray"
+                }
+            ],
+            "is_dynamic_output_": false,
+            "outputs_": [
+                {
+                    "desc_": "output_0",
+                    "name_": "TRTYOLO Node@output_0",
+                    "type_": "Union[ClassifyRes, DetectRes, OBBRes, SegmentRes, PoseRes]"
+                }
+            ],
+            "node_type_": "Intermediate",
+            "engine_path": "",
+            "model_task": "detect",
+            "device_id": 0,
+            "swap_rb": true,
+            "node_repository_": []
+        },
+        {
+            "key_": "nndeploy.trtyolo.Visualizer",
+            "name_": "Visualizer Node",
+            "developer_": "laugh12321",
+            "source_": "https://github.com/laugh12321/TensorRT-YOLO",
+            "desc_": "TensorRT-YOLO Visualizer Node",
+            "device_type_": "kDeviceTypeCodeCpu:0",
+            "version_": "6.3.2",
+            "required_params_": [],
+            "ui_params_": [],
+            "io_params_": [],
+            "dropdown_params_": {},
+            "is_dynamic_input_": false,
+            "inputs_": [
+                {
+                    "desc_": "input_0",
+                    "name_": "OpenCvImageDecode Node@output_0",
+                    "type_": "ndarray"
+                },
+                {
+                    "desc_": "input_1",
+                    "name_": "TRTYOLO Node@output_0",
+                    "type_": "Union[ClassifyRes, DetectRes, OBBRes, SegmentRes, PoseRes]"
+                }
+            ],
+            "is_dynamic_output_": false,
+            "outputs_": [
+                {
+                    "desc_": "output_0",
+                    "name_": "Visualizer Node@output_0",
+                    "type_": "ndarray"
+                }
+            ],
+            "node_type_": "Intermediate",
+            "labels_file": "",
+            "node_repository_": []
+        },
+        {
+            "key_": "nndeploy::codec::OpenCvImageEncode",
+            "name_": "OpenCvImageEncode Node",
+            "developer_": "",
+            "source_": "",
+            "desc_": "Encode image using OpenCV, from cv::Mat to image file, supports common image formats",
+            "device_type_": "kDeviceTypeCodeCpu:0",
+            "version_": "1.0.0",
+            "required_params_": [
+                "path_"
+            ],
+            "ui_params_": [],
+            "io_params_": [],
+            "dropdown_params_": {},
+            "is_dynamic_input_": false,
+            "inputs_": [
+                {
+                    "desc_": "input_0",
+                    "name_": "Visualizer Node@output_0",
+                    "type_": "ndarray"
+                }
+            ],
+            "is_dynamic_output_": false,
+            "outputs_": [],
+            "node_type_": "Output",
+            "io_type_": "Image",
+            "path_": "resources/images/output.jpg",
+            "node_repository_": []
+        }
+    ],
+    "nndeploy_ui_layout": {
+        "layout": {
+            "OpenCvImageDecode Node": {
+                "position": {
+                    "x": 100,
+                    "y": 0
+                },
+                "size": {
+                    "width": 200,
+                    "height": 80
+                },
+                "expanded": true
+            },
+            "TRTYOLO Node": {
+                "position": {
+                    "x": 400,
+                    "y": 79.5
+                },
+                "size": {
+                    "width": 200,
+                    "height": 80
+                },
+                "expanded": true
+            },
+            "Visualizer Node": {
+                "position": {
+                    "x": 719,
+                    "y": 0
+                },
+                "size": {
+                    "width": 200,
+                    "height": 80
+                },
+                "expanded": true
+            },
+            "OpenCvImageEncode Node": {
+                "position": {
+                    "x": 1067,
+                    "y": 0
+                },
+                "size": {
+                    "width": 200,
+                    "height": 80
+                },
+                "expanded": true
+            }
+        },
+        "groups": []
+    }
+}

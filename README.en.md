@@ -110,7 +110,8 @@ English | [简体中文](README.md)
     - [Pose Estimation Example](examples/pose/README.en.md)
     - [Oriented Object Detection Example](examples/obb/README.en.md)
     - [📹 Video Analysis Example](examples/VideoPipe/README.en.md)
-    - [Multi-threading and Multi-processing Example](examples/mutli_thread/README.en.md) 🌟 NEW
+    - [Multi-threading and Multi-processing Example](examples/mutli_thread/README.en.md)
+    - [nndeploy Workflow Example](examples/nndeploy/README.en.md) 🌟 NEW
 - **API Documentation**
     - Python API Documentation (⚠️ Not Implemented)
     - C++ API Documentation (⚠️ Not Implemented)
