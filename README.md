@@ -120,7 +120,8 @@
     - [姿态识别 示例](examples/pose/README.md)
     - [旋转目标检测 示例](examples/obb/README.md)
     - [📹视频分析 示例](examples/VideoPipe/README.md)
-    - [多线程多进程 示例](examples/mutli_thread/README.md) 🌟 NEW
+    - [多线程多进程 示例](examples/mutli_thread/README.md)
+    - [nndeploy 工作流 示例](examples/nndeploy/README.md) 🌟 NEW
 - **API文档**
     - Python API文档（⚠️ 未实现）
     - C++ API文档（⚠️ 未实现）
