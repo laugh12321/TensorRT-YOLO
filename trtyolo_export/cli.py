@@ -229,6 +229,7 @@ class ModelExporter:
 
     def export(self, output: str, imgsz: Union[int, Sequence[int]], opset_version: int, simplify: bool) -> None:
         from ultralytics.utils.checks import check_imgsz
+        from ultralytics.utils.torch_utils import TORCH_2_4
 
         imgsz = check_imgsz(imgsz, stride=self.__model.stride, min_dim=2)
         im = torch.zeros(self.__batch, 3, *imgsz).to(torch.device("cpu"))
@@ -244,6 +245,7 @@ class ModelExporter:
         output_path.mkdir(parents=True, exist_ok=True)
         onnx_path = output_path / (self.__weight_name + ".onnx")
 
+        kwargs = {"dynamo": False} if TORCH_2_4 else {}
         torch.onnx.export(
             model=self.__model,
             args=im,
@@ -252,6 +254,8 @@ class ModelExporter:
             input_names=['images'],
             output_names=self.__head_config[self.__head_name]["output_names"],
             dynamic_axes=self.__head_config[self.__head_name]["dynamic_axes"] if self.__dynamic else None,
+            verbose=False,
+            **kwargs,
         )
 
         onnx_model = onnx.load(onnx_path)
