@@ -84,7 +84,7 @@ std::vector<cv::Point> xyxyr_to_xyxyxyxy(const trtyolo::RotatedBox& box) {
 // 可视化推理结果
 void visualize(cv::Mat& image, trtyolo::OBBRes& result, const std::vector<std::string>& labels) {
     for (size_t i = 0; i < result.num; ++i) {
-        auto&       box        = result.boxes[i];                          // 当前边界框
+        auto&       xyxyxyxy   = result.boxes[i].xyxyxyxy();               // 当前边界框
         int         cls        = result.classes[i];                        // 当前类别
         float       score      = result.scores[i];                         // 当前置信度
         auto&       label      = labels[cls];                              // 获取类别标签
@@ -94,19 +94,17 @@ void visualize(cv::Mat& image, trtyolo::OBBRes& result, const std::vector<std::s
         int      base_line;
         cv::Size label_size = cv::getTextSize(label_text, cv::FONT_HERSHEY_SIMPLEX, 0.6, 1, &base_line);
 
-        // 获取旋转矩形的四个角点
-        auto corners = xyxyr_to_xyxyxyxy(box);
-
         // 绘制旋转矩形
-        cv::polylines(image, {corners}, true, cv::Scalar(251, 81, 163), 2, cv::LINE_AA);
+        std::vector<cv::Point> points = {cv::Point(xyxyxyxy[0], xyxyxyxy[1]), cv::Point(xyxyxyxy[2], xyxyxyxy[3]), cv::Point(xyxyxyxy[4], xyxyxyxy[5]), cv::Point(xyxyxyxy[6], xyxyxyxy[7])};
+        cv::polylines(image, points, true, cv::Scalar(251, 81, 163), 2, cv::LINE_AA);
 
         // 绘制标签背景
-        cv::rectangle(image, cv::Point(corners[0].x, corners[0].y - label_size.height),
-                      cv::Point(corners[0].x + label_size.width, corners[0].y),
+        cv::rectangle(image, cv::Point(xyxyxyxy[0], xyxyxyxy[1] - label_size.height),
+                      cv::Point(xyxyxyxy[0] + label_size.width, xyxyxyxy[1]),
                       cv::Scalar(125, 40, 81), -1);
 
         // 绘制标签文本
-        cv::putText(image, label_text, corners[0], cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(253, 168, 208), 1);
+        cv::putText(image, label_text, cv::Point(xyxyxyxy[0], xyxyxyxy[1] - base_line), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(253, 168, 208), 1);
     }
 }
 

@@ -42,6 +42,32 @@ Mask::Mask(int width, int height) : width(width), height(height) {
     data.resize(width * height);
 }
 
+std::array<int, 4> Box::xyxy() const {
+    return {static_cast<int>(left), static_cast<int>(top), static_cast<int>(right), static_cast<int>(bottom)};
+}
+
+std::array<int, 8> RotatedBox::xyxyxyxy() const {
+    float cx   = (left + right) * 0.5f;
+    float cy   = (top + bottom) * 0.5f;
+    float dx   = (right - left) * 0.5f;
+    float dy   = (bottom - top) * 0.5f;
+    float cosa = std::cos(theta);
+    float sina = std::sin(theta);
+
+    auto rot = [&](float px, float py) -> std::pair<int, int> {
+        int x = static_cast<int>(std::round(px * cosa - py * sina + cx));
+        int y = static_cast<int>(std::round(px * sina + py * cosa + cy));
+        return {x, y};
+    };
+
+    auto [x1, y1] = rot(-dx, -dy);  // 左上
+    auto [x2, y2] = rot(dx, -dy);   // 右上
+    auto [x3, y3] = rot(dx, dy);    // 右下
+    auto [x4, y4] = rot(-dx, dy);   // 左下
+
+    return {x1, y1, x2, y2, x3, y3, x4, y4};
+}
+
 class InferOption::Impl {
 public:
     InferConfig getInferConfig() const { return infer_config; }

@@ -16,6 +16,7 @@
 #define TRTYOLOAPI __attribute__((visibility("default")))
 #endif
 
+#include <array>
 #include <iostream>
 #include <memory>
 #include <optional>
@@ -132,6 +133,13 @@ struct TRTYOLOAPI Box {
     Box(float left, float top, float right, float bottom)
         : left(left), top(top), right(right), bottom(bottom) {}
 
+    /**
+     * @brief 返回矩形框的坐标数组，格式为 {left, top, right, bottom}
+     *
+     * @return std::array<int, 4> 矩形框的坐标数组
+     */
+    std::array<int, 4> xyxy() const;
+
     friend std::ostream& operator<<(std::ostream& os, const Box& box) {
         os << "Box(left=" << box.left << ", top=" << box.top << ", right=" << box.right << ", bottom=" << box.bottom << ")";
         return os;
@@ -155,6 +163,13 @@ struct TRTYOLOAPI RotatedBox : public Box {
      */
     RotatedBox(float left, float top, float right, float bottom, float theta)
         : Box(left, top, right, bottom), theta(theta) {}
+
+    /**
+     * @brief 返回旋转矩形框的坐标数组，格式为 {x1, y1, x2, y2, x3, y3, x4, y4}
+     *
+     * @return std::array<int, 8> 旋转矩形框的坐标数组
+     */
+    std::array<int, 8> xyxyxyxy() const;
 
     friend std::ostream& operator<<(std::ostream& os, const RotatedBox& rbox) {
         os << "RotatedBox(left=" << rbox.left << ", top=" << rbox.top << ", right=" << rbox.right << ", bottom=" << rbox.bottom << ", theta=" << rbox.theta << ")";
