@@ -55,6 +55,9 @@ std::vector<std::string> generate_labels(const std::string& label_file) {
 
 // 可视化推理结果（分割任务）
 void visualize(cv::Mat& image, trtyolo::SegmentRes& result, const std::vector<std::string>& labels) {
+    int im_h = image.rows;  // 图像高度
+    int im_w = image.cols;  // 图像宽度
+
     // 遍历每个检测到的目标
     for (size_t i = 0; i < result.num; ++i) {
         auto&       box        = result.boxes[i];                          // 当前目标的边界框
@@ -71,29 +74,41 @@ void visualize(cv::Mat& image, trtyolo::SegmentRes& result, const std::vector<st
         cv::putText(image, label_text, cv::Point(box.left, box.top), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(253, 168, 208), 1);
 
         // 创建分割掩码
-        cv::Mat mask(result.masks[i].height, result.masks[i].width, CV_8UC1, result.masks[i].data.data());
-        cv::resize(mask, mask, image.size());  // 将掩码调整到图像大小
+        auto xyxy = box.xyxy();
+        int  w    = std::max(xyxy[2] - xyxy[0] + 1, 1);
+        int  h    = std::max(xyxy[3] - xyxy[1] + 1, 1);
 
-        // 创建边界框区域的二值掩码
-        cv::Mat box_mask = cv::Mat::zeros(image.size(), CV_8UC1);
-        cv::rectangle(box_mask, cv::Point(box.left, box.top), cv::Point(box.right, box.bottom), cv::Scalar(1), cv::FILLED);
+        int x1 = std::max(0, xyxy[0]);
+        int y1 = std::max(0, xyxy[1]);
+        int x2 = std::min(im_w, xyxy[2] + 1);
+        int y2 = std::min(im_h, xyxy[3] + 1);
 
-        // 将分割掩码与边界框掩码结合
-        mask &= box_mask;
+        // 将模型输出的浮点掩码转换为 OpenCV 的 Mat 格式
+        cv::Mat float_mask(result.masks[i].height, result.masks[i].width, CV_32FC1, result.masks[i].data.data());
+        cv::resize(float_mask, float_mask, cv::Size(w, h), 0, 0, cv::INTER_LINEAR);
 
-        // 在掩码区域内将分割颜色与图像混合
-        for (int y = 0; y < mask.rows; ++y) {
-            cv::Vec3b*   image_row = image.ptr<cv::Vec3b>(y);  // 当前行的图像指针
-            const uchar* mask_row  = mask.ptr<uchar>(y);       // 当前行的掩码指针
-            for (int x = 0; x < mask.cols; ++x) {
-                if (mask_row[x]) {                             // 如果掩码值为1
-                    // 混合颜色（半透明效果）
-                    image_row[x][0] = static_cast<uchar>(image_row[x][0] * 0.5 + 253 * 0.5);
-                    image_row[x][1] = static_cast<uchar>(image_row[x][1] * 0.5 + 168 * 0.5);
-                    image_row[x][2] = static_cast<uchar>(image_row[x][2] * 0.5 + 208 * 0.5);
-                }
-            }
-        }
+        // 将浮点掩码转换为布尔掩码
+        cv::Mat bool_mask;
+        cv::threshold(float_mask, bool_mask, 0.5, 255, cv::THRESH_BINARY);
+
+        // 创建一个与原图大小相同的掩码图像
+        cv::Mat mask_image = cv::Mat::zeros(image.size(), CV_8UC1);
+
+        // 定义目标区域和源区域
+        cv::Rect target_rect(x1, y1, x2 - x1, y2 - y1);  // 目标区域在 mask_image 中的位置
+        cv::Rect source_rect(0, 0, x2 - x1, y2 - y1);    // 源区域在 bool_mask 中的位置
+
+        // 将 bool_mask 的指定区域复制到 mask_image 的指定区域
+        bool_mask(source_rect).copyTo(mask_image(target_rect));
+
+        // 创建一个与原图大小相同的颜色图像
+        cv::Mat color_image(image.size(), image.type(), cv::Scalar(251, 81, 163));
+
+        // 使用掩码将颜色图像与原图进行混合
+        cv::Mat masked_color_image;
+        cv::bitwise_and(color_image, color_image, masked_color_image, mask_image);
+
+        cv::addWeighted(image, 1.0, masked_color_image, 0.5, 0, image);
     }
 }
 
