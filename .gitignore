@@ -25,4 +25,4 @@ images/
 models/
 workspace/
 cmake/tensorrt-yolo-config.cmake
-tensorrt_yolo/c_lib_wrap.py
+trtyolo/c_lib_wrap.py
