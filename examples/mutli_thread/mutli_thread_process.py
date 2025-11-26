@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   mutli_thread_process.py
-# Version :   6.0
+# Version :   6.4.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2025/01/21 17:43:59
@@ -25,10 +25,10 @@
 import argparse
 import time
 from multiprocessing import Pool
+from pathlib import Path
 from threading import Thread
 
-import cv2
-from tensorrt_yolo.infer import DetectModel, InferOption, image_batches
+from trtyolo import TRTYOLO
 
 
 def parse_arguments():
@@ -41,51 +41,49 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def build_option():
-    option = InferOption()
-    option.enable_swap_rb()
-    option.enable_performance_report()
-    return option
-
-
 def load_model(engine_file):
     """加载模型"""
-    option = build_option()
-    global model
-    model = DetectModel(engine_file, option=option)
+    model = TRTYOLO(engine_file, task="detect", swap_rb=True, profile=True)
+    return model
 
 
-def process_predict(img_batch):
+def process_predict(img_batch, engine_file):
     """子进程中的预测函数"""
-    # global model
-    images = [cv2.imread(image_path) for image_path in img_batch]
-    result = model.predict(images)
+    model = load_model(engine_file)
+    model.predict(img_batch)
+    throughput, cpu_latency, gpu_latency = model.profile()
+    print(throughput)
+    print(cpu_latency)
+    print(gpu_latency)
 
 
-def predict(model, img_batches):
+def predict(model, img_batch):
     """多线程中的预测函数"""
-    for img_batch in img_batches:
-        images = [cv2.imread(image_path) for image_path in img_batch]
-        result = model.predict(images)
-    model.performance_report()
+    model.predict(img_batch)
+    throughput, cpu_latency, gpu_latency = model.profile()
+    print(throughput)
+    print(cpu_latency)
+    print(gpu_latency)
 
 
 def main():
     args = parse_arguments()
-    img_batches = image_batches(args.image_path, 1, True)
+    image_files = [args.image_path] if Path(args.image_path).is_file() else list(Path(args.image_path).glob("**/*.jpg"))
 
     # 记录开始时间
     start_time = time.time()
 
     if args.use_multi_process:
-        with Pool(args.process_num, initializer=load_model, initargs=(args.engine,)) as pool:
-            pool.map(process_predict, img_batches)
+        image_batches = [image_files[i : i + args.process_num] for i in range(0, len(image_files), args.process_num)]
+        with Pool(args.process_num) as pool:
+            pool.starmap(process_predict, [(img_batch, args.engine) for img_batch in image_batches])
     else:
         # 使用多线程
-        load_model(args.engine)
+        model = load_model(args.engine)
         threads = []
+        image_batches = [image_files[i : i + args.thread_num] for i in range(0, len(image_files), args.thread_num)]
         for i in range(args.thread_num):
-            t = Thread(target=predict, args=(model.clone(), img_batches))
+            t = Thread(target=predict, args=(model.clone(), image_batches[i]))
             threads.append(t)
             t.start()
 

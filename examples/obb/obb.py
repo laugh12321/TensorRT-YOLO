@@ -16,24 +16,23 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   obb.py
-# Version :   6.0
+# Version :   6.4.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2025/01/23 14:57:17
 # Desc    :   OBB 示例
 # ==============================================================================
 import argparse
-import sys
 from pathlib import Path
 
 import cv2
-from loguru import logger
-from rich.progress import track
-from tensorrt_yolo.infer import InferOption, OBBModel, generate_labels, image_batches, visualize
+import supervision as sv
+
+from trtyolo import TRTYOLO
 
 
 def main():
-    parser = argparse.ArgumentParser(description='YOLO Series Inference For OBB Detection.')
+    parser = argparse.ArgumentParser(description='YOLO Series Inference For Segmentation.')
     parser.add_argument('-e', '--engine', required=True, type=str, help='The serialized TensorRT engine.')
     parser.add_argument('-i', '--input', required=True, type=str, help="Path to the image or directory to process.")
     parser.add_argument('-o', '--output', type=str, default=None, help='Directory where to save the visualization results.')
@@ -44,35 +43,52 @@ def main():
     args = parser.parse_args()
 
     if args.output and not args.labels:
-        logger.error("Please provide a labels file using -l or --labels.")
-        sys.exit(1)
+        raise ValueError("Please provide a labels file using -l or --labels.")
 
     if args.output:
         output_dir = Path(args.output)
         output_dir.mkdir(parents=True, exist_ok=True)
-        args.labels = generate_labels(args.labels)
+        round_box_annotator = sv.OrientedBoxAnnotator()
+        label_annotator = sv.LabelAnnotator()
+        class_name = [line.strip() for line in open(args.labels, "r")]
 
-    option = InferOption()
-    option.enable_swap_rb()
-    option.enable_performance_report()
+    input_path = Path(args.input)
+    extensions = ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif"]
 
-    model = OBBModel(args.engine, option)
+    model = TRTYOLO(args.engine, task="obb", swap_rb=True, profile=True)
 
-    batchs = image_batches(args.input, model.batch, True)
-
-    logger.info(f"Infering data in {args.input}")
-    for batch in track(batchs, description="[cyan]Processing batches", total=len(batchs)):
-        images = [cv2.imread(image_path) for image_path in batch]
-
+    if input_path.is_dir():
+        images, image_names = [], []
+        for ext in extensions:
+            images.extend([cv2.imread(str(image_path)) for image_path in input_path.glob(ext)])
+            image_names.extend([image_path.name for image_path in input_path.glob(ext)])
+        if not images:
+            raise ValueError(f"No images found in directory: {input_path}")
         results = model.predict(images)
-
         if args.output:
-            for image_path, image, result in zip(batch, images, results):
-                vis_image = visualize(image, result, args.labels)
-                cv2.imwrite(str(output_dir / Path(image_path).name), vis_image)
+            for image_name, image, result in zip(image_names, images, results):
+                labels = [class_name[int(cls)] for cls in result.class_id]
+                annotated_frame = round_box_annotator.annotate(scene=image.copy(), detections=result)
+                annotated_frame = label_annotator.annotate(scene=annotated_frame, detections=result, labels=labels)
+                output_file = output_dir / image_name
+                cv2.imwrite(str(output_file), annotated_frame)
+    elif input_path.is_file():
+        file_ext = f"*.{input_path.suffix.lower()[1:]}"
+        if file_ext not in extensions:
+            raise ValueError(f"Unsupported file format: {input_path.suffix}")
+        image = cv2.imread(str(input_path))
+        result = model.predict(image)
+        if args.output:
+            labels = [class_name[int(cls)] for cls in result.class_id]
+            annotated_frame = round_box_annotator.annotate(scene=image.copy(), detections=result)
+            annotated_frame = label_annotator.annotate(scene=annotated_frame, detections=result, labels=labels)
+            output_file = output_dir / input_path.name
+            cv2.imwrite(str(output_file), annotated_frame)
 
-    model.performance_report()
-    logger.success("Finished Inference.")
+    throughput, cpu_latency, gpu_latency = model.profile()
+    print(throughput)
+    print(cpu_latency)
+    print(gpu_latency)
 
 
 if __name__ == '__main__':
