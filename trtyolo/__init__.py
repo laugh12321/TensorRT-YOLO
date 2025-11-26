@@ -92,6 +92,11 @@ class TRTYOLO:
             "obb": C.model.OBBModel,
         }
 
+    @property
+    def batch(self) -> int:
+        """Get model batch size."""
+        return self._model.batch
+
     def __copy__(self) -> None:
         cls = self.__class__.__name__
         raise NotImplementedError(f"Model '{cls}' does not support copy, use clone() instead.")
@@ -240,7 +245,7 @@ def split_xy_conf(arr: np.ndarray) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     """
     if arr.shape[-1] == 3:
         xy, conf = np.split(arr, [2], axis=-1)  # xy:(...,2)  conf:(...,1)
-        return xy.astype(int), conf.squeeze(-1).astype(int)
+        return xy.astype(int), conf.squeeze(-1).astype(float)
     elif arr.shape[-1] == 2:  # shape[-1] == 2
         return arr.astype(int), None
     else:
