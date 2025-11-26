@@ -9,6 +9,7 @@
  */
 
 #include <cassert>
+#include <cmath>
 #include <cstring>
 #include <memory>
 #include <sstream>
