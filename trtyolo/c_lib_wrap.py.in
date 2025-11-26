@@ -16,7 +16,7 @@
 # limitations under the License.
 # ==============================================================================
 # File    :   c_lib_wrap.py
-# Version :   6.3.0
+# Version :   6.4.0
 # Author  :   laugh12321
 # Contact :   laugh12321@vip.qq.com
 # Date    :   2024/07/03 13:12:29
@@ -24,11 +24,6 @@
 # ==============================================================================
 import os
 import sys
-
-from loguru import logger
-
-logger.configure(handlers=[{'sink': sys.stdout, 'colorize': True, 'format': "<level>[{level.name[0]}]</level> <level>{message}</level>"}])
-
 
 if os.name == "nt":
     need_lib_dirs = [r"${CUDAToolkit_BIN_DIR}", r"${TRT_LIB_DIR}"]
@@ -40,4 +35,4 @@ if os.name == "nt":
 try:
     from .libs.py_trtyolo import *
 except Exception as e:
-    raise RuntimeError(f"Deploy initialization failed! Error: {e}")
+    raise RuntimeError(f"py_trtyolo initialization failed! Error: {e}")
