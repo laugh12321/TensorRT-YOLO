@@ -48,7 +48,7 @@ function(install_target target target_type)
         # 安装 Python 绑定目标
         install(TARGETS ${target}
             EXPORT ${target}Targets
-            LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/tensorrt_yolo/libs
+            LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/trtyolo/libs
         )
     else()
         message(WARNING "Unknown target type: ${target_type}")
@@ -97,7 +97,7 @@ if(BUILD_PYTHON)
 
     # 配置 Python 配置文件
     configure_file(
-        ${PROJECT_SOURCE_DIR}/tensorrt_yolo/c_lib_wrap.py.in
-        ${PROJECT_SOURCE_DIR}/tensorrt_yolo/c_lib_wrap.py
+        ${PROJECT_SOURCE_DIR}/trtyolo/c_lib_wrap.py.in
+        ${PROJECT_SOURCE_DIR}/trtyolo/c_lib_wrap.py
     )
 endif()

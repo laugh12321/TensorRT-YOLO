@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 # Project settings -----------------------------------------------------------------------------------------------------
 [project]
-version = "6.3.2"
+version = "6.4.0"
 readme = "README.md"
-name = "tensorrt_yolo"
+name = "trtyolo"
 requires-python = ">=3.8"
 license = {file = "LICENSE"}
 maintainers = [{ name = "laugh12321" }]
@@ -44,20 +44,9 @@ classifiers = [
 
 # Required dependencies ------------------------------------------------------------------------------------------------
 dependencies = [
-    "loguru",
-    "rich_click",
+    "supervision",
     "opencv-python",
     "numpy",
-]
-
-# Optional dependencies ------------------------------------------------------------------------------------------------
-[project.optional-dependencies]
-export = [
-    "onnxsim>=0.4.1",
-    "onnxruntime>=1.6.0",
-    "onnx_graphsurgeon",
-    "onnx>=1.12.0",
-    "ultralytics",
 ]
 
 [project.urls]
@@ -65,18 +54,15 @@ export = [
 "Funding" = "https://github.com/laugh12321"
 "Source" = "https://github.com/laugh12321/TensorRT-YOLO"
 
-[project.scripts]
-trtyolo = "tensorrt_yolo.cli:trtyolo"
-
 # Tools settings -------------------------------------------------------------------------------------------------------
 [tool.setuptools]
 include-package-data = true
 
 [tool.setuptools.packages.find]
-include = ["tensorrt_yolo*"]
+include = ["trtyolo*"]
 
 [tool.setuptools.package-data]
-"tensorrt_yolo" = ["libs/*.pyd", "libs/*.so", "libs/*.dll", "libs/*.exp", "libs/*.lib"]
+"trtyolo" = ["libs/*.pyd", "libs/*.so", "libs/*.dll", "libs/*.exp", "libs/*.lib"]
 
 [tool.ruff]
 line-length = 140
