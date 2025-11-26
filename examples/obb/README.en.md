@@ -14,15 +14,9 @@ Please download the required `yolo11n-obb.pt` model file and test images through
 
 > [!IMPORTANT]
 >
-> If you only want to export the ONNX model (with TensorRT plugins) that can be used for inference in this project through the `tensorrt_yolo` provided Command Line Interface (CLI) tool `trtyolo`, you can install it via [PyPI](https://pypi.org/project/tensorrt-yolo) by simply executing the following command:
->
-> ```bash
-> pip install -U tensorrt_yolo
-> ```
->
-> If you want to experience the same inference speed as C++, please refer to [Install-tensorrt_yolo](../../docs/en/build_and_install.md#install-tensorrt_yolo) to build the latest version of `tensorrt_yolo` yourself.
+> Use the [`trtyolo-export`](https://github.com/laugh12321/TensorRT-YOLO/tree/export) tool package that comes with the project to export the ONNX model suitable for inference in this project and build it into a TensorRT engine.
 
-Use the following command to export the ONNX format with the [EfficientRotatedNMS](../../plugin/efficientRotatedNMSPlugin/) plugin. For detailed `trtyolo` CLI export methods, please read [Model Export](../../docs/en/model_export.md):
+Use the following command to export the ONNX format with the [EfficientRotatedNMS](../../modules/plugin/efficientRotatedNMSPlugin/) plugin:
 
 ```bash
 trtyolo export -w models/yolo11n-obb.pt -v yolo11 -o models -s
@@ -36,30 +30,9 @@ trtexec --onnx=models/yolo11n-obb.onnx --saveEngine=models/yolo11n-obb.engine --
 
 ## Model Inference
 
-> [!IMPORTANT]
->
-> The `tensorrt_yolo` installed via [PyPI](https://pypi.org/project/tensorrt-yolo) only provides the ONNX model (with TensorRT plugins) for inference in this project and does not provide inference capabilities.
-> If you want to experience the same inference speed as C++, please refer to [Install-tensorrt_yolo](../../docs/en/build_and_install.md#install-tensorrt_yolo) to build the latest version of `tensorrt_yolo` yourself.
-
-### Inference Using CLI
-
-1. Use the `trtyolo` command-line tool from the `tensorrt_yolo` library for inference. Run the following command to view help information:
-
-    ```bash
-    trtyolo infer --help
-    ```
-
-2. Run the following command for inference:
-
-    ```bash
-    trtyolo infer -e models/yolo11n-obb.engine -m 2 -i images -o output -l labels.txt
-    ```
-
-    The inference results will be saved in the `output` folder, and a visualization result will be generated.
-
 ### Inference Using Python
 
-1. Use the `tensorrt_yolo` library to run the example script `obb.py` for inference.
+1. Use the `trtyolo` library to run the example script `obb.py` for inference.
 2. Run the following command for inference:
 
     ```bash
@@ -68,8 +41,8 @@ trtexec --onnx=models/yolo11n-obb.onnx --saveEngine=models/yolo11n-obb.engine --
 
 ### Inference Using C++
 
-1. Ensure that the project has been compiled according to the [`TensorRT-YOLO` Compilation](../../docs/en/build_and_install.md#tensorrt-yolo-compile).
-2. Compile `detect.cpp` into an executable:
+1. Ensure that the project has been compiled according to the project documentation.
+2. Compile `obb.cpp` into an executable:
 
     ```bash
     cmake -S . -B build

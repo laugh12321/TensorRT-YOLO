@@ -10,7 +10,11 @@ Please download the required `yolo11n.pt` model file and test video through the 
 
 ## Model Export
 
-Use the following command to export the ONNX format with the [EfficientNMS](https://github.com/NVIDIA/TensorRT/tree/main/plugin/efficientNMSPlugin) plugin. For detailed `trtyolo` CLI export methods, please read [Model Export](../../docs/en/model_export.md):
+> [!IMPORTANT]
+>
+> Use the [`trtyolo-export`](https://github.com/laugh12321/TensorRT-YOLO/tree/export) tool package that comes with the project to export the ONNX model suitable for inference in this project and build it into a TensorRT engine.
+
+Use the following command to export the ONNX format with the [EfficientNMS](https://github.com/NVIDIA/TensorRT/tree/main/plugin/efficientNMSPlugin) plugin:
 
 ```bash
 trtyolo export -w workspace/yolo11n.pt -v yolo11 -o workspace -b 2 -s
@@ -24,8 +28,7 @@ trtexec --onnx=workspace/yolo11n.onnx --saveEngine=workspace/yolo11n.engine --fp
 
 ## Project Execution
 
-1. Ensure that the project has been compiled according to the [`TensorRT-YOLO` Compilation](../../docs/en/build_and_install.md#tensorrt-yolo-compile).
-1. Ensure that the project has been compiled following the instructions for [`TensorRT-YOLO` compilation](../../docs/en/build_and_install.md##tensorrt-yolo-compilation) and [`VideoPipe` compilation and debugging](https://github.com/sherlockchou86/VideoPipe/blob/master/README.md#compilation-and-debugging) (only the default five steps need to be executed, without adding any other compilation options).
+1. Make sure that the project has been compiled according to the project documentation and the [`VideoPipe` compilation and debugging](https://github.com/sherlockchou86/VideoPipe/blob/master/README.md#compilation-and-debugging) (only the default five steps need to be executed, without adding any other compilation options).
 
 2. Compile the project into an executable:
 

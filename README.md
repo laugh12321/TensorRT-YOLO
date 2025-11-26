@@ -11,14 +11,6 @@
       <img alt="Arch" src="https://img.shields.io/badge/Arch-x86%20%7C%20ARM-0091BD?style=for-the-badge&logo=cpu&logoColor=white">
       <img alt="NVIDIA" src="https://img.shields.io/badge/NVIDIA-%2376B900.svg?style=for-the-badge&logo=nvidia&logoColor=white">
   </p>
-
-  <p align="center">
-      <a href="/docs/cn/build_and_install.md"><img src="https://img.shields.io/badge/-安装-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
-      <a href="/examples/"><img src="https://img.shields.io/badge/-使用示例-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
-      <a href="#quick-start"><img src="https://img.shields.io/badge/-快速开始-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
-      <a href=""><img src="https://img.shields.io/badge/-API文档-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
-      <a href="https://github.com/laugh12321/TensorRT-YOLO/releases"><img src="https://img.shields.io/badge/-更新日志-0078D4?style=for-the-badge&logo=github&logoColor=white"></a>
-  </p>
 </div>
 
 ---
@@ -27,11 +19,8 @@
 
 <div align="center">
 
-[<img src='assets/obb.png' height="138px" width="190px">](examples/obb/)
-[<img src='assets/detect.jpg' height="138px" width="190px">](examples/detect/)
-[<img src='assets/segment.jpg' height="138px" width="190px">](examples/segment/)
-[<img src='assets/pose.jpg' height="138px" width="190px">](examples/pose/)
-[<img src='assets/example.gif' width="770px">](examples/videopipe)
+<img src='assets/task-banner.png' width="800px">
+<img src='assets/example.gif' width="800px">
 
 </div>
 
@@ -44,6 +33,8 @@
     ▸ **自定义插件开发**（含Plugin注册全流程）  
     ▸ **CUDA Graph 原理与工程实践**  
     ▸ **Triton Inference Server 部署技巧**  
+
+- 2025-10-05：精度完美对齐，CUDA 完美复刻 LetterBox，绝大多数情况下像素误差为 0。Python 模块重大重构，易用性大幅提升。🌟 NEW
 
 - 2025-06-09: C++仅引单头文件 `trtyolo.hpp`，零第三方依赖（使用模块时无需链接 CUDA 和 TensorRT），增加对带图像间距（Pitch）数据结构的支持，详见 [B站](https://www.bilibili.com/video/BV1e2N1zjE3L)。🌟 NEW
 
@@ -81,56 +72,7 @@
 ### 🔧 灵活配置
 - **预处理参数自定义**：支持多种预处理参数灵活配置，包括 **通道交换 (SwapRB)**、**归一化参数**、**边界值填充**。🌟 NEW
 
-## <div align="center">🚀 性能对比</div>
-
-<div align="center">
-
-| Model | Official + trtexec (ms) | trtyolo + trtexec (ms) | TensorRT-YOLO Inference (ms)|
-|:-----:|:-----------------------:|:----------------------:|:---------------------------:|
-| YOLOv11n | 1.611 ± 0.061        | 1.428 ± 0.097          | 1.228 ± 0.048               |
-| YOLOv11s | 2.055 ± 0.147        | 1.886 ± 0.145          | 1.687 ± 0.047               |
-| YOLOv11m | 3.028 ± 0.167        | 2.865 ± 0.235          | 2.691 ± 0.085               |
-| YOLOv11l | 3.856 ± 0.287        | 3.682 ± 0.309          | 3.571 ± 0.102               |
-| YOLOv11x | 6.377 ± 0.487        | 6.195 ± 0.482          | 6.207 ± 0.231               |
-
-</div>
-
-> [!NOTE]
->
-> **测试环境**
-> - **GPU**：NVIDIA RTX 2080 Ti 22GB
-> - **输入尺寸**：640×640 像素
->
-> **测试工具**
-> - **Official**：使用 Ultralytics 官方导出的 ONNX 模型。
-> - **trtyolo**：使用 TensorRT-YOLO 提供的 CLI 工具 (trtyolo) 导出的带 EfficientNMS 插件的 ONNX 格式模型。
-> - **trtexec**：使用 NVIDIA 的 `trtexec` 工具将 ONNX 模型构建为引擎并进行推理测试。
->   - **构建指令**：`trtexec --onnx=xxx.onnx --saveEngine=xxx.engine --fp16`
->   - **测试指令**：`trtexec --avgRuns=1000 --useSpinWait --loadEngine=xxx.engine`
-> - **TensorRT-YOLO Inference**：使用 TensorRT-YOLO 框架对 **trtyolo + trtexec** 方式得到的引擎进行推理的延迟时间（包括前处理、推理和后处理）。
-
-## <div align="center">🔮 文档教程</div>
-
-- **安装指南**
-    - [📦 快速编译安装](docs/cn/build_and_install.md)
-- **使用示例**
-    - [目标检测 示例](examples/detect/README.md)
-    - [实例分割 示例](examples/segment/README.md)
-    - [图像分类 示例](examples/classify/README.md)
-    - [姿态识别 示例](examples/pose/README.md)
-    - [旋转目标检测 示例](examples/obb/README.md)
-    - [📹视频分析 示例](examples/VideoPipe/README.md)
-    - [多线程多进程 示例](examples/mutli_thread/README.md)
-    - [nndeploy 工作流 示例](examples/nndeploy/README.md) 🌟 NEW
-- **API文档**
-    - Python API文档（⚠️ 未实现）
-    - C++ API文档（⚠️ 未实现）
-- **常见问题**
-    - ⚠️ 收集中 ...
-- **模型支持列表**
-    - [🖥️ 模型支持列表](#support-models)
-
-## <div align="center">💨 快速开始</div><div id="quick-start"></div>
+## <div align="center">💨 快速开始</div>
 
 ### 1. 前置依赖
 
@@ -138,71 +80,88 @@
 - **TensorRT**：推荐版本 ≥ 8.6.1
 - **操作系统**：Linux (x86_64 或 arm)（推荐）；Windows 亦可支持
 
-### 2. 安装
+> [!NOTE]  
+> 如果您在 Windows 下进行开发，可以参考以下配置指南：
+>
+> - [Windows 开发环境配置——NVIDIA 篇](https://www.cnblogs.com/laugh12321/p/17830096.html)
+> - [Windows 开发环境配置——C++ 篇](https://www.cnblogs.com/laugh12321/p/17827624.html)
 
-- 参考 [📦 快速编译安装](docs/cn/build_and_install.md) 文档。
+### 2. 编译安装
+
+首先，克隆 TensorRT-YOLO 仓库：
+
+```bash
+git clone https://github.com/laugh12321/TensorRT-YOLO
+cd TensorRT-YOLO
+```
+
+然后使用 CMake，可以按照以下步骤操作：
+
+```bash
+pip install "pybind11[global]" # 安装 pybind11，用于生成 Python 绑定
+cmake -S . -B build -D TRT_PATH=/your/tensorrt/dir -D BUILD_PYTHON=ON -D CMAKE_INSTALL_PREFIX=/your/tensorrt-yolo/install/dir
+cmake --build build -j$(nproc) --config Release --target install
+```
+
+执行上述指令后，`tensorrt-yolo` 库将被安装到指定的 `CMAKE_INSTALL_PREFIX` 路径中。其中，`include` 文件夹中包含头文件，`lib` 文件夹中包含 `trtyolo` 动态库和 `custom_plugins` 动态库（仅在使用 `trtexec` 构建 OBB、Segment 或 Pose 模型时需要）。如果在编译时启用了 `BUILD_PYTHON` 选项，则还会在 `trtyolo/libs` 路径下生成相应的 Python 绑定文件。
+
+> [!NOTE]  
+> 在使用 C++ 动态库之前，请确保将指定的 `CMAKE_INSTALL_PREFIX` 路径添加到环境变量中，以便 CMake 的 `find_package` 能够找到 `tensorrt-yolo-config.cmake` 文件。可以通过以下命令完成此操作：
+>
+> ```bash
+> export PATH=$PATH:/your/tensorrt-yolo/install/dir # linux
+> $env:PATH = "$env:PATH;C:\your\tensorrt-yolo\install\dir;C:\your\tensorrt-yolo\install\dir\bin" # windows
+> ```
+
+如果您希望在 Python 上体验与 C++ 相同的推理速度，则编译时需开启 `BUILD_PYTHON` 选项，然后再按照以下步骤操作：
+
+```bash
+pip install --upgrade build
+python -m build --wheel
+pip install dist/trtyolo-6.*-py3-none-any.whl
+```
 
 ### 3. 模型导出
 
-- 参考 [🔧 模型导出](docs/cn/model_export.md) 文档，导出适用于该项目推理的ONNX模型并构建为TensorRT引擎。
+- 使用项目配套的 [`trtyolo-export`](https://github.com/laugh12321/TensorRT-YOLO/tree/export) 工具包，导出适用于该项目推理的 ONNX 模型并构建为 TensorRT 引擎。
 
 ### 4. 推理示例
-
-> [!NOTE]
->
-> `ClassifyModel`、`DetectModel`、`OBBModel`、`SegmentModel` 和 `PoseModel` 分别对应于图像分类（Classify）、检测（Detect）、方向边界框（OBB）、分割（Segment）、姿态估计（Pose）和模型。
 
 - 使用 Python 进行推理：
 
   ```python
   import cv2
-  from tensorrt_yolo.infer import InferOption, DetectModel, generate_labels, visualize
+  import supervision as sv
 
-  def main():
-      # -------------------- 初始化配置 --------------------
-      # 配置推理设置
-      option = InferOption()
-      option.enable_swap_rb()  # 将OpenCV默认的BGR格式转为RGB格式
-      # 特殊模型配置示例（如PP-YOLOE系列需取消下方注释）
-      # option.set_normalize_params([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+  from trtyolo import TRTYOLO
 
-      # -------------------- 模型初始化 --------------------
-      # 加载TensorRT引擎文件（注意检查文件路径）
-      # 提示：首次加载引擎可能需要较长时间进行优化
-      model = DetectModel(engine_file="yolo11n-with-plugin.engine",
-                        option=option)
+  # -------------------- 初始化模型 --------------------
+  # 注意：task参数需与导出时指定的任务类型一致（"detect"、"segment"、"classify"、"pose"、"obb"）
+  # profile参数开启后，会在推理时计算性能指标，调用 model.profile() 可获取
+  # swap_rb参数开启后，会在推理前交换通道顺序（确保模型输入时RGB）
+  model = TRTYOLO("yolo11n-with-plugin.engine", task="detect", profile=True, swap_rb=True)
 
-      # -------------------- 数据预处理 --------------------
-      # 加载测试图片（建议添加文件存在性检查）
-      input_img = cv2.imread("test_image.jpg")
-      if input_img is None:
-          raise FileNotFoundError("测试图片加载失败，请检查文件路径")
+  # -------------------- 加载测试图片并推理 --------------------
+  image = cv2.imread("test_image.jpg")
+  result = model.predict(image)
+  print(f"==> result: {result}")
 
-      # -------------------- 执行推理 --------------------
-      # 执行目标检测（返回结果包含边界框、置信度、类别信息）
-      detection_result = model.predict(input_img)
-      print(f"==> detection_result: {detection_result}")
+  # -------------------- 可视化结果 --------------------
+  box_annotator = sv.BoxAnnotator()
+  annotated_frame = box_annotator.annotate(scene=image.copy(), detections=result)
 
-      # -------------------- 结果可视化 --------------------
-      # 加载类别标签（需确保labels.txt与模型匹配）
-      class_labels = generate_labels(labels_file="labels.txt")
-      # 生成可视化结果
-      visualized_img = visualize(
-          image=input_img,
-          result=detection_result,
-          labels=class_labels,
-      )
-      cv2.imwrite("vis_image.jpg", visualized_img)
+  # -------------------- 性能评估 --------------------
+  throughput, cpu_latency, gpu_latency = model.profile()
+  print(throughput)
+  print(cpu_latency)
+  print(gpu_latency)
 
-      # -------------------- 模型克隆演示 --------------------
-      # 克隆模型实例（适用于多线程场景）
-      cloned_model = model.clone()  # 创建独立副本，避免资源竞争
-      # 验证克隆模型推理一致性
-      cloned_result = cloned_model.predict(input_img)
-      print(f"==> cloned_result: {cloned_result}")
-
-  if __name__ == "__main__":
-      main()
+  # -------------------- 克隆模型 --------------------
+  # 克隆模型实例（适用于多线程场景）
+  cloned_model = model.clone()  # 创建独立副本，避免资源竞争
+  # 验证克隆模型推理一致性
+  cloned_result = cloned_model.predict(input_img)
+  print(f"==> cloned_result: {cloned_result}")
   ```
 
 - 使用 C++ 进行推理：
@@ -225,6 +184,7 @@
           // option.setNormalizeParams(mean, std);
 
           // -------------------- 模型初始化 --------------------
+          // ClassifyModel、DetectModel、OBBModel、SegmentModel 和 PoseModel 分别对应于图像分类、检测、方向边界框、分割和姿态估计模型
           auto detector = std::make_unique<trtyolo::DetectModel>(
               "yolo11n-with-plugin.engine",  // 模型路径
               option                         // 推理设置
@@ -282,165 +242,6 @@
 
 > 更多部署案例请参考[模型部署示例](examples) .
 
-## <div align="center">🖥️ 模型支持列表</div><div id="support-models"></div>
-
-<div>
-  <p>
-      <img width="100%" src="./assets/model-banner.png"></a>
-  </p>
-</div>
-
-符号说明: (1)  ✅ : 已经支持; (2) ❔: 正在进行中; (3) ❎ : 暂不支持; (4) 🟢 : 导出自行实现，即可推理. <br>
-
-<div style="text-align: center;">
-  <table border="1" style="border-collapse: collapse; width: 100%;">
-    <tr>
-      <th style="text-align: center;">任务场景</th>
-      <th style="text-align: center;">模型</th>
-      <th style="text-align: center;">CLI 导出</th>
-      <th style="text-align: center;">推理部署</th>
-    </tr>
-    <tr>
-      <td>Detect</td>
-      <td><a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a></td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Detect</td>
-      <td><a href="https://github.com/ultralytics/yolov5">ultralytics/yolov5</a></td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Detect</td>
-      <td><a href="https://github.com/meituan/YOLOv6">meituan/YOLOv6</a></td>
-      <td>❎ 参考<a href="https://github.com/meituan/YOLOv6/tree/main/deploy/ONNX#tensorrt-backend-tensorrt-version-800">官方导出教程</a></td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Detect</td>
-      <td><a href="https://github.com/WongKinYiu/yolov7">WongKinYiu/yolov7</a></td>
-      <td>❎ 参考<a href="https://github.com/WongKinYiu/yolov7#export">官方导出教程</a></td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Detect</td>
-      <td><a href="https://github.com/WongKinYiu/yolov9">WongKinYiu/yolov9</a></td>
-      <td>❎ 参考<a href="https://github.com/WongKinYiu/yolov9/issues/130#issue-2162045461">官方导出教程</a></td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Detect</td>
-      <td><a href="https://github.com/THU-MIG/yolov10">THU-MIG/yolov10</a></td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Detect</td>
-      <td><a href="https://github.com/sunsmarterjie/yolov12">sunsmarterjie/yolov12</a></td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Detect</td>
-      <td><a href="https://github.com/ultralytics/ultralytics">YOLO-World V2 (ultralytics)</a></td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Detect</td>
-      <td><a href="https://github.com/THU-MIG/yoloe">THU-MIG/yoloe</a></td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Detect</td>
-      <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Detect</td>
-      <td><a href="https://github.com/PaddlePaddle/PaddleDetection">PaddleDetection/PP-YOLOE+</a></td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Segment</td>
-      <td><a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a></td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Segment</td>
-      <td><a href="https://github.com/ultralytics/yolov5">ultralytics/yolov5</a></td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Segment</td>
-      <td><a href="https://github.com/meituan/YOLOv6/tree/yolov6-seg">meituan/YOLOv6-seg</a></td>
-      <td>❎ 参考<a href="https://github.com/laugh12321/TensorRT-YOLO/blob/main/tensorrt_yolo/export/head.py">tensorrt_yolo/export/head.py</a> 自行实现</td>
-      <td>🟢</td>
-    </tr>
-    <tr>
-      <td>Segment</td>
-      <td><a href="https://github.com/WongKinYiu/yolov7">WongKinYiu/yolov7</a></td>
-      <td>❎ 参考<a href="https://github.com/laugh12321/TensorRT-YOLO/blob/main/tensorrt_yolo/export/head.py">tensorrt_yolo/export/head.py</a> 自行实现</td>
-      <td>🟢</td>
-    </tr>
-    <tr>
-      <td>Segment</td>
-      <td><a href="https://github.com/WongKinYiu/yolov9">WongKinYiu/yolov9</a></td>
-      <td>❎ 参考<a href="https://github.com/laugh12321/TensorRT-YOLO/blob/main/tensorrt_yolo/export/head.py">tensorrt_yolo/export/head.py</a> 自行实现</td>
-      <td>🟢</td>
-    </tr>
-    <tr>
-      <td>Segment</td>
-      <td><a href="https://github.com/THU-MIG/yoloe">THU-MIG/yoloe</a></td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Segment</td>
-      <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Classify</td>
-      <td><a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a></td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Classify</td>
-      <td><a href="https://github.com/ultralytics/yolov5">ultralytics/yolov5</a></td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Classify</td>
-      <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Pose</td>
-      <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>OBB</td>
-      <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-  </table>
-</div>
-
 ## <div align="center">🌟 赞助与支持</div>
 
 开源不易，如果本项目对你有所帮助，欢迎通过赞助支持作者。你的支持是开发者持续维护的最大动力！
@@ -475,8 +276,14 @@ TensorRT-YOLO采用 **GPL-3.0许可证**，这个[OSI 批准](https://opensource
 
 对于 TensorRT-YOLO 的错误报告和功能请求，请访问 [GitHub Issues](https://github.com/laugh12321/TensorRT-YOLO/issues)！
 
+给项目点亮 ⭐ Star 可以帮助我们优先关注你的需求，加快响应速度～
+
 ## <div align="center">🙏 致谢</div>
 
 <div align="center">
 <a href="https://hellogithub.com/repository/942570b550824b1b9397e4291da3d17c" target="_blank"><img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=942570b550824b1b9397e4291da3d17c&claim_uid=2AGzE4dsO8ZUD9R&theme=neutral" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 </div>
+
+## <div align="center">🌟 Star History</div>
+
+[![Star History Chart](https://api.star-history.com/svg?repos=laugh12321/TensorRT-YOLO&type=date&legend=top-left)](https://www.star-history.com/#laugh12321/TensorRT-YOLO&type=date&legend=top-left)

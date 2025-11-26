@@ -11,40 +11,46 @@ TensorRT-YOLO 为 Python 和 C++ 开发者提供了多线程和多进程推理�
 
 TensorRT-YOLO 允许多个线程共享一个 engine 进行推理。一个 engine 可以支持多个 context 同时使用，这意味着多个线程可以共享同一份模型权重和参数，而仅在内存或显存中保留一份副本。因此，尽管复制了多个对象，但模型的内存占用并不会线性增加。
 
-TensorRT-YOLO 提供了以下接口用于模型克隆（以 DetectModel 为例）：
+TensorRT-YOLO 提供了以下接口用于模型克隆：
 
 - Python: `DetectModel.clone()`
-- C++: `DetectModel::clone()`
+- C++: `TRTYOLO::clone()`
 
 ### Python 示例
 
 ```python
 import cv2
-from tensorrt_yolo.infer import InferOption, DetectModel, generate_labels, visualize
+import supervision as sv
 
-# 配置推理选项
-option = InferOption()
-option.enable_swap_rb()
+from trtyolo import TRTYOLO
 
-# 初始化模型
-model = DetectModel("yolo11n-with-plugin.engine", option)
+# -------------------- 初始化模型 --------------------
+# 注意：task参数需与导出时指定的任务类型一致（"detect"、"segment"、"classify"、"pose"、"obb"）
+# profile参数开启后，会在推理时计算性能指标，调用 model.profile() 可获取
+# swap_rb参数开启后，会在推理前交换通道顺序（确保模型输入时RGB）
+model = TRTYOLO("yolo11n-with-plugin.engine", task="detect", profile=True, swap_rb=True)
 
-# 加载图片
-im = cv2.imread("test_image.jpg")
+# -------------------- 加载测试图片并推理 --------------------
+image = cv2.imread("test_image.jpg")
+result = model.predict(image)
+print(f"==> result: {result}")
 
-# 模型预测
-result = model.predict(im)
-print(f"==> 检测结果: {result}")
+# -------------------- 可视化结果 --------------------
+box_annotator = sv.BoxAnnotator()
+annotated_frame = box_annotator.annotate(scene=image.copy(), detections=result)
 
-# 可视化检测结果
-labels = generate_labels("labels.txt")
-vis_im = visualize(im, result, labels)
-cv2.imwrite("vis_image.jpg", vis_im)
+# -------------------- 性能评估 --------------------
+throughput, cpu_latency, gpu_latency = model.profile()
+print(throughput)
+print(cpu_latency)
+print(gpu_latency)
 
-# 克隆模型并进行预测
-clone_model = model.clone()
-clone_result = clone_model.predict(im)
-print(f"==> 克隆模型检测结果: {clone_result}")
+# -------------------- 克隆模型 --------------------
+# 克隆模型实例（适用于多线程场景）
+cloned_model = model.clone()  # 创建独立副本，避免资源竞争
+# 验证克隆模型推理一致性
+cloned_result = cloned_model.predict(input_img)
+print(f"==> cloned_result: {cloned_result}")
 ```
 
 ### C++ 示例
@@ -56,28 +62,57 @@ print(f"==> 克隆模型检测结果: {clone_result}")
 #include "trtyolo.hpp"
 
 int main() {
-    // 配置推理选项
-    trtyolo::InferOption option;
-    option.enableSwapRB();  // 启用通道交换（从BGR到RGB）
+    try {
+        // -------------------- 初始化配置 --------------------
+        trtyolo::InferOption option;
+        option.enableSwapRB();  // BGR->RGB转换
 
-    // 初始化模型
-    auto model = std::make_unique<trtyolo::DetectModel>("yolo11n-with-plugin.engine", option);
+        // 特殊模型参数设置示例
+        // const std::vector<float> mean{0.485f, 0.456f, 0.406f};
+        // const std::vector<float> std{0.229f, 0.224f, 0.225f};
+        // option.setNormalizeParams(mean, std);
 
-    // 加载图片
-    cv::Mat cvim = cv::imread("test_image.jpg");
-    trtyolo::Image im(cvim.data, cvim.cols, cvim.rows);
+        // -------------------- 模型初始化 --------------------
+        // ClassifyModel、DetectModel、OBBModel、SegmentModel 和 PoseModel 分别对应于图像分类、检测、方向边界框、分割和姿态估计模型
+        auto detector = std::make_unique<trtyolo::DetectModel>(
+            "yolo11n-with-plugin.engine",  // 模型路径
+            option                         // 推理设置
+        );
 
-    // 模型预测
-    trtyolo::DetResult result = model->predict(im);
+        // -------------------- 数据加载 --------------------
+        cv::Mat cv_image = cv::imread("test_image.jpg");
+        if (cv_image.empty()) {
+            throw std::runtime_error("无法加载测试图片");
+        }
 
-    // 可视化（代码省略）
-    // ...  // 可视化部分代码未提供，可根据需要实现
+        // 封装图像数据（不复制像素数据）
+        trtyolo::Image input_image(
+            cv_image.data,     // 像素数据指针
+            cv_image.cols,     // 图像宽度
+            cv_image.rows     // 图像高度
+        );
 
-    // 克隆模型并进行预测
-    auto clone_model = model->clone();
-    trtyolo::DetResult clone_result = clone_model->predict(im);
+        // -------------------- 执行推理 --------------------
+        trtyolo::DetectRes result = detector->predict(input_image);
+        std::cout << result << std::endl;
 
-    return 0;  // 程序正常结束
+        // -------------------- 结果可视化（示意） --------------------
+        // 实际开发需实现可视化逻辑，示例：
+        // cv::Mat vis_image = visualize_detections(cv_image, result);
+        // cv::imwrite("vis_result.jpg", vis_image);
+
+        // -------------------- 模型克隆演示 --------------------
+        auto cloned_detector = detector->clone();  // 创建独立实例
+        trtyolo::DetectRes cloned_result = cloned_detector->predict(input_image);
+
+        // 验证结果一致性
+        std::cout << cloned_result << std::endl;
+
+    } catch (const std::exception& e) {
+        std::cerr << "程序异常: " << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }
 ```
 

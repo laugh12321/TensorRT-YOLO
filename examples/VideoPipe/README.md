@@ -10,7 +10,11 @@
 
 ## 模型导出
 
-使用以下命令导出带 [EfficientNMS](https://github.com/NVIDIA/TensorRT/tree/main/plugin/efficientNMSPlugin) 插件的 ONNX 格式，详细的 `trtyolo` CLI 导出方法请阅读 [模型导出](../../docs/cn/model_export.md)：
+> [!IMPORTANT]
+>
+> 使用项目配套的 [`trtyolo-export`](https://github.com/laugh12321/TensorRT-YOLO/tree/export) 工具包，导出适用于该项目推理的 ONNX 模型并构建为 TensorRT 引擎。
+
+使用以下命令导出带 [EfficientNMS](https://github.com/NVIDIA/TensorRT/tree/main/plugin/efficientNMSPlugin) 插件的 ONNX 格式：
 
 ```bash
 trtyolo export -w workspace/yolo11n.pt -v yolo11 -o workspace -b 2 -s
@@ -24,7 +28,7 @@ trtexec --onnx=workspace/yolo11n.onnx --saveEngine=workspace/yolo11n.engine --fp
 
 ## 项目运行
 
-1. 确保已按照 [`TensorRT-YOLO` 编译](../../docs/cn/build_and_install.md##rensorrt-yolo-编译) 和 [`VideoPipe` 编译和调试](https://github.com/sherlockchou86/VideoPipe/blob/master/README_CN.md#52-编译和调试) （只需要执行默认的五个步骤，不需要追加其他编译选项）对项目进行编译。
+1. 确保已按照项目文档 和 [`VideoPipe` 编译和调试](https://github.com/sherlockchou86/VideoPipe/blob/master/README_CN.md#52-编译和调试) （只需要执行默认的五个步骤，不需要追加其他编译选项）对项目进行编译。
 
 2. 将项目编译为可执行文件：
 

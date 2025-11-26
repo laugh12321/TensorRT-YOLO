@@ -12,15 +12,9 @@
 
 > [!IMPORTANT]
 >
-> 如果您仅想通过 `tensorrt_yolo` 提供的命令行界面（CLI）工具 `trtyolo`，导出可供该项目推理的 ONNX 模型（带 TensorRT 插件），可以通过 [PyPI](https://pypi.org/project/tensorrt-yolo) 安装，只需执行以下命令即可：
->
-> ```bash
-> pip install -U tensorrt_yolo
-> ```
->
-> 如果想体验与 C++ 同样的推理速度，则请参考 [安装-tensorrt_yolo](../../docs/cn/build_and_install.md#安装-tensorrt_yolo) 自行构建最新版本的 `tensorrt_yolo`。
+> 使用项目配套的 [`trtyolo-export`](https://github.com/laugh12321/TensorRT-YOLO/tree/export) 工具包，导出适用于该项目推理的 ONNX 模型并构建为 TensorRT 引擎。
 
-使用以下命令导出带 [EfficientNMS](https://github.com/NVIDIA/TensorRT/tree/main/plugin/efficientNMSPlugin) 插件的 ONNX 格式，详细的 `trtyolo` CLI 导出方法请阅读 [模型导出](../../docs/cn/model_export.md)：
+使用以下命令导出带 [EfficientNMS](https://github.com/NVIDIA/TensorRT/tree/main/plugin/efficientNMSPlugin) 插件的 ONNX 格式：
 
 ```bash
 trtyolo export -w models/yolo11n.pt -v yolo11 -o models -s
@@ -34,30 +28,9 @@ trtexec --onnx=models/yolo11n.onnx --saveEngine=models/yolo11n.engine --fp16
 
 ## 模型推理
 
-> [!IMPORTANT]
->
-> 通过 [PyPI](https://pypi.org/project/tensorrt-yolo) 安装的 `tensorrt_yolo` 仅提供可供该项目推理的 ONNX 模型（带 TensorRT 插件） 功能，不提供推理功能。
-> 如果想体验与 C++ 同样的推理速度，则请参考 [安装-tensorrt_yolo](../../docs/cn/build_and_install.md#安装-tensorrt_yolo) 自行构建最新版本的 `tensorrt_yolo`。
-
-### 使用 CLI 进行推理
-
-1. 使用 `tensorrt_yolo` 库的 `trtyolo` 命令行工具进行推理。运行以下命令查看帮助信息：
-
-    ```bash
-    trtyolo infer --help
-    ```
-
-2. 运行以下命令进行推理：
-
-    ```bash
-    trtyolo infer -e models/yolo11n.engine -m 1 -i images -o output -l labels.txt
-    ```
-
-    推理结果将保存至 `output` 文件夹，并生成可视化结果。
-
 ### 使用 Python 进行推理
 
-1. 使用 `tensorrt_yolo` 库运行示例脚本 `detect.py`进行推理。
+1. 使用 `trtyolo` 库运行示例脚本 `detect.py`进行推理。
 2. 运行以下命令进行推理：
 
     ```bash
@@ -66,7 +39,7 @@ trtexec --onnx=models/yolo11n.onnx --saveEngine=models/yolo11n.engine --fp16
 
 ### 使用 C++ 进行推理
 
-1. 确保已按照 [`TensorRT-YOLO` 编译](../../docs/cn/build_and_install.md##rensorrt-yolo-编译) 对项目进行编译。
+1. 确保已按照项目文档对项目进行编译。
 2. 将 `detect.cpp` 编译为可执行文件：
 
     ```bash

@@ -11,40 +11,46 @@ TensorRT-YOLO provides example code for multi-threading and multi-processing inf
 
 TensorRT-YOLO allows multiple threads to share a single engine for inference. One engine can support multiple contexts simultaneously, meaning multiple threads can share the same model weights and parameters while maintaining only one copy in memory or GPU memory. As a result, even though multiple objects are cloned, the memory footprint of the model does not increase linearly.
 
-TensorRT-YOLO provides the following interfaces for model cloning (using DetectModel as an example):
+TensorRT-YOLO provides the following interfaces for model cloning:
 
 - Python: `DetectModel.clone()`
-- C++: `DetectModel::clone()`
+- C++: `TRTYOLO::clone()`
 
 ### Python Example
 
 ```python
 import cv2
-from tensorrt_yolo.infer import InferOption, DetectModel, generate_labels, visualize
+import supervision as sv
 
-# Configure inference options
-option = InferOption()
-option.enable_swap_rb()
+from trtyolo import TRTYOLO
 
-# Initialize the model
-model = DetectModel("yolo11n-with-plugin.engine", option)
+# -------------------- Initialize the model --------------------
+# Note: The task parameter must match the task type specified during export ("detect", "segment", "classify", "pose", "obb")
+# The profile parameter, when enabled, calculates performance metrics during inference, which can be retrieved by calling model.profile()
+# The swap_rb parameter, when enabled, swaps the channel order before inference (ensuring the model input is RGB)
+model = TRTYOLO("yolo11n-with-plugin.engine", task="detect", profile=True, swap_rb=True)
 
-# Load an image
-im = cv2.imread("test_image.jpg")
+# -------------------- Load the test image and perform inference --------------------
+image = cv2.imread("test_image.jpg")
+result = model.predict(image)
+print(f"==> result: {result}")
 
-# Perform model prediction
-result = model.predict(im)
-print(f"==> Detection result: {result}")
+# -------------------- Visualize the results --------------------
+box_annotator = sv.BoxAnnotator()
+annotated_frame = box_annotator.annotate(scene=image.copy(), detections=result)
 
-# Visualize the detection results
-labels = generate_labels("labels.txt")
-vis_im = visualize(im, result, labels)
-cv2.imwrite("vis_image.jpg", vis_im)
+# -------------------- Performance evaluation --------------------
+throughput, cpu_latency, gpu_latency = model.profile()
+print(throughput)
+print(cpu_latency)
+print(gpu_latency)
 
-# Clone the model and perform prediction
-clone_model = model.clone()
-clone_result = clone_model.predict(im)
-print(f"==> Cloned model detection result: {clone_result}")
+# -------------------- Clone the model --------------------
+# Clone the model instance (suitable for multi-threading scenarios)
+cloned_model = model.clone()  # Create an independent copy to avoid resource contention
+# Verify the consistency of inference with the cloned model
+cloned_result = cloned_model.predict(input_img)
+print(f"==> cloned_result: {cloned_result}")
 ```
 
 ### C++ Example
@@ -56,28 +62,57 @@ print(f"==> Cloned model detection result: {clone_result}")
 #include "trtyolo.hpp"
 
 int main() {
-    // Configure inference options
-    trtyolo::InferOption option;
-    option.enableSwapRB();  // Enable channel swapping (BGR to RGB)
+    try {
+        // -------------------- Initialization --------------------
+        trtyolo::InferOption option;
+        option.enableSwapRB();  // BGR->RGB conversion
 
-    // Initialize the model
-    auto model = std::make_unique<trtyolo::DetectModel>("yolo11n-with-plugin.engine", option);
+        // Special model parameter setup example
+        // const std::vector<float> mean{0.485f, 0.456f, 0.406f};
+        // const std::vector<float> std{0.229f, 0.224f, 0.225f};
+        // option.setNormalizeParams(mean, std);
 
-    // Load an image
-    cv::Mat cvim = cv::imread("test_image.jpg");
-    trtyolo::Image im(cvim.data, cvim.cols, cvim.rows);
+        // -------------------- Model Initialization --------------------
+        // The models ClassifyModel, DetectModel, OBBModel, SegmentModel, and PoseModel correspond to image classification, detection, oriented bounding box, segmentation, and pose estimation models, respectively.
+        auto detector = std::make_unique<trtyolo::DetectModel>(
+            "yolo11n-with-plugin.engine",  // Model path
+            option                         // Inference settings
+        );
 
-    // Perform model prediction
-    trtyolo::DetResult result = model->predict(im);
+        // -------------------- Data Loading --------------------
+        cv::Mat cv_image = cv::imread("test_image.jpg");
+        if (cv_image.empty()) {
+            throw std::runtime_error("Failed to load test image.");
+        }
 
-    // Visualization (code omitted)
-    // ...  // Visualization code is not provided and can be implemented as needed
+        // Encapsulate image data (no pixel data copying)
+        trtyolo::Image input_image(
+            cv_image.data,     // Pixel data pointer
+            cv_image.cols,     // Image width
+            cv_image.rows     // Image height
+        );
 
-    // Clone the model and perform prediction
-    auto clone_model = model->clone();
-    trtyolo::DetResult clone_result = clone_model->predict(im);
+        // -------------------- Inference Execution --------------------
+        trtyolo::DetectRes result = detector->predict(input_image);
+        std::cout << result << std::endl;
 
-    return 0;  // Program ends successfully
+        // -------------------- Result Visualization (Example) --------------------
+        // Implement visualization logic in actual development, e.g.:
+        // cv::Mat vis_image = visualize_detections(cv_image, result);
+        // cv::imwrite("vis_result.jpg", vis_image);
+
+        // -------------------- Model Cloning Demo --------------------
+        auto cloned_detector = detector->clone();  // Create an independent instance
+        trtyolo::DetectRes cloned_result = cloned_detector->predict(input_image);
+
+        // Verify result consistency
+        std::cout << cloned_result << std::endl;
+
+    } catch (const std::exception& e) {
+        std::cerr << "Program Exception: " << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }
 ```
 
