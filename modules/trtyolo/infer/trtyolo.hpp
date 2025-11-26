@@ -31,10 +31,11 @@ class BaseModel;  // 前向声明 BaseModel 模板类
  * @brief 图像结构体，用于存储图像数据及其尺寸信息
  */
 struct TRTYOLOAPI Image {
-    void*  ptr;         // < 图像数据指针
-    int    width  = 0;  // < 图像宽度（像素数）
-    int    height = 0;  // < 图像高度（像素数）
-    size_t pitch  = 0;  // < 图像数据行距（字节数，包括可能的 padding）
+    void*  ptr;           // < 图像数据指针
+    int    width    = 0;  // < 图像宽度（像素数）
+    int    height   = 0;  // < 图像高度（像素数）
+    int    channels = 0;  // < 图像通道数
+    size_t pitch    = 0;  // < 图像数据行距（字节数，包括可能的 padding）
 
     /**
      * @brief 构造函数（紧密排列，无 padding）
@@ -54,9 +55,20 @@ struct TRTYOLOAPI Image {
      */
     Image(void* data, int width, int height, size_t pitch);
 
+    /**
+     * @brief 构造函数（带 channels, pitch）
+     * @param data 图像数据指针
+     * @param width 图像宽度（像素数）
+     * @param height 图像高度（像素数）
+     * @param channels 图像通道数
+     * @param pitch 每行的字节数（包括可能的 padding）
+     */
+    Image(void* data, int width, int height, int channels, size_t pitch);
+
     friend std::ostream& operator<<(std::ostream& os, const Image& img) {
         os << "Image(width=" << img.width
            << ", height=" << img.height
+           << ", channels=" << img.channels
            << ", pitch=" << img.pitch
            << ", ptr=" << img.ptr << ")";
         return os;
