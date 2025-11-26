@@ -5,7 +5,7 @@
     "source_": "https://github.com/laugh12321/TensorRT-YOLO",
     "desc_": "TensorRT-YOLO workflow supporting task scenarios including object detection, instance segmentation, image classification, pose recognition, and rotated object detection.",
     "device_type_": "kDeviceTypeCodeCpu:0",
-    "version_": "6.3.2",
+    "version_": "6.4.0",
     "required_params_": [],
     "ui_params_": [],
     "io_params_": [],
@@ -80,11 +80,23 @@
             "source_": "https://github.com/laugh12321/TensorRT-YOLO",
             "desc_": "TensorRT-YOLO Node",
             "device_type_": "kDeviceTypeCodeCpu:0",
-            "version_": "6.3.2",
-            "required_params_": [],
+            "version_": "6.4.0",
+            "required_params_": [
+                "engine_path"
+            ],
             "ui_params_": [],
-            "io_params_": [],
-            "dropdown_params_": {},
+            "io_params_": [
+                "engine_path"
+            ],
+            "dropdown_params_": {
+                "model_task": [
+                    "detect",
+                    "segment",
+                    "classify",
+                    "pose",
+                    "obb"
+                ]
+            },
             "is_dynamic_input_": false,
             "inputs_": [
                 {
@@ -98,7 +110,7 @@
                 {
                     "desc_": "output_0",
                     "name_": "TRTYOLO Node@output_0",
-                    "type_": "Union[ClassifyRes, DetectRes, OBBRes, SegmentRes, PoseRes]"
+                    "type_": "Union[Detections, KeyPoints, Classifications]"
                 }
             ],
             "node_type_": "Intermediate",
@@ -115,11 +127,23 @@
             "source_": "https://github.com/laugh12321/TensorRT-YOLO",
             "desc_": "TensorRT-YOLO Visualizer Node",
             "device_type_": "kDeviceTypeCodeCpu:0",
-            "version_": "6.3.2",
-            "required_params_": [],
+            "version_": "6.4.0",
+            "required_params_": [
+                "labels_file"
+            ],
             "ui_params_": [],
-            "io_params_": [],
-            "dropdown_params_": {},
+            "io_params_": [
+                "labels_file"
+            ],
+            "dropdown_params_": {
+                "model_task": [
+                    "detect",
+                    "segment",
+                    "classify",
+                    "pose",
+                    "obb"
+                ]
+            },
             "is_dynamic_input_": false,
             "inputs_": [
                 {
@@ -130,7 +154,7 @@
                 {
                     "desc_": "input_1",
                     "name_": "TRTYOLO Node@output_0",
-                    "type_": "Union[ClassifyRes, DetectRes, OBBRes, SegmentRes, PoseRes]"
+                    "type_": "Union[Detections, KeyPoints, Classifications]"
                 }
             ],
             "is_dynamic_output_": false,
@@ -143,6 +167,7 @@
             ],
             "node_type_": "Intermediate",
             "labels_file": "",
+            "model_task": "detect",
             "node_repository_": []
         },
         {
