@@ -67,9 +67,9 @@ struct TRTYOLOAPI Image {
  * @brief 掩码结构体，用于存储掩码数据及其尺寸信息
  */
 struct TRTYOLOAPI Mask {
-    std::vector<uint8_t> data;        // < 掩码数据
-    int                  width  = 0;  // < 掩码宽度
-    int                  height = 0;  // < 掩码高度
+    std::vector<float> data;        // < 掩码数据
+    int                width  = 0;  // < 掩码宽度
+    int                height = 0;  // < 掩码高度
 
     /**
      * @brief 构造函数，初始化掩码尺寸并分配数据空间
