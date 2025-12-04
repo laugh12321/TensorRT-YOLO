@@ -94,9 +94,27 @@ void visualize(cv::Mat& image, trtyolo::SegmentRes& result, const std::vector<st
         // 创建一个与原图大小相同的掩码图像
         cv::Mat mask_image = cv::Mat::zeros(image.size(), CV_8UC1);
 
+        // 计算从 bool_mask 中裁切的偏移（若 xyxy 左上角为负，则偏移为负值的绝对值）
+        int src_x_offset = std::max(0, -xyxy[0]);
+        int src_y_offset = std::max(0, -xyxy[1]);
+
+        // 目标区域的宽高（在原图中的实际可用区域）
+        int target_w = x2 - x1;
+        int target_h = y2 - y1;
+        if (target_w <= 0 || target_h <= 0)
+            continue;
+
+        // 确保源裁切区域不会超出 bool_mask 的边界
+        if (src_x_offset + target_w > bool_mask.cols)
+            target_w = bool_mask.cols - src_x_offset;
+        if (src_y_offset + target_h > bool_mask.rows)
+            target_h = bool_mask.rows - src_y_offset;
+        if (target_w <= 0 || target_h <= 0)
+            continue;
+
         // 定义目标区域和源区域
-        cv::Rect target_rect(x1, y1, x2 - x1, y2 - y1);  // 目标区域在 mask_image 中的位置
-        cv::Rect source_rect(0, 0, x2 - x1, y2 - y1);    // 源区域在 bool_mask 中的位置
+        cv::Rect target_rect(x1, y1, target_w, target_h);                      // 目标区域在 mask_image 中的位置
+        cv::Rect source_rect(src_x_offset, src_y_offset, target_w, target_h);  // 源区域在 bool_mask 中的位置
 
         // 将 bool_mask 的指定区域复制到 mask_image 的指定区域
         bool_mask(source_rect).copyTo(mask_image(target_rect));
