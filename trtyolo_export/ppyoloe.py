@@ -209,18 +209,18 @@ class PPYOLOEGraphSurgeon:
         """
         self.graph.cleanup().toposort()
         model_onnx = gs.export_onnx(self.graph)
-        if self.simplify:
+        if simplify:
             try:
-                import onnxsim
+                import onnxslim
 
-                logger.success(f"Simplifying ONNX model with onnxsim version {onnxsim.__version__}...")
-                model_onnx, check = onnxsim.simplify(model_onnx)
-                assert check, "Simplified ONNX model could not be validated"
+                logger.success(f"Simplifying ONNX model with onnxslim version {onnxslim.__version__}...")
+                onnx_model = onnxslim.slim(onnx_model)
             except ImportError:
-                logger.warning('onnxsim not found. Please install onnx-simplifier for example: `pip install onnx-simplifier>=0.4.1`.')
+                logger.warning('onnxslim not found. Please install onnxslim for example: `pip install onnxslim`.')
             except Exception as e:
                 logger.warning(f"Simplifier failure: {e}")
-        onnx.save(model_onnx, output_path)
+
+        onnx.save(onnx_model, onnx_path)
 
     def register_nms(
         self,
