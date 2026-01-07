@@ -20,7 +20,7 @@
 
 ## ✨ 主要特性
 
-- **全面兼容**：支持 YOLOv3 至 YOLO12 全系列模型，以及 PP-YOLOE、PP-YOLOE+、YOLO-World、YOLOE 等多种变体，全面覆盖目标检测、实例分割、姿态估计、旋转框检测、图像分类等视觉五大核心任务类型，充分满足多样化应用需求，详见 [🖥️ 模型支持列表](#support-models)
+- **全面兼容**：支持 YOLOv3 至 YOLO12 全系列模型，以及 PP-YOLOE+、YOLO-World、YOLO-Master 等多种变体，全面覆盖目标检测、实例分割、姿态估计、旋转框检测、图像分类等视觉五大核心任务类型，充分满足多样化应用需求，详见 [🖥️ 模型支持列表](#support-models)
 - **插件内置**：导出的 ONNX 文件已预先集成 TensorRT 官方插件与自定义插件，全面支持检测、分割、姿态估计、OBB 等多任务场景，大幅简化部署流程
 - **灵活配置**：提供动态批量大小、自定义阈值、图像尺寸等丰富参数选项，满足不同场景需求
 - **一键操作**：简洁直观的命令行界面，无需复杂配置，实现模型快速导出
@@ -125,8 +125,12 @@ trtyolo export -v yolov3 -w yolov3.pt -o output
 # 导出本地仓库中的 YOLOv5 Classify 模型
 trtyolo export -v yolov5 -w yolov5s-cls.pt -o output --repo_dir your_local_yolovs_repository
 
-# 使用 Ultralytics 训练的 YOLO 系列模型（YOLOv3、YOLOv5、YOLOv6、YOLOv8、YOLOv9、YOLOv10、YOLOv11 等），并指定插件参数，以动态 batch 导出
+# 使用 Ultralytics 训练的 YOLO 系列模型（YOLOv3、YOLOv5、YOLOv6、YOLOv8、YOLOv9、YOLOv10、YOLOv11、YOLO-Master 等），并指定插件参数，以动态 batch 导出
 trtyolo export -v ultralytics -w yolov8s.pt -o output --max_boxes 100 --iou_thres 0.45 --conf_thres 0.25 -b -1
+
+# 导出 YOLO-Master 模型
+# 新版网络含动态内存分配，与 CUDA Graph 冲突，而 TensorRT-YOLO 推理静态模型时默认启用 CUDA Graph，故需导出动态模型（-b -1）
+trtyolo export -v yolo-master -w yolo-master.pt -o output -s
 
 # 导出 PP-YOLOE 和 PP-YOLOE+ 模型
 trtyolo export -v pp-yoloe --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output
@@ -194,6 +198,7 @@ trtexec --onnx=yolo11n-obb.onnx --saveEngine=yolo11n-obb.engine --fp16 --minShap
 | | <a href="https://github.com/ultralytics/ultralytics">YOLO-World V2</a> | ✅ 支持 | ✅ 支持 |
 | | <a href="https://github.com/THU-MIG/yoloe">THU-MIG/yoloe</a> | ✅ 支持 | ✅ 支持 |
 | | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ 支持 | ✅ 支持 |
+| | <a href="https://github.com/isLinXu/YOLO-Master">isLinXu/YOLO-Master</a> | ✅ 支持 | ✅ 支持 |
 | | <a href="https://github.com/PaddlePaddle/PaddleDetection">PaddleDetection/PP-YOLOE+</a> | ✅ 支持 | ✅ 支持 |
 | **Segment** | | | |
 | | <a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a> | ✅ 支持 | ✅ 支持 |
@@ -203,10 +208,12 @@ trtexec --onnx=yolo11n-obb.onnx --saveEngine=yolo11n-obb.engine --fp16 --minShap
 | | <a href="https://github.com/WongKinYiu/yolov9">WongKinYiu/yolov9</a> | ❎ 需参考代码自行实现 | 🟢 可推理 |
 | | <a href="https://github.com/THU-MIG/yoloe">THU-MIG/yoloe</a> | ✅ 支持 | ✅ 支持 |
 | | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ 支持 | ✅ 支持 |
+| | <a href="https://github.com/isLinXu/YOLO-Master">isLinXu/YOLO-Master</a> | ✅ 支持 | ✅ 支持 |
 | **Classify** | | | |
 | | <a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a> | ✅ 支持 | ✅ 支持 |
 | | <a href="https://github.com/ultralytics/yolov5">ultralytics/yolov5</a> | ✅ 支持 | ✅ 支持 |
 | | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ 支持 | ✅ 支持 |
+| | <a href="https://github.com/isLinXu/YOLO-Master">isLinXu/YOLO-Master</a> | ✅ 支持 | ✅ 支持 |
 | **Pose** | | | |
 | | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ 支持 | ✅ 支持 |
 | **OBB** | | | |

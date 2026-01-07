@@ -87,6 +87,7 @@ class ModelExporter:
                     "yolov8": UltralyticsDetect,
                     "yolo11": UltralyticsDetect,
                     "yolo12": UltralyticsDetect,
+                    "yolo-master": UltralyticsDetect,
                     "ultralytics": UltralyticsDetect,
                 },
                 "output_names": self.__output_names,
@@ -129,6 +130,7 @@ class ModelExporter:
                     "yolov8": UltralyticsSegment,
                     "yolo11": UltralyticsSegment,
                     "yolo12": UltralyticsSegment,
+                    "yolo-master": UltralyticsSegment,
                     "ultralytics": UltralyticsSegment,
                 },
                 "output_names": self.__output_names + ["det_masks"],
@@ -151,6 +153,7 @@ class ModelExporter:
                     "yolov8": UltralyticsClassify,
                     "yolo11": UltralyticsClassify,
                     "yolo12": UltralyticsClassify,
+                    "yolo-master": UltralyticsClassify,
                     "ultralytics": UltralyticsClassify,
                 },
                 "output_names": ["topk"],
@@ -178,7 +181,7 @@ class ModelExporter:
         if version in yolo_versions_with_repo:
             repo_dir = yolo_versions_with_repo[version] if repo_dir is None else repo_dir
             self.__model = torch.hub.load(repo_dir, 'custom', path=weights, source=source, _verbose=False)
-        elif version in ['yolov8', 'yolov10', 'yolo11', 'yolo12', 'yolo-world', 'yoloe', 'ultralytics']:
+        elif version in ['yolov8', 'yolov10', 'yolo11', 'yolo12', 'yolo-world', 'yoloe', 'yolo-master', 'ultralytics']:
             from ultralytics import YOLO
 
             self.__model = YOLO(model=weights, verbose=False).model
@@ -191,7 +194,7 @@ class ModelExporter:
         else:
             logger.error(
                 f"YOLO version '{version}' is unsupported for export with trtyolo CLI tool. "
-                "Please provide a valid version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, yolo-world, yoloe, ultralytics."
+                "Please provide a valid version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, yolo-world, yolo-master, yoloe, ultralytics."
             )
             if version in self.__export_info:
                 logger.warning(
@@ -328,7 +331,7 @@ def torch_export(
     Args:
         weights (str): Path to YOLO weights for PyTorch.
         output (str): Directory path to save the exported model.
-        version (str): YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, yolo-world, yoloe, ultralytics.
+        version (str): YOLO version, e.g., yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, yolo-world, yolo-master, yoloe, ultralytics.
         imgsz (Optional[Sequence[int]], optional): Inference image size (height, width). Defaults to [640, 640].
         batch (Optional[int], optional): Total batch size for the model. Use -1 for dynamic batch size. Defaults to 1.
         max_boxes (Optional[int], optional): Maximum number of detections to output per image. Defaults to 100.
@@ -445,12 +448,12 @@ def trtyolo():
 
 @trtyolo.command(
     help="Export YOLO models to ONNX format compatible with TensorRT-YOLO. "
-    "Supports YOLOv3, YOLOv5, YOLOv8, YOLOv10, YOLO11, YOLO12, YOLO-World, YOLOE, PP-YOLOE, and PP-YOLOE+."
+    "Supports YOLOv3, YOLOv5, YOLOv8, YOLOv10, YOLO11, YOLO12, YOLO-World, YOLOE, PP-YOLOE+ and YOLO-Master."
 )
 @click.option(
     '-v',
     '--version',
-    help='Model version. Options include yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, yolo-world, yoloe, pp-yoloe, ultralytics.',
+    help='Model version. Options include yolov3, yolov5, yolov8, yolov10, yolo11, yolo12, yolo-world, yoloe, pp-yoloe, yolo-master, ultralytics.',
     type=str,
     required=True,
     callback=validate_export_params,

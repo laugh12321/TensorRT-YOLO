@@ -20,7 +20,7 @@
 
 ## ✨ Key Features
 
-- **Comprehensive Compatibility**: Supports the full range of models from YOLOv3 to YOLO12, as well as various variants like PP-YOLOE, PP-YOLOE+, YOLO-World, and YOLOE, covering all five core visual task types: object detection, instance segmentation, pose estimation, oriented object detection (OBB), and image classification, fully meeting diverse application needs. See [🖥️ Model Support List](#support-models) for details.
+- **Comprehensive Compatibility**: Supports the full range of models from YOLOv3 to YOLO12, as well as various variants like PP-YOLOE+、YOLO-World and YOLO-Master, covering all five core visual task types: object detection, instance segmentation, pose estimation, oriented object detection (OBB), and image classification, fully meeting diverse application needs. See [🖥️ Model Support List](#support-models) for details.
 - **Built-in Plugins**: The exported ONNX files have pre-integrated TensorRT official plugins and custom plugins, fully supporting multi-task scenarios such as detection, segmentation, pose estimation, and OBB, greatly simplifying the deployment process.
 - **Flexible Configuration**: Provides rich parameter options such as dynamic batch size, custom thresholds, and image dimensions to meet different scenario requirements.
 - **One-Click Operation**: A concise and intuitive command-line interface, no complex configuration required, enabling quick model export.
@@ -125,8 +125,14 @@ trtyolo export -v yolov3 -w yolov3.pt -o output
 # Export a YOLOv5 Classify model from a local repository
 trtyolo export -v yolov5 -w yolov5s-cls.pt -o output --repo_dir your_local_yolovs_repository
 
-# Export a YOLO series model trained with Ultralytics (YOLOv3, YOLOv5, YOLOv6, YOLOv8, YOLOv9, YOLOv10, YOLOv11, etc.) with plugin parameters and dynamic batch
+# Export a YOLO series model trained with Ultralytics (YOLOv3, YOLOv5, YOLOv6, YOLOv8, YOLOv9, YOLOv10, YOLOv11, YOLO-Master, etc.) with plugin parameters and dynamic batch
 trtyolo export -v ultralytics -w yolov8s.pt -o output --max_boxes 100 --iou_thres 0.45 --conf_thres 0.25 -b -1
+
+# Export YOLO-Master models
+# The new network performs dynamic memory allocation, which conflicts with CUDA Graph.
+# TensorRT-YOLO enables CUDA Graph by default when inferring static models,
+# so export a dynamic model (-b -1) instead.
+trtyolo export -v yolo-master -w yolo-master.pt -o output -s
 
 # Export PP-YOLOE and PP-YOLOE+ models
 trtyolo export -v pp-yoloe --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output
@@ -194,6 +200,7 @@ The exported ONNX model structure is optimized for TensorRT inference and integr
 | | <a href="https://github.com/ultralytics/ultralytics">YOLO-World V2</a> | ✅ Supported | ✅ Supported |
 | | <a href="https://github.com/THU-MIG/yoloe">THU-MIG/yoloe</a> | ✅ Supported | ✅ Supported |
 | | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ Supported | ✅ Supported |
+| | <a href="https://github.com/isLinXu/YOLO-Master">isLinXu/YOLO-Master</a> | ✅ Supported | ✅ Supported |
 | | <a href="https://github.com/PaddlePaddle/PaddleDetection">PaddleDetection/PP-YOLOE+</a> | ✅ Supported | ✅ Supported |
 | **Segment** | | | |
 | | <a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a> | ✅ Supported | ✅ Supported |
@@ -203,10 +210,12 @@ The exported ONNX model structure is optimized for TensorRT inference and integr
 | | <a href="https://github.com/WongKinYiu/yolov9">WongKinYiu/yolov9</a> | ❎ Need to refer to code for self-implementation | 🟢 Inference possible |
 | | <a href="https://github.com/THU-MIG/yoloe">THU-MIG/yoloe</a> | ✅ Supported | ✅ Supported |
 | | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ Supported | ✅ Supported |
+| | <a href="https://github.com/isLinXu/YOLO-Master">isLinXu/YOLO-Master</a> | ✅ Supported | ✅ Supported |
 | **Classify** | | | |
 | | <a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a> | ✅ Supported | ✅ Supported |
 | | <a href="https://github.com/ultralytics/yolov5">ultralytics/yolov5</a> | ✅ Supported | ✅ Supported |
 | | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ Supported | ✅ Supported |
+| | <a href="https://github.com/isLinXu/YOLO-Master">isLinXu/YOLO-Master</a> | ✅ Supported | ✅ Supported |
 | **Pose** | | | |
 | | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ Supported | ✅ Supported |
 | **OBB** | | | |
