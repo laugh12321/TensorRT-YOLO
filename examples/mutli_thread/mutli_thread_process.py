@@ -73,15 +73,24 @@ def main():
     # 记录开始时间
     start_time = time.time()
 
+    count = len(image_files)
+    num_workers = args.process_num if args.use_multi_process else args.thread_num
+    num_per_batch = count // num_workers
+    remaining = count % num_workers
+    image_batches = []
+    start = 0
+    for i in range(num_workers):
+        end = start + num_per_batch + (1 if i < remaining else 0)
+        image_batches.append(image_files[start:end])
+        start = end
+
     if args.use_multi_process:
-        image_batches = [image_files[i : i + args.process_num] for i in range(0, len(image_files), args.process_num)]
         with Pool(args.process_num) as pool:
             pool.starmap(process_predict, [(img_batch, args.engine) for img_batch in image_batches])
     else:
         # 使用多线程
         model = load_model(args.engine)
         threads = []
-        image_batches = [image_files[i : i + args.thread_num] for i in range(0, len(image_files), args.thread_num)]
         for i in range(args.thread_num):
             t = Thread(target=predict, args=(model.clone(), image_batches[i]))
             threads.append(t)
