@@ -46,7 +46,7 @@ endif()
 
 # 定义 TensorRT 库的版本选择
 set(TRT_LIB_DIR "${TRT_PATH}/lib")
-if(MSVC AND EXISTS "${TRT_LIB_DIR}/nvinfer_10.dll")
+if(MSVC AND EXISTS "${TRT_LIB_DIR}/nvinfer_10.lib")
     set(TRT_LIBS nvinfer_10 nvinfer_plugin_10 nvonnxparser_10)
 else()
     set(TRT_LIBS nvinfer nvinfer_plugin nvonnxparser)
