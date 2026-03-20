@@ -4,15 +4,29 @@ build-backend = "setuptools.build_meta"
 
 # Project settings -----------------------------------------------------------------------------------------------------
 [project]
-version = "1.0.3"
+dynamic = ["version"]
 readme = "README.md"
 name = "trtyolo-export"
 requires-python = ">=3.8"
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 maintainers = [{ name = "laugh12321" }]
 authors = [{ name = "laugh12321", email = "laugh12321@vip.qq.com" }]
-description = "🛠️ TensorRT-YOLO official exporter: one-click ONNX export for TensorRT-YOLO"
-keywords = ["ML", "DL", "AI", "YOLO", "YOLOv3", "YOLOv5", "YOLOv6", "YOLOv7", "YOLOv8", "YOLOv9", "YOLOv10", "YOLO11", "YOLO12", "YOLO-World", "YOLOE", "PP-YOLOE", "TensorRT", "CUDA", "ONNX", "computer-vision", "image-classification", "object-detection", "pose-estimation", "instance-segmentation", "rotated-object-detection", "ultralytics"]
+description = "🛠️ TensorRT-YOLO official exporter: one-click ONNX convert for TensorRT-YOLO"
+keywords = [
+    "TensorRT-YOLO",
+    "TensorRT",
+    "ONNX",
+    "YOLO",
+    "exporter",
+    "converter",
+    "model-conversion",
+    "computer-vision",
+    "object-detection",
+    "instance-segmentation",
+    "pose-estimation",
+    "rotated-object-detection",
+    "image-classification",
+]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
@@ -26,13 +40,6 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
     "Topic :: Software Development",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
@@ -42,13 +49,11 @@ classifiers = [
 # Required dependencies ------------------------------------------------------------------------------------------------
 dependencies = [
     "loguru",
-    "rich_click",
     "numpy",
-    "onnxslim>=0.1.80",
-    "onnxruntime>=1.6.0",
+    "onnx<=1.19.1",
     "onnx_graphsurgeon",
-    "onnx>=1.12.0",
-    "ultralytics",
+    "onnxslim",
+    "rich_click",
 ]
 
 [project.urls]
@@ -57,7 +62,7 @@ dependencies = [
 "Source" = "https://github.com/laugh12321/TensorRT-YOLO/tree/export"
 
 [project.scripts]
-trtyolo = "trtyolo_export.cli:trtyolo"
+trtyolo-export = "trtyolo_export.cli:main"
 
 # Tools settings -------------------------------------------------------------------------------------------------------
 [tool.setuptools]
@@ -66,111 +71,64 @@ include-package-data = true
 [tool.setuptools.packages.find]
 include = ["trtyolo_export*"]
 
-[tool.ruff]
-line-length = 140
+[tool.setuptools.dynamic]
+version = { attr = "trtyolo_export.__version__" }
 
-[tool.ruff.format]
-# Prevent change to double quotes by some users use ruff format
-quote-style = "preserve"
+# Ruff settings -------------------------------------------------------------------------------------------------------
+[tool.ruff]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+line-length = 80
+indent-width = 4
 
 [tool.ruff.lint]
-select = [
-    # Pycodestyle
-    "E",
-    "W",
+select = ["E", "W", "F", "I", "N", "B", "UP", "C4", "D", "T100"]
+ignore = ["E203"]
+fixable = ["ALL"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-    # Pyflakes
-    "F",
-
-    # Isort
-    "I",
-
-    # Comprehensions
-    "C4",
-
-    # Debugger
-    "T100",
-
-    # Pyupgrade
-    "UP",
-
-    # NumPy-specific rules
-    "NPY001",
-    "NPY003",
-    "NPY201",
-
-    # Bugbear
-    "B002",
-    "B003",
-    "B004",
-    "B009",
-    "B010",
-    "B011",
-    "B012",
-    "B013",
-    "B014",
-    "B015",
-    "B016",
-    "B017",
-    "B018",
-    "B019",
-    "B020",
-    "B021",
-    "B022",
-    "B025",
-    "B029",
-    "B032",
-
-    # Pylint
-    "PLE",
-    "PLC0414",
-    "PLC3002",
-    "PLR0206",
-    "PLR0402",
-    "PLR1701",
-    "PLR1711",
-    "PLR1722",
-    "PLW3301",
-
-    # Pygrep-hooks
-    "PGH004",
-
-    # Ruff-specific rules
-    "RUF100",
-]
-unfixable = [
-    "NPY001"
-]
-ignore = [
-    # Whitespace before ‘,’, ‘;’, or ‘:’, it is not compatible with black
-    "E203",
-    # Module level import not at top of file
-    "E402",
-    # Line too long (82 > 79 characters)
-    "E501",
-    # Do not compare types, use `isinstance()`
-    "E721",
-    # Do not use bare except, specify exception instead
-    "E722",
-    # Do not assign a lambda expression, use a def
-    "E731",
-    # Do not use variables named ‘l’, ‘O’, or ‘I’
-    "E741",
-    # `name` may be undefined, or defined from star imports: `module`
-    "F405",
-    # Local variable name is assigned to but never used
-    "F841",
-    # It not met the "Explicit is better than implicit" rule
-    "UP015",
-    # It will cause the performance regression on python3.10
-    "UP038",
-    "UP009",
-]
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = 80
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
-known-first-party = ["pydantic"]
+known-first-party = ["trtyolo_export"]
 
-[tool.ruff.pyupgrade]
-# Preserve types, even if a file imports `from __future__ import annotations`.
+[tool.ruff.lint.pyupgrade]
 keep-runtime-typing = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
