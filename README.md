@@ -16,20 +16,20 @@
 
 ---
 
-🔧 `trtyolo-export` is the official export tool for the TensorRT-YOLO project, providing a simple and user-friendly command-line interface to help you export various YOLO series models to TensorRT-YOLO compatible ONNX format with just one click. The exported ONNX files have pre-registered the required TensorRT plugins (including official and custom plugins, supporting detection, segmentation, pose estimation, OBB, etc.), significantly improving model deployment efficiency.
+🔧 `trtyolo-export` is the official ONNX conversion tool for the TensorRT-YOLO project, providing a simple and user-friendly command-line interface to help you convert already-exported YOLO-family ONNX models into TensorRT-YOLO compatible outputs. The converted ONNX files have pre-registered the required TensorRT plugins (including official and custom plugins, supporting detection, segmentation, pose estimation, OBB, etc.), significantly improving model deployment efficiency.
 
 ## ✨ Key Features
 
-- **Comprehensive Compatibility**: Supports the full range of models from YOLOv3 to YOLO12, as well as various variants like PP-YOLOE+、YOLO-World and YOLO-Master, covering all five core visual task types: object detection, instance segmentation, pose estimation, oriented object detection (OBB), and image classification, fully meeting diverse application needs. See [🖥️ Model Support List](#support-models) for details.
-- **Built-in Plugins**: The exported ONNX files have pre-integrated TensorRT official plugins and custom plugins, fully supporting multi-task scenarios such as detection, segmentation, pose estimation, and OBB, greatly simplifying the deployment process.
-- **Flexible Configuration**: Provides rich parameter options such as dynamic batch size, custom thresholds, and image dimensions to meet different scenario requirements.
-- **One-Click Operation**: A concise and intuitive command-line interface, no complex configuration required, enabling quick model export.
+- **Comprehensive Compatibility**: Supports exported ONNX models from YOLOv3 to YOLO26, as well as model families such as YOLO-World and YOLO-Master, covering object detection, instance segmentation, pose estimation, oriented object detection (OBB), and image classification. See [🖥️ Model Support List](#support-models) for details.
+- **Built-in Plugins**: The converted ONNX files have pre-integrated TensorRT official plugins and custom plugins, fully supporting multi-task scenarios such as detection, segmentation, pose estimation, and OBB, greatly simplifying the deployment process.
+- **Flexible Configuration**: Provides parameter options such as target opset conversion, threshold tuning, maximum detections, and optional `onnxslim` simplification to meet different deployment requirements.
+- **One-Click Conversion**: A concise and intuitive command-line interface with automatic model structure detection, no complex configuration required.
 
 ## 🚀 Performance Comparison
 
 <div align="center">
 
-| Model | Official export - Latency 2080Ti TensorRT10 FP16 | trtyolo export - Latency 2080Ti TensorRT10 FP16 |
+| Model | Official export - Latency 2080Ti TensorRT10 FP16 | trtyolo-export - Latency 2080Ti TensorRT10 FP16 |
 |:-----:|:-----------------------:|:----------------------:|
 | YOLOv11N | 1.611 ± 0.061        | 1.428 ± 0.097          |
 | YOLOv11S | 2.055 ± 0.147        | 1.886 ± 0.145          |
@@ -73,89 +73,80 @@ pip install dist/*.whl
 
 ### Basic Usage
 
-After installation, you can use the export functionality through the `trtyolo` command-line tool:
+After installation, you can use the conversion functionality through the `trtyolo-export` command-line tool:
 
 ```bash
-# View export command help information
-trtyolo export --help
+# View installed version
+trtyolo-export --version
 
-# Export a basic YOLO model
-trtyolo export -v yolov8 -w yolov8s.pt -o output
+# View command help information
+trtyolo-export --help
+
+# Convert a basic ONNX model
+trtyolo-export -i model.onnx -o output/model-trtyolo.onnx
+```
+
+If you need to query the installed version from Python:
+
+```bash
+python -c "import trtyolo_export; print(trtyolo_export.__version__)"
 ```
 
 ## 🛠️ Parameter Description
 
-The `trtyolo export` command supports various parameters to meet different scenario requirements:
+The `trtyolo-export` command supports the following parameters:
 
 <div align="center">
 
 | Parameter | Description | Default Value | Applicable Scenarios |
 |-----------|-------------|---------------|----------------------|
-| `-v, --version` | Model version | - | **Required**, specify the type of model to export |
-| `-o, --output` | Export model save directory | - | **Required**, specify the output folder path |
-| `-w, --weights` | PyTorch weight file path | - | **Required** for non-PP-YOLOE models |
-| `--model_dir` | PP-YOLOE model directory | - | **Required** for PP-YOLOE models |
-| `--model_filename` | PP-YOLOE model filename | - | **Required** for PP-YOLOE models |
-| `--params_filename` | PP-YOLOE parameter filename | - | **Required** for PP-YOLOE models |
-| `-b, --batch` | Batch size (-1 for dynamic) | 1 | Adjust the batch processing capability of the model |
-| `--max_boxes` | Maximum number of detection boxes | 100 | (Not applicable to classification models) Control the maximum number of detection boxes output per image |
-| `--iou_thres` | NMS IoU threshold | 0.45 | Control the overlap threshold for filtering detection boxes |
-| `--conf_thres` | Confidence threshold | 0.25 | Filter low-confidence detection results |
-| `--imgsz` | Image size (height,width) | 640 | Set the input image size of the model |
-| `--names` | Custom class names (comma-separated) | - | Only applicable to YOLO-World and YOLOE models |
-| `--repo_dir` | Local repository directory | - | Only applicable to YOLOv3 and YOLOv5 models |
-| `--opset` | ONNX opset version | 12 | Specify the ONNX operator set version |
-| `-s, --simplify` | Whether to simplify the ONNX model | False | Simplify the model structure and reduce model size |
+| `--version` | Show the installed package version and exit | - | Confirm the CLI version in the current environment |
+| `--verbose, --quiet` | Show or hide conversion progress logs | `--verbose` | Control CLI logging verbosity |
+| `-i, --input` | Source ONNX file path | - | **Required**, input must be an existing ONNX file |
+| `-o, --output` | Converted ONNX output path | - | **Required**, output path must end with `.onnx`; if it matches the input path, `-trtyolo` is appended automatically |
+| `--opset` | Target ONNX opset version | Preserve source opset | Convert the converted model to a specific opset before saving |
+| `--max-dets` | Maximum detections | 100 | Control the output size when appending TensorRT NMS plugins |
+| `--conf-thres` | Confidence threshold | 0.25 | Used by plugin-based and NMS-free postprocess outputs |
+| `--iou-thres` | IoU threshold | 0.45 | Used when appending TensorRT NMS plugins |
+| `-s, --simplify` | Run `onnxslim` after conversion | False | Slim the converted ONNX model after graph conversion |
 
 </div>
 
 > [!NOTE]
-> When exporting ONNX models for PP-YOLOE and PP-YOLOE+, only the batch dimension will be adjusted, while the height and width dimensions remain unchanged. You need to make relevant settings in [PaddleDetection](https://github.com/PaddlePaddle/PaddleDetection), with the default value usually being 640.
+> The input to `trtyolo-export` must already be an exported ONNX model. This tool converts ONNX graphs and postprocess outputs; it does not export directly from `.pt`, `.pth`, `.pdmodel`, or `.pdiparams`.
 >
-> Official repositories such as [YOLOv6](https://github.com/meituan/YOLOv6/tree/main/deploy/ONNX#tensorrt-backend-tensorrt-version-800), [YOLOv7](https://github.com/WongKinYiu/yolov7#export), and [YOLOv9](https://github.com/WongKinYiu/yolov9/issues/130#issue-2162045461) already provide ONNX model export functionality with EfficientNMS plugins, so they are not repeated here.
+> If `-o/--output` points to the same file as `-i/--input`, the tool will emit a warning and automatically rename the output to `*-trtyolo.onnx` to avoid overwriting the source model.
+>
+> Official repositories such as [YOLOv6](https://github.com/meituan/YOLOv6/tree/main/deploy/ONNX#tensorrt-backend-tensorrt-version-800), [YOLOv7](https://github.com/WongKinYiu/yolov7#export), and [YOLOv9](https://github.com/WongKinYiu/yolov9/issues/130#issue-2162045461) already provide ONNX export functionality with EfficientNMS plugins. If the official output already matches your deployment requirement, an additional conversion step may be unnecessary.
 
 ## 📝 Usage Examples
 
-### Export Examples
+### Conversion Examples
 
 ```bash
-# Export a YOLOv3 model from a remote repository
-trtyolo export -v yolov3 -w yolov3.pt -o output
+# Convert a basic ONNX model
+trtyolo-export -i yolov8s.onnx -o output/yolov8s-trtyolo.onnx
 
-# Export a YOLOv5 Classify model from a local repository
-trtyolo export -v yolov5 -w yolov5s-cls.pt -o output --repo_dir your_local_yolovs_repository
+# Convert with a target opset
+trtyolo-export -i yolov10s.onnx -o output/yolov10s-trtyolo.onnx --opset 12
 
-# Export a YOLO series model trained with Ultralytics (YOLOv3, YOLOv5, YOLOv6, YOLOv8, YOLOv9, YOLOv10, YOLOv11, YOLO-Master, etc.) with plugin parameters and dynamic batch
-trtyolo export -v ultralytics -w yolov8s.pt -o output --max_boxes 100 --iou_thres 0.45 --conf_thres 0.25 -b -1
+# Tune TensorRT NMS plugin parameters
+trtyolo-export -i yolo11n-obb.onnx -o output/yolo11n-obb-trtyolo.onnx --max-dets 100 --iou-thres 0.45 --conf-thres 0.25
 
-# Export YOLO-Master models
-# The new network performs dynamic memory allocation, which conflicts with CUDA Graph.
-# TensorRT-YOLO enables CUDA Graph by default when inferring static models,
-# so export a dynamic model (-b -1) instead.
-trtyolo export -v yolo-master -w yolo-master.pt -o output -s
+# Simplify the converted ONNX with onnxslim
+trtyolo-export -i yolo12n-seg.onnx -o output/yolo12n-seg-trtyolo.onnx -s
 
-# Export PP-YOLOE and PP-YOLOE+ models
-trtyolo export -v pp-yoloe --model_dir modeldir --model_filename model.pdmodel --params_filename model.pdiparams -o output
+# Convert quietly
+trtyolo-export --quiet -i model.onnx -o output/model-trtyolo.onnx
 
-# Export YOLOv10 model with height 1080 and width 1920
-trtyolo export -v yolov10 -w yolov10s.pt -o output --imgsz 1080,1920
-
-# Export YOLO11 OBB model
-trtyolo export -v yolo11 -w yolo11n-obb.pt -o output
-
-# Export YOLO12 Segment model
-trtyolo export -v yolo12 -w yolo12n-seg.pt -o output
-
-# Export YOLO-World model with custom classes
-trtyolo export -v yolo-world -w yoloworld.pt -o output --names "person,car,dog"
-
-# Export YOLOE model
-trtyolo export -v yoloe -w yoloe.pt -o output
+# Avoid overwriting the source file
+# If -o and -i are the same path, the actual output becomes yolo11n-pose-trtyolo.onnx
+trtyolo-export -i yolo11n-pose.onnx -o yolo11n-pose.onnx
 ```
 
 ### TensorRT Engine Construction
 
-The exported ONNX model can be further built into a TensorRT engine using the `trtexec` tool for optimal inference performance:
+The converted ONNX model can be further built into a TensorRT engine using the `trtexec` tool for optimal inference performance:
 
 ```bash
 # Static batch
@@ -173,9 +164,9 @@ trtexec --onnx=yolov8n-obb.onnx --saveEngine=yolov8n-obb.engine --fp16 --staticP
 trtexec --onnx=yolo11n-obb.onnx --saveEngine=yolo11n-obb.engine --fp16 --minShapes=images:1x3x640x640 --optShapes=images:4x3x640x640 --maxShapes=images:8x3x640x640 --staticPlugins=/your/tensorrt-yolo/install/dir/lib/custom_plugins.dll --setPluginsToSerialize=/your/tensorrt-yolo/install/dir/lib/custom_plugins.dll
 ```
 
-## 📊 Export Structure
+## 📊 Conversion Structure
 
-The exported ONNX model structure is optimized for TensorRT inference and integrates corresponding plugins (official and custom). The model structures for different task types are as follows:
+The converted ONNX model structure is optimized for TensorRT inference and integrates corresponding plugins (official and custom). The model structures for different task types are as follows:
 
 <div>
   <p>
@@ -187,61 +178,54 @@ The exported ONNX model structure is optimized for TensorRT inference and integr
 
 <div align="center">
 
-| Task Scenario | Model | CLI Export | Inference Deployment |
-|---------------|-------|------------|----------------------|
-| **Detect** | | | |
-| | <a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a> | ✅ Supported | ✅ Supported |
-| | <a href="https://github.com/ultralytics/yolov5">ultralytics/yolov5</a> | ✅ Supported | ✅ Supported |
-| | <a href="https://github.com/meituan/YOLOv6">meituan/YOLOv6</a> | ❎ Refer to <a href="https://github.com/meituan/YOLOv6/tree/main/deploy/ONNX#tensorrt-backend-tensorrt-version-800">official export tutorial</a> | ✅ Supported |
-| | <a href="https://github.com/WongKinYiu/yolov7">WongKinYiu/yolov7</a> | ❎ Refer to <a href="https://github.com/WongKinYiu/yolov7#export">official export tutorial</a> | ✅ Supported |
-| | <a href="https://github.com/WongKinYiu/yolov9">WongKinYiu/yolov9</a> | ❎ Refer to <a href="https://github.com/WongKinYiu/yolov9/issues/130#issue-2162045461">official export tutorial</a> | ✅ Supported |
-| | <a href="https://github.com/THU-MIG/yolov10">THU-MIG/yolov10</a> | ✅ Supported | ✅ Supported |
-| | <a href="https://github.com/sunsmarterjie/yolov12">sunsmarterjie/yolov12</a> | ✅ Supported | ✅ Supported |
-| | <a href="https://github.com/ultralytics/ultralytics">YOLO-World V2</a> | ✅ Supported | ✅ Supported |
-| | <a href="https://github.com/THU-MIG/yoloe">THU-MIG/yoloe</a> | ✅ Supported | ✅ Supported |
-| | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ Supported | ✅ Supported |
-| | <a href="https://github.com/isLinXu/YOLO-Master">isLinXu/YOLO-Master</a> | ✅ Supported | ✅ Supported |
-| | <a href="https://github.com/PaddlePaddle/PaddleDetection">PaddleDetection/PP-YOLOE+</a> | ✅ Supported | ✅ Supported |
-| **Segment** | | | |
-| | <a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a> | ✅ Supported | ✅ Supported |
-| | <a href="https://github.com/ultralytics/yolov5">ultralytics/yolov5</a> | ✅ Supported | ✅ Supported |
-| | <a href="https://github.com/meituan/YOLOv6/tree/yolov6-seg">meituan/YOLOv6-seg</a> | ❎ Need to refer to code for self-implementation | 🟢 Inference possible |
-| | <a href="https://github.com/WongKinYiu/yolov7">WongKinYiu/yolov7</a> | ❎ Need to refer to code for self-implementation | 🟢 Inference possible |
-| | <a href="https://github.com/WongKinYiu/yolov9">WongKinYiu/yolov9</a> | ❎ Need to refer to code for self-implementation | 🟢 Inference possible |
-| | <a href="https://github.com/THU-MIG/yoloe">THU-MIG/yoloe</a> | ✅ Supported | ✅ Supported |
-| | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ Supported | ✅ Supported |
-| | <a href="https://github.com/isLinXu/YOLO-Master">isLinXu/YOLO-Master</a> | ✅ Supported | ✅ Supported |
-| **Classify** | | | |
-| | <a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a> | ✅ Supported | ✅ Supported |
-| | <a href="https://github.com/ultralytics/yolov5">ultralytics/yolov5</a> | ✅ Supported | ✅ Supported |
-| | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ Supported | ✅ Supported |
-| | <a href="https://github.com/isLinXu/YOLO-Master">isLinXu/YOLO-Master</a> | ✅ Supported | ✅ Supported |
-| **Pose** | | | |
-| | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ Supported | ✅ Supported |
-| **OBB** | | | |
-| | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ Supported | ✅ Supported |
+| YOLO Series | Source Repo | Detect | Segment | Classify | Pose | OBB |
+|-------------|-------------|--------|---------|----------|------|-----|
+| YOLOv3 | <a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a> | ✅ | ✅ | ✅ | - | - |
+| YOLOv3 | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ | - | - | - | - |
+| YOLOv5 | <a href="https://github.com/ultralytics/yolov5">ultralytics/yolov5</a> | ✅ | ✅ | ✅ | - | - |
+| YOLOv5 | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ | - | - | - | - |
+| YOLOv6 | <a href="https://github.com/meituan/YOLOv6">meituan/YOLOv6</a> | 🟢 | - | - | - | - |
+| YOLOv6 | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ | - | - | - | - |
+| YOLOv7 | <a href="https://github.com/WongKinYiu/yolov7">WongKinYiu/yolov7</a> | 🟢 | - | - | - | - |
+| YOLOv8 | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ | ✅ | ✅ | ✅ | ✅ |
+| YOLOv9 | <a href="https://github.com/WongKinYiu/yolov9">WongKinYiu/yolov9</a> | 🟢 | ✅ | - | - | - |
+| YOLOv9 | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ | ✅ | - | - | - |
+| YOLOv10 | <a href="https://github.com/THU-MIG/yolov10">THU-MIG/yolov10</a> | ✅ | - | - | - | - |
+| YOLOv10 | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ | - | - | - | - |
+| YOLO11 | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ | ✅ | ✅ | ✅ | ✅ |
+| YOLO12 | <a href="https://github.com/sunsmarterjie/yolov12">sunsmarterjie/yolov12</a> | ✅ | ✅ | ✅ | - | - |
+| YOLO12 | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ | ✅ | ✅ | ✅ | ✅ |
+| YOLO13 | <a href="https://github.com/iMoonLab/yolov13">iMoonLab/yolov13</a> | ✅ | - | - | - | - |
+| YOLO26 | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ | ✅ | ✅ | ✅ | ✅ |
+| YOLO-World | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ | - | - | - | - |
+| YOLOE | <a href="https://github.com/THU-MIG/yoloe">THU-MIG/yoloe</a> | ✅ | ✅ | - | - | - |
+| YOLOE | <a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a> | ✅ | ✅ | - | - | - |
+| YOLO-Master | <a href="https://github.com/isLinXu/YOLO-Master">isLinXu/YOLO-Master</a> | ✅ | ✅ | ✅ | - | - |
 
 
 </div>
 
-> **Symbol Explanation**: ✅ Supported | ❔ In progress | ❎ Not supported yet | 🟢 Inference possible after self-implementation of export
+>
+> **Symbol Explanation**: `✅` means `trtyolo-export` can convert and can inference | `🟢` means the upstream or repository export path can be used directly for inference | `-` means this task is not provided | `❎` means not supported
 
 ## ❓ Frequently Asked Questions
 
 ### 1. Why do some models require referring to official export tutorials?
 
-Official repositories for models like YOLOv6, YOLOv7, and YOLOv9 already provide ONNX model export functionality with EfficientNMS plugins. To avoid redundant development, we recommend using the export methods provided directly by the official repositories.
+Official repositories for models like YOLOv6, YOLOv7, and YOLOv9 already provide ONNX export functionality with EfficientNMS plugins. If those official ONNX files already satisfy your deployment requirements, you may not need an extra conversion step.
 
-### 2. How to choose the appropriate batch size?
+### 2. Which conversion parameters should be adjusted first?
 
-- For fixed scenarios and hardware, static batch (e.g., `--batch 4`) can be chosen for optimal performance
-- For varying input scales, dynamic batch (e.g., `--batch -1`) is recommended, combined with TensorRT dynamic shape functionality
-- In actual use, adjustments should be made according to your GPU memory size and inference latency requirements
+- `--max-dets` limits the number of final detections produced by appended TensorRT NMS plugins
+- `--conf-thres` filters low-confidence predictions in plugin-based and NMS-free outputs
+- `--iou-thres` controls overlap suppression when TensorRT NMS plugins are appended
+- `-s, --simplify` runs `onnxslim`; if your downstream toolchain is sensitive, retry without it
+- `--opset` is only needed when your downstream runtime requires a specific ONNX opset version
 
-### 3. What to do if errors are encountered during the export process?
+### 3. What to do if errors are encountered during the conversion process?
 
 - Ensure that the correct version of dependent libraries is installed in your environment
-- Check if the model file path is correct
-- Confirm that the model version you are using is in the support list
-- For PP-YOLOE models, ensure all necessary files and parameters are provided
-- For models with custom modifications based on Ultralytics, ensure that `trtyolo-export` and the custom model are installed in the same Python environment; if this condition cannot be met, ensure that the custom modified code is completely synchronized with the Ultralytics code version that `trtyolo-export` depends on
+- Check that the input ONNX file exists and the output path ends with `.onnx`
+- Confirm that the exported ONNX graph you are using is in the support list
+- If opset conversion fails, retry without `--opset` or choose a compatible version
+- For models with custom graph modifications, ensure the exported ONNX structure still matches one of the supported conversion patterns
