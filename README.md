@@ -34,7 +34,9 @@
     ▸ **CUDA Graph 原理与工程实践**  
     ▸ **Triton Inference Server 部署技巧**  
 
-- 2026-01-07: 添加对 [YOLO-Master](https://github.com/isLinXu/YOLO-Master) 的支持，包括分类、检测以及实例分割。🌟 NEW
+- 2026-03-20: 添加对 [YOLO26](https://docs.ultralytics.com/zh/models/yolo26/) 的支持，包括分类、定向边界框、姿态估计以及实例分割。🌟 NEW
+
+- 2026-01-07: 添加对 [YOLO-Master](https://github.com/Tencent/YOLO-Master) 的支持，包括分类、定向边界框、姿态估计以及实例分割。🌟 NEW
 
 - 2025-10-05：精度完美对齐，CUDA 完美复刻 LetterBox，绝大多数情况下像素误差为 0。Python 模块重大重构，易用性大幅提升。🌟 NEW
 
@@ -50,7 +52,7 @@
 ## <div align="center">✨ 主要特性</div>
 
 ### 🎯 多样化的 YOLO 支持
-- **全面兼容**：支持 YOLOv3 至 YOLO12 全系列模型，以及 PP-YOLOE+、YOLO-World 和 YOLO-Master 等多种变体，满足多样化需求，详见 [🖥️ 模型支持列表](https://github.com/laugh12321/TensorRT-YOLO/blob/export/README.cn.md#%EF%B8%8F-模型支持列表)。
+- **全面兼容**：支持 YOLOv3 至 YOLO26，以及 YOLO-World、YOLO-Master 等多种变体，满足多样化需求，详见 [🖥️ 模型支持列表](https://github.com/laugh12321/trtyolo-export/blob/main/README.cn.md#%EF%B8%8F-%E6%A8%A1%E5%9E%8B%E6%94%AF%E6%8C%81%E5%88%97%E8%A1%A8)。
 - **灵活切换**：提供简洁易用的接口，支持不同版本 YOLO 模型的快速切换。🌟 NEW
 - **多场景应用**：提供丰富的示例代码，涵盖[Detect](examples/detect/)、[Segment](examples/segment/)、[Classify](examples/classify/)、[Pose](examples/pose/)、[OBB](examples/obb/)等多种应用场景。
 
@@ -62,7 +64,7 @@
 
 ### 🛠️ 易用性
 - **开箱即用**：提供全面的 C++ 和 Python 推理支持，满足不同开发者需求。
-- **CLI 工具**：内置命令行工具，支持快速模型导出与推理，提升开发效率。
+- **CLI 工具**：命令行界面简洁直观，并支持自动识别模型结构，无需复杂配置。
 - **Docker 支持**：提供 Docker 一键部署方案，简化环境配置与部署流程。
 - **无第三方依赖**：全部功能使用标准库实现，无需额外依赖，简化部署流程。
 - **部署便捷**：提供动态库编译支持，方便调用和部署。
@@ -123,9 +125,9 @@ python -m build --wheel
 pip install dist/trtyolo-6.*-py3-none-any.whl
 ```
 
-### 3. 模型导出
+### 3. 模型转换
 
-- 使用项目配套的 [`trtyolo-export`](https://github.com/laugh12321/TensorRT-YOLO/tree/export) 工具包，导出适用于该项目推理的 ONNX 模型并构建为 TensorRT 引擎。
+- 使用项目配套的 [`trtyolo-export`](https://github.com/laugh12321/trtyolo-export) 工具包，将已经导出的 YOLO 系列 ONNX 模型转换为兼容 TensorRT-YOLO 推理的输出结构并构建为 TensorRT 引擎。
 
 ### 4. 推理示例
 
