@@ -8,22 +8,23 @@ This example uses the yolo11n-cls model to demonstrate how to perform Image Clas
 
 Please download the required `yolo11n-cls.pt` model file and test images through the provided link, and save the model file to the `models` folder, and place the extracted test images into the `images` folder after unzipping.
 
-## Model Export
+## Model Convert
 
 > [!IMPORTANT]
 >
-> Use the [`trtyolo-export`](https://github.com/laugh12321/TensorRT-YOLO/tree/export) tool package that comes with the project to export the ONNX model suitable for inference in this project and build it into a TensorRT engine.
+> Please first export the model weights to ONNX, then use the bundled [`trtyolo-export`](https://github.com/laugh12321/trtyolo-export) tool to convert the ONNX model into TensorRT-YOLO compatible outputs and build it into a TensorRT engine.
 
-Use the following command to export the ONNX format model:
+Use the following commands to export ONNX first and then convert it into the structure required by this project:
 
 ```bash
-trtyolo export -w models/yolo11n-cls.pt -v yolo11 -o models --imgsz 224 -s
+yolo export model=models/yolo11n-cls.pt format=onnx imgsz=224 batch=1
+trtyolo-export -i models/yolo11n-cls.onnx -o models/yolo11n-cls-trtyolo.onnx -s
 ```
 
-After running the above command, a `yolo11n-cls.onnx` file with a `batch_size` of 1 will be generated in the `models` folder. Next, use the `trtexec` tool to convert the ONNX file to a TensorRT engine (fp16):
+After running the commands above, the `models` folder will contain the original ONNX file `yolo11n-cls.onnx` and the converted file `yolo11n-cls-trtyolo.onnx`. Next, use `trtexec` to build a TensorRT engine from the converted ONNX file (fp16):
 
 ```bash
-trtexec --onnx=models/yolo11n-cls.onnx --saveEngine=models/yolo11n-cls.engine --fp16
+trtexec --onnx=models/yolo11n-cls-trtyolo.onnx --saveEngine=models/yolo11n-cls.engine --fp16
 ```
 
 ## Model Inference

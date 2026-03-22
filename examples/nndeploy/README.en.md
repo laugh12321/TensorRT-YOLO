@@ -21,7 +21,7 @@ Refer to the [TensorRT-YOLO Quick Compilation and Installation](https://github.c
 
 ## 2. Model Conversion
 
-Refer to the methods in [TensorRT-YOLO Model Export](https://github.com/laugh12321/TensorRT-YOLO/blob/main/docs/en/model_export.md). First, export the model to ONNX format using the command-line tool (CLI) of the model's Python library, then convert the ONNX model to a TensorRT engine.
+Refer to [Ultralytics YOLO model export](https://docs.ultralytics.com/modes/export/) and [`trtyolo-export`](https://github.com/laugh12321/trtyolo-export). First, export the model to ONNX format with the model's Python library CLI, then use `trtyolo-export` to convert the ONNX model into TensorRT-YOLO compatible outputs, and finally build it into a TensorRT engine.
 
 ## 3. Adding Custom Nodes
 
