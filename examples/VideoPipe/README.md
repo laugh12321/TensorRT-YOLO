@@ -6,24 +6,25 @@
 
 [yolo11n.pt](https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt)，[demo0.mp4](https://www.ilanzou.com/s/yhUyq8f3)，[demo1.mp4](https://www.ilanzou.com/s/aIhyq8ET)
 
-请通过提供的链接下载所需的 `yolo11n.pt` 模型文件和测试视频，并均保存至 `worksapce` 文件夹。
+请通过提供的链接下载所需的 `yolo11n.pt` 模型文件和测试视频，并均保存至 `workspace` 文件夹。
 
-## 模型导出
+## 模型转换
 
 > [!IMPORTANT]
 >
-> 使用项目配套的 [`trtyolo-export`](https://github.com/laugh12321/TensorRT-YOLO/tree/export) 工具包，导出适用于该项目推理的 ONNX 模型并构建为 TensorRT 引擎。
+> 请先将模型权重导出为 ONNX，再使用项目配套的 [`trtyolo-export`](https://github.com/laugh12321/trtyolo-export) 工具包，将 ONNX 模型转换为兼容 TensorRT-YOLO 推理的输出结构并构建为 TensorRT 引擎。
 
-使用以下命令导出带 [EfficientNMS](https://github.com/NVIDIA/TensorRT/tree/main/plugin/efficientNMSPlugin) 插件的 ONNX 格式：
+使用以下命令先导出 ONNX，再转换为适用于该项目推理的模型结构。转换后的 ONNX 会自动集成 [EfficientNMS](https://github.com/NVIDIA/TensorRT/tree/main/plugin/efficientNMSPlugin) 插件：
 
 ```bash
-trtyolo export -w workspace/yolo11n.pt -v yolo11 -o workspace -b 2 -s
+yolo export model=workspace/yolo11n.pt format=onnx batch=2
+trtyolo-export -i workspace/yolo11n.onnx -o workspace/yolo11n-trtyolo.onnx -s
 ```
 
-运行上述命令后，`models` 文件夹中将生成一个 `batch_size` 为 2 的 `yolo11n.onnx` 文件。接下来，使用 `trtexec` 工具将 ONNX 文件转换为 TensorRT 引擎（fp16）：
+运行上述命令后，`workspace` 文件夹中将依次生成原始 ONNX 文件 `yolo11n.onnx` 和转换后的 `yolo11n-trtyolo.onnx`。接下来，使用 `trtexec` 工具将转换后的 ONNX 文件构建为 TensorRT 引擎（fp16）：
 
 ```bash
-trtexec --onnx=workspace/yolo11n.onnx --saveEngine=workspace/yolo11n.engine --fp16
+trtexec --onnx=workspace/yolo11n-trtyolo.onnx --saveEngine=workspace/yolo11n.engine --fp16
 ```
 
 ## 项目运行

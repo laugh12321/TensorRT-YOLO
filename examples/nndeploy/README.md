@@ -21,7 +21,7 @@
 
 ## 2. 模型转换
 
-参考 [TensorRT-YOLO 模型导出](https://github.com/laugh12321/TensorRT-YOLO/blob/main/docs/cn/model_export.md) 中的方法，先通过模型 Python 库的命令行工具（CLI）将模型导出为 ONNX 格式，再将 ONNX 模型转换为 TensorRT 引擎。
+参考 [Ultralytics YOLO 模型导出](https://docs.ultralytics.com/zh/modes/export/) 与 [`trtyolo-export`](https://github.com/laugh12321/trtyolo-export) 中的方法，先将模型权重导出为 ONNX 格式，再使用 `trtyolo-export` 将 ONNX 模型转换为兼容 TensorRT-YOLO 推理的输出结构，最后构建为 TensorRT 引擎。
 
 ## 3. 添加自定义节点
 

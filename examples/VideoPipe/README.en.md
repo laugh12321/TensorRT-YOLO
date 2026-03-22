@@ -8,22 +8,23 @@ This example uses the YOLO11n model to demonstrate how to integrate the TensorRT
 
 Please download the required `yolo11n.pt` model file and test video through the provided link, and save both to the `workspace` folder.
 
-## Model Export
+## Model Convert
 
 > [!IMPORTANT]
 >
-> Use the [`trtyolo-export`](https://github.com/laugh12321/TensorRT-YOLO/tree/export) tool package that comes with the project to export the ONNX model suitable for inference in this project and build it into a TensorRT engine.
+> Please first export the model weights to ONNX, then use the bundled [`trtyolo-export`](https://github.com/laugh12321/trtyolo-export) tool to convert the ONNX model into TensorRT-YOLO compatible outputs and build it into a TensorRT engine.
 
-Use the following command to export the ONNX format with the [EfficientNMS](https://github.com/NVIDIA/TensorRT/tree/main/plugin/efficientNMSPlugin) plugin:
+Use the following commands to export ONNX first and then convert it into the structure required by this project. The converted ONNX will automatically integrate the [EfficientNMS](https://github.com/NVIDIA/TensorRT/tree/main/plugin/efficientNMSPlugin) plugin:
 
 ```bash
-trtyolo export -w workspace/yolo11n.pt -v yolo11 -o workspace -b 2 -s
+yolo export model=workspace/yolo11n.pt format=onnx batch=2
+trtyolo-export -i workspace/yolo11n.onnx -o workspace/yolo11n-trtyolo.onnx -s
 ```
 
-After running the above command, a `yolo11n.onnx` file with a `batch_size` of 2 will be generated in the `models` folder. Next, use the `trtexec` tool to convert the ONNX file to a TensorRT engine (fp16):
+After running the commands above, the `workspace` folder will contain the original ONNX file `yolo11n.onnx` and the converted file `yolo11n-trtyolo.onnx`. Next, use `trtexec` to build a TensorRT engine from the converted ONNX file (fp16):
 
 ```bash
-trtexec --onnx=workspace/yolo11n.onnx --saveEngine=workspace/yolo11n.engine --fp16
+trtexec --onnx=workspace/yolo11n-trtyolo.onnx --saveEngine=workspace/yolo11n.engine --fp16
 ```
 
 ## Project Execution

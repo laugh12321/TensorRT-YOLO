@@ -25,7 +25,7 @@ import supervision as sv
 from trtyolo import TRTYOLO
 
 # -------------------- 初始化模型 --------------------
-# 注意：task参数需与导出时指定的任务类型一致（"detect"、"segment"、"classify"、"pose"、"obb"）
+# 注意：task参数需与导出为 ONNX 时的任务类型一致（"detect"、"segment"、"classify"、"pose"、"obb"）
 # profile参数开启后，会在推理时计算性能指标，调用 model.profile() 可获取
 # swap_rb参数开启后，会在推理前交换通道顺序（确保模型输入时RGB）
 model = TRTYOLO("yolo11n-with-plugin.engine", task="detect", profile=True, swap_rb=True)

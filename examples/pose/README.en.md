@@ -8,22 +8,23 @@ This example uses the yolo11n-pose model to demonstrate how to perform pose esti
 
 Please download the required `yolo11n-pose.pt` model file and test images through the provided link, and save the model file to the `models` folder, and place the extracted test images into the `images` folder after unzipping.
 
-## Model Export
+## Model Convert
 
 > [!IMPORTANT]
 >
-> Use the [`trtyolo-export`](https://github.com/laugh12321/TensorRT-YOLO/tree/export) tool package that comes with the project to export the ONNX model suitable for inference in this project and build it into a TensorRT engine.
+> Please first export the model weights to ONNX, then use the bundled [`trtyolo-export`](https://github.com/laugh12321/trtyolo-export) tool to convert the ONNX model into TensorRT-YOLO compatible outputs and build it into a TensorRT engine.
 
-Use the following command to export the ONNX format with the [EfficientIdxNMS](../../modules/plugin/efficientIdxNMSPlugin/) plugin:
+Use the following commands to export ONNX first and then convert it into the structure required by this project. The converted ONNX will automatically integrate the [EfficientIdxNMS](../../modules/plugin/efficientIdxNMSPlugin/) plugin:
 
 ```bash
-trtyolo export -w models/yolo11n-pose.pt -v yolo11 -o models -s
+yolo export model=models/yolo11n-pose.pt format=onnx batch=1
+trtyolo-export -i models/yolo11n-pose.onnx -o models/yolo11n-pose-trtyolo.onnx -s
 ```
 
-After running the above command, a `yolo11n-pose.onnx` file with a `batch_size` of 1 will be generated in the `models` folder. Next, use the `trtexec` tool to convert the ONNX file to a TensorRT engine (fp16):
+After running the commands above, the `models` folder will contain the original ONNX file `yolo11n-pose.onnx` and the converted file `yolo11n-pose-trtyolo.onnx`. Next, use `trtexec` to build a TensorRT engine from the converted ONNX file (fp16):
 
 ```bash
-trtexec --onnx=models/yolo11n-pose.onnx --saveEngine=models/yolo11n-pose.engine --fp16 --staticPlugins=/your/tensorrt-yolo/install/dir/lib/libcustom_plugins.so --setPluginsToSerialize=/your/tensorrt-yolo/install/dir/lib/libcustom_plugins.so
+trtexec --onnx=models/yolo11n-pose-trtyolo.onnx --saveEngine=models/yolo11n-pose.engine --fp16 --staticPlugins=/your/tensorrt-yolo/install/dir/lib/libcustom_plugins.so --setPluginsToSerialize=/your/tensorrt-yolo/install/dir/lib/libcustom_plugins.so
 ```
 
 ## Model Inference

@@ -8,22 +8,23 @@
 
 请通过提供的链接下载所需的 `yolo11n-pose.pt` 模型文件和测试图片，并将模型文件保存至 `models` 文件夹，测试图片解压后存放至 `images` 文件夹。
 
-## 模型导出
+## 模型转换
 
 > [!IMPORTANT]
 >
-> 使用项目配套的 [`trtyolo-export`](https://github.com/laugh12321/TensorRT-YOLO/tree/export) 工具包，导出适用于该项目推理的 ONNX 模型并构建为 TensorRT 引擎。
+> 请先将模型权重导出为 ONNX，再使用项目配套的 [`trtyolo-export`](https://github.com/laugh12321/trtyolo-export) 工具包，将 ONNX 模型转换为兼容 TensorRT-YOLO 推理的输出结构并构建为 TensorRT 引擎。
 
-使用以下命令导出带 [EfficientIdxNMS](../../modules/plugin/efficientIdxNMSPlugin/)  插件的 ONNX 格式：
+使用以下命令先导出 ONNX，再转换为适用于该项目推理的模型结构。转换后的 ONNX 会自动集成 [EfficientIdxNMS](../../modules/plugin/efficientIdxNMSPlugin/) 插件：
 
 ```bash
-trtyolo export -w models/yolo11n-pose.pt -v yolo11 -o models -s
+yolo export model=models/yolo11n-pose.pt format=onnx batch=1
+trtyolo-export -i models/yolo11n-pose.onnx -o models/yolo11n-pose-trtyolo.onnx -s
 ```
 
-运行上述命令后，`models` 文件夹中将生成一个 `batch_size` 为 1 的 `yolo11n-pose.onnx` 文件。接下来，使用 `trtexec` 工具将 ONNX 文件转换为 TensorRT 引擎（fp16）：
+运行上述命令后，`models` 文件夹中将依次生成原始 ONNX 文件 `yolo11n-pose.onnx` 和转换后的 `yolo11n-pose-trtyolo.onnx`。接下来，使用 `trtexec` 工具将转换后的 ONNX 文件构建为 TensorRT 引擎（fp16）：
 
 ```bash
-trtexec --onnx=models/yolo11n-pose.onnx --saveEngine=models/yolo11n-pose.engine --fp16 --staticPlugins=/your/tensorrt-yolo/install/dir/lib/libcustom_plugins.so --setPluginsToSerialize=/your/tensorrt-yolo/install/dir/lib/libcustom_plugins.so
+trtexec --onnx=models/yolo11n-pose-trtyolo.onnx --saveEngine=models/yolo11n-pose.engine --fp16 --staticPlugins=/your/tensorrt-yolo/install/dir/lib/libcustom_plugins.so --setPluginsToSerialize=/your/tensorrt-yolo/install/dir/lib/libcustom_plugins.so
 ```
 
 ## 模型推理

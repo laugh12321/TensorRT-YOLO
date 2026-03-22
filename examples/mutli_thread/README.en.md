@@ -25,7 +25,7 @@ import supervision as sv
 from trtyolo import TRTYOLO
 
 # -------------------- Initialize the model --------------------
-# Note: The task parameter must match the task type specified during export ("detect", "segment", "classify", "pose", "obb")
+# Note: The task parameter must match the task type of the exported ONNX model ("detect", "segment", "classify", "pose", "obb")
 # The profile parameter, when enabled, calculates performance metrics during inference, which can be retrieved by calling model.profile()
 # The swap_rb parameter, when enabled, swaps the channel order before inference (ensuring the model input is RGB)
 model = TRTYOLO("yolo11n-with-plugin.engine", task="detect", profile=True, swap_rb=True)
