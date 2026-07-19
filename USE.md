@@ -113,6 +113,7 @@ trtexec --onnx=yolo11n-trtyolo.onnx --saveEngine=yolo11n.engine --fp16
 ### 4.1 C++ Example
 
 以 detect 为例：
+cmake -S . -B build -D CMAKE_PREFIX_PATH=/home/dys/code/TensorRT-YOLO/install
 
 ```bash
 cd TensorRT-YOLO/examples/detect
