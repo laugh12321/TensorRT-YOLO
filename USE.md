@@ -1,7 +1,14 @@
 # TensorRT-YOLO 使用指南
 
 > 从环境搭建到成功推理的完整流程。
-
+先nano禁用掉更新
+dys@dys-desktop:~$ sudo apt-mark hold nvidia-l4t-kernel nvidia-l4t-kernel-dtbs nvidia-l4t-initrd
+nvidia-l4t-kernel set on hold.
+nvidia-l4t-kernel-dtbs set on hold.
+nvidia-l4t-initrd set on hold.
+dys@dys-desktop:~$ sudo apt-mark hold nvidia-l4t-core nvidia-jetpack
+nvidia-l4t-core set on hold.
+nvidia-jetpack set on hold.
 ---
 
 ## 一、环境要求
@@ -249,3 +256,43 @@ A: 能。只要拿到 ONNX，就能用 `trtyolo-export` + `trtexec` 转成 engin
 **Q: classify 和 detect 怎么选？**
 
 A: classify 回答"整张图是什么"（一个标签），detect 回答"目标**在哪里**、是什么"（框 + 类别 + 位置）。需要知道目标位置就用 detect。
+
+**Q: Jetson 设备上 `docker pull` 报 `no such host` 错误怎么办？**
+
+错误示例：
+```
+Error response from daemon: failed to resolve reference "docker.io/ultralytics/ultralytics:latest-jetson-jetpack6":
+dial tcp: lookup docker.mirrors.ustc.edu.cn on 127.0.0.53:53: no such host
+```
+
+A: 这是因为 Docker 镜像加速器地址失效或 DNS 无法解析。解决方法——更换稳定的镜像加速器。
+
+编辑 Docker 配置文件：
+```bash
+sudo nano /etc/docker/daemon.json
+```
+
+将内容修改为（确保 JSON 格式正确，注意逗号）：
+```json
+{
+  "registry-mirrors": [
+    "https://docker.xuanyuan.me",
+    "https://docker.1ms.run",
+    "https://registry.docker-cn.com",
+    "https://docker.m.daocloud.io",
+    "https://docker.mirrors.ustc.edu.cn",
+    "https://hub-mirror.c.163.com"
+  ]
+}
+```
+
+保存后重启 Docker 服务：
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+
+然后重新拉取镜像：
+```bash
+docker pull ultralytics/ultralytics:latest-jetson-jetpack6
+```
