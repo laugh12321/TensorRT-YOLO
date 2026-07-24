@@ -9,6 +9,9 @@ nvidia-l4t-initrd set on hold.
 dys@dys-desktop:~$ sudo apt-mark hold nvidia-l4t-core nvidia-jetpack
 nvidia-l4t-core set on hold.
 nvidia-jetpack set on hold.
+
+dys@dys-desktop:~$ sudo systemctl mask update-notifier.service
+sudo systemctl mask update-notifier-motd.service
 ---
 
 ## 一、环境要求
