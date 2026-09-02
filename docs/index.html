@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>社区文档 · TensorRT-YOLO</title>
-  <meta name="description" content="TensorRT-YOLO 社区版安装与推理：依赖、编译、模型转换，以及 Python / C++ 示例。">
+  <script>(function(){try{if(localStorage.getItem("trtyolo-lang")==="en")document.documentElement.lang="en";}catch(e){}})();</script>
+  <title data-zh="社区文档 · TensorRT-YOLO" data-en="Docs · TensorRT-YOLO">社区文档 · TensorRT-YOLO</title>
+  <meta name="description" data-zh="TensorRT-YOLO 社区版安装与推理：依赖、编译、模型转换，以及 Python / C++ 示例。" data-en="TensorRT-YOLO Community install and inference: dependencies, build, model conversion, plus Python / C++ examples." content="TensorRT-YOLO 社区版安装与推理：依赖、编译、模型转换，以及 Python / C++ 示例。">
   <link rel="stylesheet" href="../assets/site.css">
   <link rel="icon" type="image/png" href="../assets/png/logo-no-background.png">
 </head>
@@ -15,77 +16,107 @@
         <img src="../assets/png/logo-no-background.png" alt="TensorRT-YOLO">
       </a>
       <nav class="nav-links">
-        <a href="../">首页</a>
-        <a href="../models/">模型支持</a>
-        <a href="../pro/">专业版</a>
-        <a class="active" href="./">社区文档</a>
+        <a href="../"><span class="zh">首页</span><span class="en">Home</span></a>
+        <a href="../models/"><span class="zh">模型支持</span><span class="en">Models</span></a>
+        <a href="../pro/"><span class="zh">专业版</span><span class="en">Pro</span></a>
+        <a class="active" href="./"><span class="zh">社区文档</span><span class="en">Docs</span></a>
       </nav>
-      <a class="btn btn-gh" href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
+      <div class="nav-actions">
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button type="button" data-set-lang="zh" aria-pressed="true">中文</button>
+          <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
+        </div>
+        <a class="btn btn-gh" href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
+      </div>
     </div>
   </header>
 
   <section class="page-hero">
     <div class="wrap">
-      <p class="tag">文档 · 社区版</p>
-      <h1>把社区版装上，跑通一次推理</h1>
-      <p class="lede">下面按社区版来写：C++ 一个头文件 <code>trtyolo.hpp</code>，Python 一次 <code>predict</code>。专业版接口不同，见 <a href="../pro/">专业版</a>。</p>
+      <p class="tag"><span class="zh">文档 · 社区版</span><span class="en">Docs · Community</span></p>
+      <h1><span class="zh">把社区版装上，跑通一次推理</span><span class="en">Install Community and run inference</span></h1>
+      <p class="lede">
+        <span class="zh">下面按社区版来写：C++ 一个头文件 <code>trtyolo.hpp</code>，Python 一次 <code>predict</code>。专业版接口不同，见 <a href="../pro/">专业版</a>。</span>
+        <span class="en">Written for Community: one C++ header <code>trtyolo.hpp</code>, one Python <code>predict</code>. Pro uses a different API — see <a href="../pro/">Pro</a>.</span>
+      </p>
     </div>
   </section>
 
   <main class="wrap page">
     <div class="install-panel left">
-      <h2>从转换开始</h2>
-      <p class="lede">先把已导出的 ONNX 转成可推理结构，再按下面步骤编译推理库、构建 engine。</p>
+      <h2><span class="zh">从转换开始</span><span class="en">Start with conversion</span></h2>
+      <p class="lede">
+        <span class="zh">先把已导出的 ONNX 转成可推理结构，再按下面步骤编译推理库、构建 engine。</span>
+        <span class="en">Convert an exported ONNX graph into an inference-ready structure, then build the runtime and the engine.</span>
+      </p>
       <div class="install-cmd">$ pip install trtyolo-export</div>
       <div class="actions">
         <a class="btn btn-primary" href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
-        <a class="btn" href="../models/">模型支持</a>
-        <a class="btn" href="../pro/">专业版</a>
+        <a class="btn" href="../models/"><span class="zh">模型支持</span><span class="en">Models</span></a>
+        <a class="btn" href="../pro/"><span class="zh">专业版</span><span class="en">Pro</span></a>
       </div>
     </div>
 
     <nav class="toc">
-      <strong>本页</strong>
+      <strong><span class="zh">本页</span><span class="en">On this page</span></strong>
       <ol>
-        <li><a href="#deps">依赖</a></li>
-        <li><a href="#build">编译安装</a></li>
-        <li><a href="#export">模型转换</a></li>
-        <li><a href="#python">Python 推理</a></li>
-        <li><a href="#cpp">C++ 推理</a></li>
+        <li><a href="#deps"><span class="zh">依赖</span><span class="en">Dependencies</span></a></li>
+        <li><a href="#build"><span class="zh">编译安装</span><span class="en">Build</span></a></li>
+        <li><a href="#export"><span class="zh">模型转换</span><span class="en">Conversion</span></a></li>
+        <li><a href="#python"><span class="zh">Python 推理</span><span class="en">Python inference</span></a></li>
+        <li><a href="#cpp"><span class="zh">C++ 推理</span><span class="en">C++ inference</span></a></li>
       </ol>
     </nav>
 
-    <h2 id="deps">1. 依赖</h2>
+    <h2 id="deps"><span class="zh">1. 依赖</span><span class="en">1. Dependencies</span></h2>
     <ul>
       <li>CUDA ≥ 11.0.1</li>
       <li>TensorRT ≥ 8.6.1</li>
-      <li>操作系统：推荐 Linux（x86_64 或 ARM），也支持 Windows</li>
+      <li>
+        <span class="zh">操作系统：推荐 Linux（x86_64 或 ARM），也支持 Windows</span>
+        <span class="en">OS: Linux (x86_64 or ARM) recommended; Windows is also supported</span>
+      </li>
     </ul>
 
-    <h2 id="build">2. 编译安装</h2>
+    <h2 id="build"><span class="zh">2. 编译安装</span><span class="en">2. Build and install</span></h2>
     <pre data-lang="Shell"><code class="language-bash">git clone https://github.com/laugh12321/TensorRT-YOLO
 cd TensorRT-YOLO
 pip install "pybind11[global]"
 cmake -S . -B build -D TRT_PATH=/your/tensorrt/dir -D BUILD_PYTHON=ON -D CMAKE_INSTALL_PREFIX=/your/tensorrt-yolo/install/dir
 cmake --build build -j$(nproc) --config Release --target install</code></pre>
-    <p>安装目录里有头文件、<code>trtyolo</code> 和 <code>custom_plugins</code>。构建 OBB / Segment / Pose 的 engine 时需要 TensorRT Plugin。把安装前缀加入 <code>PATH</code>，<code>find_package</code> 才能找到配置文件：</p>
+    <p>
+      <span class="zh">安装目录里有头文件、<code>trtyolo</code> 和 <code>custom_plugins</code>。构建 OBB / Segment / Pose 的 engine 时需要 TensorRT Plugin。把安装前缀加入 <code>PATH</code>，<code>find_package</code> 才能找到配置文件：</span>
+      <span class="en">The install prefix contains headers, <code>trtyolo</code>, and <code>custom_plugins</code>. Building engines for OBB / Segment / Pose needs the TensorRT plugin. Add the prefix to <code>PATH</code> so <code>find_package</code> can locate the config files:</span>
+    </p>
     <pre data-lang="Shell"><code class="language-bash">export PATH=$PATH:/your/tensorrt-yolo/install/dir   # Linux
 # PowerShell
 $env:PATH = "$env:PATH;C:\your\tensorrt-yolo\install\dir;C:\your\tensorrt-yolo\install\dir\bin"</code></pre>
-    <p>若编译时打开了 <code>BUILD_PYTHON</code>，再装 Python 包：</p>
+    <p>
+      <span class="zh">若编译时打开了 <code>BUILD_PYTHON</code>，再装 Python 包：</span>
+      <span class="en">If you enabled <code>BUILD_PYTHON</code>, install the Python package:</span>
+    </p>
     <pre data-lang="Shell"><code class="language-bash">pip install --upgrade build
 python -m build --wheel
 pip install dist/trtyolo-*-py3-none-any.whl</code></pre>
 
-    <h2 id="export">3. 模型转换</h2>
-    <p>先把权重导出为 ONNX，再用 <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a> 转结构，最后用 <code>trtexec</code> 出 engine。各系列和任务能否转换，见 <a href="../models/">模型支持</a>。Detect 示例：</p>
+    <h2 id="export"><span class="zh">3. 模型转换</span><span class="en">3. Model conversion</span></h2>
+    <p>
+      <span class="zh">先把权重导出为 ONNX，再用 <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a> 转结构，最后用 <code>trtexec</code> 出 engine。各系列和任务能否转换，见 <a href="../models/">模型支持</a>。Detect 示例：</span>
+      <span class="en">Export weights to ONNX, convert the graph with <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>, then build an engine with <code>trtexec</code>. See <a href="../models/">Models</a> for which families and tasks convert. Detect example:</span>
+    </p>
     <pre data-lang="Shell"><code class="language-bash">yolo export model=models/yolo11n.pt format=onnx batch=1
 trtyolo-export -i models/yolo11n.onnx -o models/yolo11n-trtyolo.onnx -s
 trtexec --onnx=models/yolo11n-trtyolo.onnx --saveEngine=models/yolo11n.engine --fp16</code></pre>
-    <p>Pose / Segment / OBB 构建 engine 时还要加上 <code>--staticPlugins</code> 和 <code>--setPluginsToSerialize</code>，指向安装目录里的 <code>libcustom_plugins</code>。各任务完整命令见仓库 <a href="https://github.com/laugh12321/TensorRT-YOLO/tree/dev/examples">examples</a>。</p>
+    <p>
+      <span class="zh">Pose / Segment / OBB 构建 engine 时还要加上 <code>--staticPlugins</code> 和 <code>--setPluginsToSerialize</code>，指向安装目录里的 <code>libcustom_plugins</code>。各任务完整命令见仓库 <a href="https://github.com/laugh12321/TensorRT-YOLO/tree/dev/examples">examples</a>。</span>
+      <span class="en">For Pose / Segment / OBB, also pass <code>--staticPlugins</code> and <code>--setPluginsToSerialize</code> pointing at <code>libcustom_plugins</code> in the install prefix. Full per-task commands are in the repo <a href="https://github.com/laugh12321/TensorRT-YOLO/tree/dev/examples">examples</a>.</span>
+    </p>
 
-    <h2 id="python">4. Python 推理</h2>
-    <p><code>task</code> 必须和导出时的任务一致。</p>
+    <h2 id="python"><span class="zh">4. Python 推理</span><span class="en">4. Python inference</span></h2>
+    <p>
+      <span class="zh"><code>task</code> 必须和导出时的任务一致。</span>
+      <span class="en"><code>task</code> must match the task used at export.</span>
+    </p>
     <pre data-lang="Python"><code class="language-python">import cv2
 import supervision as sv
 from trtyolo import TRTYOLO
@@ -100,7 +131,7 @@ annotated_frame = box_annotator.annotate(scene=image.copy(), detections=result)
 throughput, cpu_latency, gpu_latency = model.profile()
 cloned_model = model.clone()</code></pre>
 
-    <h2 id="cpp">5. C++ 推理</h2>
+    <h2 id="cpp"><span class="zh">5. C++ 推理</span><span class="en">5. C++ inference</span></h2>
     <pre data-lang="C++"><code class="language-cpp">#include &lt;memory&gt;
 #include &lt;opencv2/opencv.hpp&gt;
 #include "trtyolo.hpp"
@@ -119,37 +150,44 @@ int main() {
     auto cloned_detector = detector-&gt;clone();
     return 0;
 }</code></pre>
-    <p>分类、分割、姿态、旋转框分别用 <code>ClassifyModel</code>、<code>SegmentModel</code>、<code>PoseModel</code>、<code>OBBModel</code>。更多示例见 <a href="https://github.com/laugh12321/TensorRT-YOLO/tree/dev#readme">仓库 README</a>。</p>
+    <p>
+      <span class="zh">分类、分割、姿态、旋转框分别用 <code>ClassifyModel</code>、<code>SegmentModel</code>、<code>PoseModel</code>、<code>OBBModel</code>。更多示例见 <a href="https://github.com/laugh12321/TensorRT-YOLO/tree/dev#readme">仓库 README</a>。</span>
+      <span class="en">Classify, segment, pose, and OBB use <code>ClassifyModel</code>, <code>SegmentModel</code>, <code>PoseModel</code>, and <code>OBBModel</code>. More examples are in the <a href="https://github.com/laugh12321/TensorRT-YOLO/tree/dev#readme">repo README</a>.</span>
+    </p>
   </main>
 
   <footer class="footer">
     <div class="wrap footer-grid">
       <div class="footer-brand">
         <img src="../assets/png/logo-no-background.png" alt="TensorRT-YOLO">
-        <p>在 NVIDIA 设备上部署 YOLO 系列与变体。</p>
+        <p>
+          <span class="zh">在 NVIDIA 设备上部署 YOLO 系列与变体。</span>
+          <span class="en">Deploy YOLO models and variants on NVIDIA devices.</span>
+        </p>
       </div>
       <div class="footer-col">
-        <h3>产品</h3>
-        <a href="../">首页</a>
-        <a href="../models/">模型支持</a>
-        <a href="../pro/">专业版</a>
-        <a href="./">社区文档</a>
+        <h3><span class="zh">产品</span><span class="en">Product</span></h3>
+        <a href="../"><span class="zh">首页</span><span class="en">Home</span></a>
+        <a href="../models/"><span class="zh">模型支持</span><span class="en">Models</span></a>
+        <a href="../pro/"><span class="zh">专业版</span><span class="en">Pro</span></a>
+        <a href="./"><span class="zh">社区文档</span><span class="en">Docs</span></a>
       </div>
       <div class="footer-col">
-        <h3>资源</h3>
+        <h3><span class="zh">资源</span><span class="en">Resources</span></h3>
         <a href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
         <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
         <a href="https://github.com/laugh12321/TensorRT-YOLO/issues">Issues</a>
-        <a href="https://afdian.com/a/laugh12321">赞助</a>
+        <a href="https://afdian.com/a/laugh12321"><span class="zh">赞助</span><span class="en">Sponsor</span></a>
       </div>
       <div class="footer-col">
-        <h3>许可</h3>
-        <span>社区版 GPL-3.0</span>
-        <span>专业版单独授权</span>
+        <h3><span class="zh">许可</span><span class="en">License</span></h3>
+        <span><span class="zh">社区版 GPL-3.0</span><span class="en">Community GPL-3.0</span></span>
+        <span><span class="zh">专业版单独授权</span><span class="en">Pro licensed separately</span></span>
       </div>
     </div>
-    <div class="wrap footer-bar">社区版 GPL-3.0 · 专业版单独授权</div>
+    <div class="wrap footer-bar"><span class="zh">社区版 GPL-3.0 · 专业版单独授权</span><span class="en">Community GPL-3.0 · Pro licensed separately</span></div>
   </footer>
   <script src="../assets/prism.js"></script>
+  <script src="../assets/i18n.js"></script>
 </body>
 </html>

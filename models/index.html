@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>模型支持 · TensorRT-YOLO</title>
-  <meta name="description" content="TensorRT-YOLO 支持的 YOLO 系列与任务：Detect、Segment、Classify、Pose、OBB，以及 YOLO-World、YOLOE、YOLO-Master 等变体。">
+  <script>(function(){try{if(localStorage.getItem("trtyolo-lang")==="en")document.documentElement.lang="en";}catch(e){}})();</script>
+  <title data-zh="模型支持 · TensorRT-YOLO" data-en="Models · TensorRT-YOLO">模型支持 · TensorRT-YOLO</title>
+  <meta name="description" data-zh="TensorRT-YOLO 支持的 YOLO 系列与任务：Detect、Segment、Classify、Pose、OBB，以及 YOLO-World、YOLOE、YOLO-Master 等变体。" data-en="YOLO families and tasks supported by TensorRT-YOLO: Detect, Segment, Classify, Pose, OBB, plus variants such as YOLO-World, YOLOE, and YOLO-Master." content="TensorRT-YOLO 支持的 YOLO 系列与任务：Detect、Segment、Classify、Pose、OBB，以及 YOLO-World、YOLOE、YOLO-Master 等变体。">
   <link rel="stylesheet" href="../assets/site.css">
   <link rel="icon" type="image/png" href="../assets/png/logo-no-background.png">
 </head>
@@ -15,45 +16,61 @@
         <img src="../assets/png/logo-no-background.png" alt="TensorRT-YOLO">
       </a>
       <nav class="nav-links">
-        <a href="../">首页</a>
-        <a class="active" href="./">模型支持</a>
-        <a href="../pro/">专业版</a>
-        <a href="../docs/">社区文档</a>
+        <a href="../"><span class="zh">首页</span><span class="en">Home</span></a>
+        <a class="active" href="./"><span class="zh">模型支持</span><span class="en">Models</span></a>
+        <a href="../pro/"><span class="zh">专业版</span><span class="en">Pro</span></a>
+        <a href="../docs/"><span class="zh">社区文档</span><span class="en">Docs</span></a>
       </nav>
-      <a class="btn btn-gh" href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
+      <div class="nav-actions">
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button type="button" data-set-lang="zh" aria-pressed="true">中文</button>
+          <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
+        </div>
+        <a class="btn btn-gh" href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
+      </div>
     </div>
   </header>
 
   <section class="page-hero">
     <div class="wrap">
-      <p class="tag">模型支持 · trtyolo-export</p>
-      <h1>YOLO 系列与任务</h1>
+      <p class="tag"><span class="zh">模型支持 · trtyolo-export</span><span class="en">Models · trtyolo-export</span></p>
+      <h1><span class="zh">YOLO 系列与任务</span><span class="en">YOLO families and tasks</span></h1>
       <p class="lede">
-        用 <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
-        把已导出的 YOLO ONNX 转成可推理结构。下表按系列和任务列出能否转换、能否直接推理，与
-        <a href="https://github.com/laugh12321/trtyolo-export/blob/main/README.cn.md">转换工具说明</a> 对齐。
+        <span class="zh">
+          用 <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
+          把已导出的 YOLO ONNX 转成可推理结构。下表按系列和任务列出能否转换、能否直接推理，与
+          <a href="https://github.com/laugh12321/trtyolo-export/blob/main/README.cn.md">转换工具说明</a> 对齐。
+        </span>
+        <span class="en">
+          <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
+          converts an exported YOLO ONNX graph into an inference-ready structure. The table lists convert/infer support by family and task, aligned with the
+          <a href="https://github.com/laugh12321/trtyolo-export/blob/main/README.md">converter docs</a>.
+        </span>
       </p>
     </div>
   </section>
 
   <main class="wrap page">
 
-    <h2 id="structure">转换结构</h2>
-    <p class="lede">转换后会整理输出，并按任务挂上对应 TensorRT Plugin。各任务的图结构如下：</p>
-    <img class="banner banner-wide" src="https://raw.githubusercontent.com/laugh12321/TensorRT-YOLO/main/assets/model-banner.png" alt="各任务转换后的 ONNX 结构">
+    <h2 id="structure"><span class="zh">转换结构</span><span class="en">Converted graphs</span></h2>
+    <p class="lede">
+      <span class="zh">转换后会整理输出，并按任务挂上对应 TensorRT Plugin。各任务的图结构如下：</span>
+      <span class="en">Conversion rearranges outputs and attaches the matching TensorRT plugin per task. Graph layouts:</span>
+    </p>
+    <img class="banner banner-wide" src="https://raw.githubusercontent.com/laugh12321/TensorRT-YOLO/main/assets/model-banner.png" data-zh-alt="各任务转换后的 ONNX 结构" data-en-alt="Converted ONNX graphs by task" alt="各任务转换后的 ONNX 结构">
 
-    <h2 id="support-models">模型支持列表</h2>
+    <h2 id="support-models"><span class="zh">模型支持列表</span><span class="en">Supported models</span></h2>
     <div class="legend">
-      <span><i class="mark mark-ok">✓</i> 可转换且可推理</span>
-      <span><i class="mark mark-up">●</i> 上游或仓库导出路径可直接推理</span>
-      <span><i class="mark mark-na">—</i> 该任务不提供</span>
+      <span><i class="mark mark-ok">✓</i> <span class="zh">可转换且可推理</span><span class="en">Convertible and runnable</span></span>
+      <span><i class="mark mark-up">●</i> <span class="zh">上游或仓库导出路径可直接推理</span><span class="en">Upstream or repo export can run directly</span></span>
+      <span><i class="mark mark-na">—</i> <span class="zh">该任务不提供</span><span class="en">Not offered for this task</span></span>
     </div>
     <div class="table-wrap">
       <table class="support-table">
         <thead>
           <tr>
-            <th>YOLO 系列</th>
-            <th>来源仓库</th>
+            <th><span class="zh">YOLO 系列</span><span class="en">YOLO family</span></th>
+            <th><span class="zh">来源仓库</span><span class="en">Source repo</span></th>
             <th>Detect</th>
             <th>Segment</th>
             <th>Classify</th>
@@ -254,10 +271,13 @@
         </tbody>
       </table>
     </div>
-    <p class="note">同一系列出现多行，表示官方仓库和 Ultralytics 两条导出路径都列了出来。青色圆点表示上游导出通常已能直接推理，不必再跑一遍 trtyolo-export。</p>
+    <p class="note">
+      <span class="zh">同一系列出现多行，表示官方仓库和 Ultralytics 两条导出路径都列了出来。青色圆点表示上游导出通常已能直接推理，不必再跑一遍 trtyolo-export。</span>
+      <span class="en">Multiple rows for the same family mean both the official repo and the Ultralytics export path are listed. A cyan dot means the upstream export can usually run without another trtyolo-export pass.</span>
+    </p>
 
     <div class="actions">
-      <a class="btn btn-primary" href="../docs/#export">看转换步骤</a>
+      <a class="btn btn-primary" href="../docs/#export"><span class="zh">看转换步骤</span><span class="en">Conversion steps</span></a>
       <a class="btn" href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
     </div>
   </main>
@@ -266,29 +286,33 @@
     <div class="wrap footer-grid">
       <div class="footer-brand">
         <img src="../assets/png/logo-no-background.png" alt="TensorRT-YOLO">
-        <p>在 NVIDIA 设备上部署 YOLO 系列与变体。</p>
+        <p>
+          <span class="zh">在 NVIDIA 设备上部署 YOLO 系列与变体。</span>
+          <span class="en">Deploy YOLO models and variants on NVIDIA devices.</span>
+        </p>
       </div>
       <div class="footer-col">
-        <h3>产品</h3>
-        <a href="../">首页</a>
-        <a href="./">模型支持</a>
-        <a href="../pro/">专业版</a>
-        <a href="../docs/">社区文档</a>
+        <h3><span class="zh">产品</span><span class="en">Product</span></h3>
+        <a href="../"><span class="zh">首页</span><span class="en">Home</span></a>
+        <a href="./"><span class="zh">模型支持</span><span class="en">Models</span></a>
+        <a href="../pro/"><span class="zh">专业版</span><span class="en">Pro</span></a>
+        <a href="../docs/"><span class="zh">社区文档</span><span class="en">Docs</span></a>
       </div>
       <div class="footer-col">
-        <h3>资源</h3>
+        <h3><span class="zh">资源</span><span class="en">Resources</span></h3>
         <a href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
         <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
         <a href="https://github.com/laugh12321/TensorRT-YOLO/issues">Issues</a>
-        <a href="https://afdian.com/a/laugh12321">赞助</a>
+        <a href="https://afdian.com/a/laugh12321"><span class="zh">赞助</span><span class="en">Sponsor</span></a>
       </div>
       <div class="footer-col">
-        <h3>许可</h3>
-        <span>社区版 GPL-3.0</span>
-        <span>专业版单独授权</span>
+        <h3><span class="zh">许可</span><span class="en">License</span></h3>
+        <span><span class="zh">社区版 GPL-3.0</span><span class="en">Community GPL-3.0</span></span>
+        <span><span class="zh">专业版单独授权</span><span class="en">Pro licensed separately</span></span>
       </div>
     </div>
-    <div class="wrap footer-bar">社区版 GPL-3.0 · 专业版单独授权</div>
+    <div class="wrap footer-bar"><span class="zh">社区版 GPL-3.0 · 专业版单独授权</span><span class="en">Community GPL-3.0 · Pro licensed separately</span></div>
   </footer>
+  <script src="../assets/i18n.js"></script>
 </body>
 </html>

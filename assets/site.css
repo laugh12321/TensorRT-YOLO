@@ -85,6 +85,54 @@ a:hover { text-decoration: underline; }
 .nav-links a:hover,
 .nav-links a.active { color: var(--text); text-decoration: none; }
 
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.lang-switch {
+  display: inline-flex;
+  flex-shrink: 0;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg-card);
+  white-space: nowrap;
+}
+
+.lang-switch button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 5px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.lang-switch button:hover { color: var(--text); }
+
+.lang-switch button:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 1px;
+}
+
+html:not([lang="en"]) .lang-switch [data-set-lang="zh"],
+html[lang="en"] .lang-switch [data-set-lang="en"] {
+  background: var(--blue);
+  color: #fff;
+}
+
+html[lang="en"] .zh { display: none !important; }
+html:not([lang="en"]) .en { display: none !important; }
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -630,6 +678,8 @@ h2 { font-size: 1.45rem; }
 
 @media (max-width: 760px) {
   .nav-inner { flex-wrap: wrap; min-height: 0; padding: 12px 0; }
-  .nav-links { justify-content: flex-start; flex-basis: 100%; }
+  .brand { order: 1; }
+  .nav-actions { order: 2; margin-left: auto; }
+  .nav-links { order: 3; justify-content: flex-start; flex-basis: 100%; }
   .feature-grid { grid-template-columns: 1fr; }
 }

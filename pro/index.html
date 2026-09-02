@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>专业版 · TensorRT-YOLO</title>
-  <meta name="description" content="TensorRT-YOLO 专业版相对社区版吞吐更高。闭源单独提供，购买入口尚未开放。">
+  <script>(function(){try{if(localStorage.getItem("trtyolo-lang")==="en")document.documentElement.lang="en";}catch(e){}})();</script>
+  <title data-zh="专业版 · TensorRT-YOLO" data-en="Pro · TensorRT-YOLO">专业版 · TensorRT-YOLO</title>
+  <meta name="description" data-zh="TensorRT-YOLO 专业版相对社区版吞吐更高。闭源单独提供，购买入口尚未开放。" data-en="TensorRT-YOLO Pro delivers higher throughput than Community. Closed source, sold separately. Purchase is not open yet." content="TensorRT-YOLO 专业版相对社区版吞吐更高。闭源单独提供，购买入口尚未开放。">
   <link rel="stylesheet" href="../assets/site.css">
   <link rel="icon" type="image/png" href="../assets/png/logo-no-background.png">
 </head>
@@ -15,20 +16,29 @@
         <img src="../assets/png/logo-no-background.png" alt="TensorRT-YOLO">
       </a>
       <nav class="nav-links">
-        <a href="../">首页</a>
-        <a href="../models/">模型支持</a>
-        <a class="active" href="./">专业版</a>
-        <a href="../docs/">社区文档</a>
+        <a href="../"><span class="zh">首页</span><span class="en">Home</span></a>
+        <a href="../models/"><span class="zh">模型支持</span><span class="en">Models</span></a>
+        <a class="active" href="./"><span class="zh">专业版</span><span class="en">Pro</span></a>
+        <a href="../docs/"><span class="zh">社区文档</span><span class="en">Docs</span></a>
       </nav>
-      <a class="btn btn-gh" href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
+      <div class="nav-actions">
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button type="button" data-set-lang="zh" aria-pressed="true">中文</button>
+          <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
+        </div>
+        <a class="btn btn-gh" href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
+      </div>
     </div>
   </header>
 
   <section class="page-hero">
     <div class="wrap">
-      <p class="tag tag-pro">专业版 · 闭源</p>
-      <h1>相对社区版，吞吐更高</h1>
-      <p class="lede">同一套任务，会话更干净。源码不在公开仓库。购买入口尚未开放，开放后会写在本页和仓库 README。</p>
+      <p class="tag tag-pro"><span class="zh">专业版 · 闭源</span><span class="en">Pro · Closed source</span></p>
+      <h1><span class="zh">相对社区版，吞吐更高</span><span class="en">Higher throughput than Community</span></h1>
+      <p class="lede">
+        <span class="zh">同一套任务，会话更干净。源码不在公开仓库。购买入口尚未开放，开放后会写在本页和仓库 README。</span>
+        <span class="en">Same tasks, cleaner sessions. Source is not in the public repo. Purchase is not open yet; when it is, it will be listed here and in the repo README.</span>
+      </p>
     </div>
   </section>
 
@@ -36,26 +46,32 @@
     <section class="stats">
       <article class="stat">
         <div class="num">+19.8%</div>
-        <div class="label">Detect 墙钟吞吐，785.6 → 941.2 qps</div>
+        <div class="label">
+          <span class="zh">Detect 墙钟吞吐，785.6 → 941.2 qps</span>
+          <span class="en">Detect wall-clock throughput, 785.6 → 941.2 qps</span>
+        </div>
       </article>
       <article class="stat">
         <div class="num">+23.4%</div>
-        <div class="label">Segment 墙钟吞吐，251.5 → 310.5 qps</div>
+        <div class="label">
+          <span class="zh">Segment 墙钟吞吐，251.5 → 310.5 qps</span>
+          <span class="en">Segment wall-clock throughput, 251.5 → 310.5 qps</span>
+        </div>
       </article>
     </section>
     <p class="note">
-      条件：YOLO11n FP16，RTX 3080，batch=1，C++，warmup 20 次后跑 100 次，取墙钟吞吐中位数。
-      对比时桌面合成大约占用 1.1 GiB 显存，不是独占空卡。只测了 Detect / Segment。
+      <span class="zh">条件：YOLO11n FP16，RTX 3080，batch=1，C++，warmup 20 次后跑 100 次，取墙钟吞吐中位数。对比时桌面合成大约占用 1.1 GiB 显存，不是独占空卡。只测了 Detect / Segment。</span>
+      <span class="en">Setup: YOLO11n FP16, RTX 3080, batch=1, C++, 20 warmup iterations then 100 timed runs, median wall-clock throughput. Desktop compositing used about 1.1 GiB VRAM; this was not an idle exclusive GPU. Only Detect / Segment were measured.</span>
     </p>
 
-    <h2>吞吐对比</h2>
+    <h2><span class="zh">吞吐对比</span><span class="en">Throughput</span></h2>
     <table>
       <thead>
         <tr>
-          <th>任务</th>
-          <th>社区版</th>
-          <th>专业版</th>
-          <th>吞吐</th>
+          <th><span class="zh">任务</span><span class="en">Task</span></th>
+          <th><span class="zh">社区版</span><span class="en">Community</span></th>
+          <th><span class="zh">专业版</span><span class="en">Pro</span></th>
+          <th><span class="zh">吞吐</span><span class="en">Throughput</span></th>
         </tr>
       </thead>
       <tbody>
@@ -73,75 +89,132 @@
         </tr>
       </tbody>
     </table>
-    <p class="lede">同轮 GPU 延迟：Detect 1.250 ms → 1.010 ms，Segment 3.936 ms → 3.120 ms。专业版可以看分阶段耗时，这一轮对比都开了 CUDA Graph。</p>
+    <p class="lede">
+      <span class="zh">同轮 GPU 延迟：Detect 1.250 ms → 1.010 ms，Segment 3.936 ms → 3.120 ms。专业版可以看分阶段耗时，这一轮对比都开了 CUDA Graph。</span>
+      <span class="en">Same-run GPU latency: Detect 1.250 ms → 1.010 ms, Segment 3.936 ms → 3.120 ms. Pro can report staged timings. CUDA Graph was on for this comparison.</span>
+    </p>
 
-    <h2>能力对比</h2>
+    <h2><span class="zh">能力对比</span><span class="en">Capabilities</span></h2>
     <table>
       <thead>
         <tr>
           <th></th>
-          <th>社区版</th>
-          <th>专业版</th>
+          <th><span class="zh">社区版</span><span class="en">Community</span></th>
+          <th><span class="zh">专业版</span><span class="en">Pro</span></th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>公开接口</td>
-          <td><code>InferOption</code> + 按任务拆的 Model；一次 <code>predict</code></td>
-          <td>加载一次模型，多次开推理会话；按帧读取结果</td>
+          <td><span class="zh">公开接口</span><span class="en">Public API</span></td>
+          <td>
+            <span class="zh"><code>InferOption</code> + 按任务拆的 Model；一次 <code>predict</code></span>
+            <span class="en"><code>InferOption</code> plus per-task Model; one <code>predict</code></span>
+          </td>
+          <td>
+            <span class="zh">加载一次模型，多次开推理会话；按帧读取结果</span>
+            <span class="en">Load the model once, open many infer sessions; read results per frame</span>
+          </td>
         </tr>
         <tr>
-          <td>多会话</td>
-          <td>再开会话要复制实例</td>
-          <td>已加载的模型上直接开多会话，不重复加载</td>
+          <td><span class="zh">多会话</span><span class="en">Multi-session</span></td>
+          <td>
+            <span class="zh">再开会话要复制实例</span>
+            <span class="en">Opening another session means cloning the instance</span>
+          </td>
+          <td>
+            <span class="zh">已加载的模型上直接开多会话，不重复加载</span>
+            <span class="en">Open extra sessions on a loaded model without reloading</span>
+          </td>
         </tr>
         <tr>
-          <td>头文件</td>
+          <td><span class="zh">头文件</span><span class="en">Headers</span></td>
           <td><code>#include "trtyolo.hpp"</code></td>
-          <td>单一公开头</td>
+          <td>
+            <span class="zh">单一公开头</span>
+            <span class="en">One public header</span>
+          </td>
         </tr>
         <tr>
-          <td>Python 任务</td>
-          <td>必须手填 <code>task=</code>，且与导出一致</td>
-          <td>默认同 engine 推断，可覆盖</td>
+          <td><span class="zh">Python 任务</span><span class="en">Python task</span></td>
+          <td>
+            <span class="zh">必须手填 <code>task=</code>，且与导出一致</span>
+            <span class="en">Must set <code>task=</code> to match export</span>
+          </td>
+          <td>
+            <span class="zh">默认同 engine 推断，可覆盖</span>
+            <span class="en">Inferred from the engine by default, overridable</span>
+          </td>
         </tr>
         <tr>
           <td>TensorRT</td>
           <td>≥ 8.6.1</td>
-          <td><strong>≥ 10</strong>（硬下限）</td>
+          <td><strong>≥ 10</strong><span class="zh">（硬下限）</span><span class="en"> (hard floor)</span></td>
         </tr>
         <tr>
-          <td>后处理插件</td>
-          <td>检测走内置 NMS；Pose / Seg / OBB 各有插件</td>
-          <td>一套插件覆盖 Detect / Pose / Seg / OBB</td>
+          <td><span class="zh">后处理插件</span><span class="en">Post-process plugin</span></td>
+          <td>
+            <span class="zh">检测走内置 NMS；Pose / Seg / OBB 各有插件</span>
+            <span class="en">Detect uses built-in NMS; Pose / Seg / OBB each have a plugin</span>
+          </td>
+          <td>
+            <span class="zh">一套插件覆盖 Detect / Pose / Seg / OBB</span>
+            <span class="en">One plugin covers Detect / Pose / Seg / OBB</span>
+          </td>
         </tr>
         <tr>
-          <td>构建 engine</td>
-          <td>Pose / Seg / OBB 还需把插件编进 engine</td>
-          <td>构建步骤更简单；社区版 engine 不能直接用，需要重新导出</td>
+          <td><span class="zh">构建 engine</span><span class="en">Build engine</span></td>
+          <td>
+            <span class="zh">Pose / Seg / OBB 还需把插件编进 engine</span>
+            <span class="en">Pose / Seg / OBB still need the plugin compiled into the engine</span>
+          </td>
+          <td>
+            <span class="zh">构建步骤更简单；社区版 engine 不能直接用，需要重新导出</span>
+            <span class="en">Simpler build; Community engines cannot be reused — re-export is required</span>
+          </td>
         </tr>
         <tr>
           <td>CUDA Graph</td>
-          <td>首次推理会把 capture 算进性能报告，且无法只看稳态</td>
-          <td>库内自动回放，调用方无感知</td>
+          <td>
+            <span class="zh">首次推理会把 capture 算进性能报告，且无法只看稳态</span>
+            <span class="en">First-run capture is included in the report; cannot isolate steady state</span>
+          </td>
+          <td>
+            <span class="zh">库内自动回放，调用方无感知</span>
+            <span class="en">Automatic replay inside the library; callers do not manage it</span>
+          </td>
         </tr>
         <tr>
-          <td>性能统计</td>
-          <td>粗粒度，吞吐含 warmup</td>
-          <td>可重置后只统计稳态，可看分阶段 GPU 耗时</td>
+          <td><span class="zh">性能统计</span><span class="en">Profiling</span></td>
+          <td>
+            <span class="zh">粗粒度，吞吐含 warmup</span>
+            <span class="en">Coarse; throughput includes warmup</span>
+          </td>
+          <td>
+            <span class="zh">可重置后只统计稳态，可看分阶段 GPU 耗时</span>
+            <span class="en">Reset to measure steady state; staged GPU timings available</span>
+          </td>
         </tr>
         <tr>
-          <td>源码与许可</td>
-          <td>公开仓库，GPL-3.0</td>
-          <td>闭源，单独授权</td>
+          <td><span class="zh">源码与许可</span><span class="en">Source and license</span></td>
+          <td>
+            <span class="zh">公开仓库，GPL-3.0</span>
+            <span class="en">Public repo, GPL-3.0</span>
+          </td>
+          <td>
+            <span class="zh">闭源，单独授权</span>
+            <span class="en">Closed source, licensed separately</span>
+          </td>
         </tr>
       </tbody>
     </table>
-    <p class="note">社区版 engine 不能直接给专业版用，需要用当前的 <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a> 重新导出后再构建。</p>
+    <p class="note">
+      <span class="zh">社区版 engine 不能直接给专业版用，需要用当前的 <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a> 重新导出后再构建。</span>
+      <span class="en">Community engines cannot be used with Pro. Re-export with the current <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>, then rebuild.</span>
+    </p>
 
     <div class="actions">
-      <a class="btn btn-primary" href="../docs/">先用社区版</a>
-      <a class="btn" href="../models/">模型支持</a>
+      <a class="btn btn-primary" href="../docs/"><span class="zh">先用社区版</span><span class="en">Start with Community</span></a>
+      <a class="btn" href="../models/"><span class="zh">模型支持</span><span class="en">Models</span></a>
       <a class="btn" href="https://github.com/laugh12321/TensorRT-YOLO">Star</a>
     </div>
   </main>
@@ -150,29 +223,33 @@
     <div class="wrap footer-grid">
       <div class="footer-brand">
         <img src="../assets/png/logo-no-background.png" alt="TensorRT-YOLO">
-        <p>在 NVIDIA 设备上部署 YOLO 系列与变体。</p>
+        <p>
+          <span class="zh">在 NVIDIA 设备上部署 YOLO 系列与变体。</span>
+          <span class="en">Deploy YOLO models and variants on NVIDIA devices.</span>
+        </p>
       </div>
       <div class="footer-col">
-        <h3>产品</h3>
-        <a href="../">首页</a>
-        <a href="../models/">模型支持</a>
-        <a href="./">专业版</a>
-        <a href="../docs/">社区文档</a>
+        <h3><span class="zh">产品</span><span class="en">Product</span></h3>
+        <a href="../"><span class="zh">首页</span><span class="en">Home</span></a>
+        <a href="../models/"><span class="zh">模型支持</span><span class="en">Models</span></a>
+        <a href="./"><span class="zh">专业版</span><span class="en">Pro</span></a>
+        <a href="../docs/"><span class="zh">社区文档</span><span class="en">Docs</span></a>
       </div>
       <div class="footer-col">
-        <h3>资源</h3>
+        <h3><span class="zh">资源</span><span class="en">Resources</span></h3>
         <a href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
         <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
         <a href="https://github.com/laugh12321/TensorRT-YOLO/issues">Issues</a>
-        <a href="https://afdian.com/a/laugh12321">赞助</a>
+        <a href="https://afdian.com/a/laugh12321"><span class="zh">赞助</span><span class="en">Sponsor</span></a>
       </div>
       <div class="footer-col">
-        <h3>许可</h3>
-        <span>社区版 GPL-3.0</span>
-        <span>专业版单独授权</span>
+        <h3><span class="zh">许可</span><span class="en">License</span></h3>
+        <span><span class="zh">社区版 GPL-3.0</span><span class="en">Community GPL-3.0</span></span>
+        <span><span class="zh">专业版单独授权</span><span class="en">Pro licensed separately</span></span>
       </div>
     </div>
-    <div class="wrap footer-bar">社区版 GPL-3.0 · 专业版单独授权</div>
+    <div class="wrap footer-bar"><span class="zh">社区版 GPL-3.0 · 专业版单独授权</span><span class="en">Community GPL-3.0 · Pro licensed separately</span></div>
   </footer>
+  <script src="../assets/i18n.js"></script>
 </body>
 </html>
