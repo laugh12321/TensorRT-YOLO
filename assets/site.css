@@ -588,6 +588,10 @@ table {
   overflow: hidden;
 }
 
+table + .actions {
+  margin-top: 28px;
+}
+
 th, td {
   text-align: left;
   padding: 12px 14px;
