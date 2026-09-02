@@ -68,7 +68,7 @@
       <span class="en">Setup: YOLO11n FP16, RTX 3080, batch=1, C++, 20 warmup iterations then 100 timed runs, median wall-clock throughput. Desktop compositing used about 1.1 GiB VRAM; this was not an idle exclusive GPU. Only Detect / Segment were measured.</span>
     </p>
 
-    <h2><span class="zh">吞吐对比</span><span class="en">Throughput</span></h2>
+    <h2 class="compare-title"><span class="zh">吞吐对比</span><span class="en">Throughput</span></h2>
     <table>
       <thead>
         <tr>
@@ -82,14 +82,14 @@
         <tr>
           <td>Detect</td>
           <td>785.6 qps（1.273 ms）</td>
-          <td><strong>941.2 qps（1.063 ms）</strong></td>
-          <td><strong>+19.8%</strong></td>
+          <td><strong class="pro-text">941.2 qps（1.063 ms）</strong></td>
+          <td><strong class="pro-text">+19.8%</strong></td>
         </tr>
         <tr>
           <td>Segment</td>
           <td>251.5 qps（3.976 ms）</td>
-          <td><strong>310.5 qps（3.221 ms）</strong></td>
-          <td><strong>+23.4%</strong></td>
+          <td><strong class="pro-text">310.5 qps（3.221 ms）</strong></td>
+          <td><strong class="pro-text">+23.4%</strong></td>
         </tr>
       </tbody>
     </table>
@@ -98,7 +98,7 @@
       <span class="en">Same-run GPU latency: Detect 1.250 ms → 1.010 ms, Segment 3.936 ms → 3.120 ms. Pro can report staged timings. CUDA Graph was on for this comparison.</span>
     </p>
 
-    <h2><span class="zh">能力对比</span><span class="en">Capabilities</span></h2>
+    <h2 class="compare-title"><span class="zh">能力对比</span><span class="en">Capabilities</span></h2>
     <table>
       <thead>
         <tr>
@@ -115,8 +115,10 @@
             <span class="en"><code>InferOption</code> plus per-task Model; one <code>predict</code></span>
           </td>
           <td>
-            <span class="zh">加载一次模型，多次开推理会话；按帧读取结果</span>
-            <span class="en">Load the model once, open many infer sessions; read results per frame</span>
+            <span class="pro-text">
+              <span class="zh">加载一次模型，多次开推理会话；按帧读取结果</span>
+              <span class="en">Load the model once, open many infer sessions; read results per frame</span>
+            </span>
           </td>
         </tr>
         <tr>
@@ -126,16 +128,20 @@
             <span class="en">Opening another session means cloning the instance</span>
           </td>
           <td>
-            <span class="zh">已加载的模型上直接开多会话，不重复加载</span>
-            <span class="en">Open extra sessions on a loaded model without reloading</span>
+            <span class="pro-text">
+              <span class="zh">已加载的模型上直接开多会话，不重复加载</span>
+              <span class="en">Open extra sessions on a loaded model without reloading</span>
+            </span>
           </td>
         </tr>
         <tr>
           <td><span class="zh">头文件</span><span class="en">Headers</span></td>
           <td><code>#include "trtyolo.hpp"</code></td>
           <td>
-            <span class="zh">单一公开头</span>
-            <span class="en">One public header</span>
+            <span class="pro-text">
+              <span class="zh">单一公开头</span>
+              <span class="en">One public header</span>
+            </span>
           </td>
         </tr>
         <tr>
@@ -145,14 +151,16 @@
             <span class="en">Must set <code>task=</code> to match export</span>
           </td>
           <td>
-            <span class="zh">默认同 engine 推断，可覆盖</span>
-            <span class="en">Inferred from the engine by default, overridable</span>
+            <span class="pro-text">
+              <span class="zh">默认同 engine 推断，可覆盖</span>
+              <span class="en">Inferred from the engine by default, overridable</span>
+            </span>
           </td>
         </tr>
         <tr>
           <td>TensorRT</td>
           <td>≥ 8.6.1</td>
-          <td><strong>≥ 10</strong><span class="zh">（硬下限）</span><span class="en"> (hard floor)</span></td>
+          <td><strong class="pro-text">≥ 10</strong><span class="zh">（硬下限）</span><span class="en"> (hard floor)</span></td>
         </tr>
         <tr>
           <td><span class="zh">后处理插件</span><span class="en">Post-process plugin</span></td>
@@ -161,8 +169,10 @@
             <span class="en">Detect uses built-in NMS; Pose / Seg / OBB each have a plugin</span>
           </td>
           <td>
-            <span class="zh">一套插件覆盖 Detect / Pose / Seg / OBB</span>
-            <span class="en">One plugin covers Detect / Pose / Seg / OBB</span>
+            <span class="pro-text">
+              <span class="zh">一套插件覆盖 Detect / Pose / Seg / OBB</span>
+              <span class="en">One plugin covers Detect / Pose / Seg / OBB</span>
+            </span>
           </td>
         </tr>
         <tr>
@@ -172,8 +182,10 @@
             <span class="en">Pose / Seg / OBB still need the plugin compiled into the engine</span>
           </td>
           <td>
-            <span class="zh">构建步骤更简单；社区版 engine 不能直接用，需要重新导出</span>
-            <span class="en">Simpler build; Community engines cannot be reused — re-export is required</span>
+            <span class="pro-text">
+              <span class="zh">构建步骤更简单；社区版 engine 不能直接用，需要重新导出</span>
+              <span class="en">Simpler build; Community engines cannot be reused — re-export is required</span>
+            </span>
           </td>
         </tr>
         <tr>
@@ -183,8 +195,10 @@
             <span class="en">First-run capture is included in the report; cannot isolate steady state</span>
           </td>
           <td>
-            <span class="zh">库内自动回放，调用方无感知</span>
-            <span class="en">Automatic replay inside the library; callers do not manage it</span>
+            <span class="pro-text">
+              <span class="zh">库内自动回放，调用方无感知</span>
+              <span class="en">Automatic replay inside the library; callers do not manage it</span>
+            </span>
           </td>
         </tr>
         <tr>
@@ -194,8 +208,10 @@
             <span class="en">Coarse; throughput includes warmup</span>
           </td>
           <td>
-            <span class="zh">可重置后只统计稳态，可看分阶段 GPU 耗时</span>
-            <span class="en">Reset to measure steady state; staged GPU timings available</span>
+            <span class="pro-text">
+              <span class="zh">可重置后只统计稳态，可看分阶段 GPU 耗时</span>
+              <span class="en">Reset to measure steady state; staged GPU timings available</span>
+            </span>
           </td>
         </tr>
         <tr>
@@ -205,8 +221,10 @@
             <span class="en">Public repo, GPL-3.0</span>
           </td>
           <td>
-            <span class="zh">闭源，单独授权</span>
-            <span class="en">Closed source, licensed separately</span>
+            <span class="pro-text">
+              <span class="zh">闭源，单独授权</span>
+              <span class="en">Closed source, licensed separately</span>
+            </span>
           </td>
         </tr>
       </tbody>

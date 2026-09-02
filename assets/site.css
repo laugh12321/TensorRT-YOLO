@@ -278,7 +278,7 @@ html:not([lang="en"]) .en { display: none !important; }
   margin: 0 0 12px;
 }
 
-.tag-pro { color: var(--nvidia); }
+.tag-pro { color: var(--blue-bright); }
 
 .hero {
   padding: 72px 0 56px;
@@ -534,7 +534,7 @@ html:not([lang="en"]) .en { display: none !important; }
 .stat .num {
   font-size: clamp(2.2rem, 5vw, 3.2rem);
   font-weight: 800;
-  color: var(--nvidia);
+  color: var(--blue-bright);
   line-height: 1.1;
 }
 
@@ -718,6 +718,16 @@ p code, li code {
 .toc ol { margin: 8px 0 0; padding-left: 1.2rem; }
 
 h2 { font-size: 1.45rem; }
+
+.compare-title {
+  color: var(--blue-bright);
+  font-weight: 800;
+}
+
+.pro-text {
+  color: var(--blue-bright);
+  font-weight: 700;
+}
 
 .footer {
   border-top: 1px solid var(--line);
