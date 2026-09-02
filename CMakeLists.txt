@@ -44,13 +44,79 @@ if(NOT TRT_PATH)
     message(FATAL_ERROR "TensorRT path must be specified with -DTRT_PATH=/path/to/tensorrt")
 endif()
 
-# 定义 TensorRT 库的版本选择
+# Linux：.so 始终在 lib/。
+# Windows：导入库 .lib 在 lib/（或 lib/x64）；运行时 DLL 在
+#   - 高版本 zip（TRT 10.10+）：bin/
+#   - 旧 zip：与 .lib 同在 lib/
+set(TRT_IMPLIB_DIRS "${TRT_PATH}/lib")
 set(TRT_LIB_DIR "${TRT_PATH}/lib")
-if(MSVC AND EXISTS "${TRT_LIB_DIR}/nvinfer_10.lib")
-    set(TRT_LIBS nvinfer_10 nvinfer_plugin_10 nvonnxparser_10)
+if(WIN32)
+    if(EXISTS "${TRT_PATH}/lib/x64")
+        list(APPEND TRT_IMPLIB_DIRS "${TRT_PATH}/lib/x64")
+        set(TRT_LIB_DIR "${TRT_PATH}/lib/x64")
+    endif()
+    if(EXISTS "${TRT_PATH}/bin")
+        list(APPEND TRT_IMPLIB_DIRS "${TRT_PATH}/bin")
+    endif()
+endif()
+
+set(TRT_BIN_DIR "")
+if(WIN32)
+    foreach(_trt_dll nvinfer_11.dll nvinfer_10.dll nvinfer.dll)
+        if(NOT TRT_BIN_DIR AND EXISTS "${TRT_PATH}/bin/${_trt_dll}")
+            set(TRT_BIN_DIR "${TRT_PATH}/bin")
+        endif()
+        if(NOT TRT_BIN_DIR AND EXISTS "${TRT_PATH}/lib/${_trt_dll}")
+            set(TRT_BIN_DIR "${TRT_PATH}/lib")
+        endif()
+        if(NOT TRT_BIN_DIR AND EXISTS "${TRT_PATH}/lib/x64/${_trt_dll}")
+            set(TRT_BIN_DIR "${TRT_PATH}/lib/x64")
+        endif()
+    endforeach()
+    if(NOT TRT_BIN_DIR)
+        set(TRT_BIN_DIR "${TRT_LIB_DIR}")
+    endif()
+else()
+    set(TRT_BIN_DIR "${TRT_PATH}/lib")
+endif()
+# c_lib_wrap.py.in 用 TRT_LIB_DIR 做 Windows DLL 搜索路径，必须指向运行时目录
+set(TRT_LIB_DIR "${TRT_BIN_DIR}")
+
+set(_trt_use_suffix "")
+foreach(_d ${TRT_IMPLIB_DIRS} ${TRT_BIN_DIR})
+    if(NOT _d)
+        continue()
+    endif()
+    if(NOT _trt_use_suffix AND (EXISTS "${_d}/nvinfer_11.lib" OR EXISTS "${_d}/nvinfer_11.dll"))
+        set(_trt_use_suffix 11)
+    endif()
+    if(NOT _trt_use_suffix AND (EXISTS "${_d}/nvinfer_10.lib" OR EXISTS "${_d}/nvinfer_10.dll"))
+        set(_trt_use_suffix 10)
+    endif()
+endforeach()
+if(WIN32 AND _trt_use_suffix)
+    set(TRT_LIBS nvinfer_${_trt_use_suffix} nvinfer_plugin_${_trt_use_suffix} nvonnxparser_${_trt_use_suffix})
 else()
     set(TRT_LIBS nvinfer nvinfer_plugin nvonnxparser)
 endif()
+unset(_trt_use_suffix)
+
+set(TRT_LIB_FILES)
+foreach(_trt_lib ${TRT_LIBS})
+    unset(_TRT_LIB_PATH CACHE)
+    find_library(_TRT_LIB_PATH
+        NAMES ${_trt_lib}
+        HINTS ${TRT_IMPLIB_DIRS}
+        NO_DEFAULT_PATH)
+    if(NOT _TRT_LIB_PATH)
+        find_library(_TRT_LIB_PATH NAMES ${_trt_lib} HINTS ${TRT_IMPLIB_DIRS} REQUIRED)
+    endif()
+    list(APPEND TRT_LIB_FILES "${_TRT_LIB_PATH}")
+endforeach()
+unset(_TRT_LIB_PATH CACHE)
+message(STATUS "TensorRT implib dirs: ${TRT_IMPLIB_DIRS}")
+message(STATUS "TensorRT runtime dir: ${TRT_BIN_DIR}")
+message(STATUS "TensorRT libs: ${TRT_LIB_FILES}")
 
 # Python 绑定选项
 option(BUILD_PYTHON "Build Python bindings with pybind11" OFF)
@@ -123,15 +189,10 @@ function(configure_cuda_trt_target target)
         ${TRT_PATH}/include
     )
 
-    # 链接目录
-    target_link_directories(${target} PRIVATE
-        ${TRT_LIB_DIR}
-    )
-
     # 添加链接库
     target_link_libraries(${target} PRIVATE
         CUDA::cudart
-        ${TRT_LIBS}
+        ${TRT_LIB_FILES}
     )
 
     # CUDA 特性

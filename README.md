@@ -4,12 +4,12 @@
   <img width="75%" src="assets/logo.png">
 
   <p align="center">
-      <a href="./LICENSE"><img alt="GitHub License" src="https://img.shields.io/github/license/laugh12321/TensorRT-YOLO?style=for-the-badge&color=0074d9"></a>
-      <a href="https://github.com/laugh12321/TensorRT-YOLO/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/laugh12321/TensorRT-YOLO?style=for-the-badge&color=0074d9"></a>
-      <img alt="GitHub Repo Stars" src="https://img.shields.io/github/stars/laugh12321/TensorRT-YOLO?style=for-the-badge&color=3dd3ff">
-      <img alt="Linux" src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black">
-      <img alt="Arch" src="https://img.shields.io/badge/Arch-x86%20%7C%20ARM-0091BD?style=for-the-badge&logo=cpu&logoColor=white">
-      <img alt="NVIDIA" src="https://img.shields.io/badge/NVIDIA-%2376B900.svg?style=for-the-badge&logo=nvidia&logoColor=white">
+      <a href="./LICENSE"><img alt="GitHub License" src="https://img.shields.io/github/license/laugh12321/TensorRT-YOLO?style=for-the-badge&color=0059a5"></a>
+      <a href="https://github.com/laugh12321/TensorRT-YOLO/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/laugh12321/TensorRT-YOLO?style=for-the-badge&color=0074d8"></a>
+      <img alt="GitHub Repo Stars" src="https://img.shields.io/github/stars/laugh12321/TensorRT-YOLO?style=for-the-badge&color=1492e4">
+      <img alt="Linux / Windows · x64 / ARM" src="https://img.shields.io/badge/Linux%20%7C%20Windows-x64%20%7C%20ARM-28b1f0?style=for-the-badge&labelColor=1492e4">
+      <img alt="C++ / Python" src="https://img.shields.io/badge/C%2B%2B-Python-3cd0fc?style=for-the-badge&labelColor=28b1f0">
+      <img alt="NVIDIA TensorRT" src="https://img.shields.io/badge/NVIDIA-TensorRT%2010%2B-76B900?style=for-the-badge&logo=nvidia&logoColor=white">
   </p>
 </div>
 
@@ -20,11 +20,18 @@
 <div align="center">
 
 <img src='assets/task-banner.png' width="800px">
-<img src='assets/example.gif' width="800px">
 
 </div>
 
+> [!IMPORTANT]
+>
+> **本仓库是社区版（6.4）**，许可证 [GPL-3.0](LICENSE)。社区版推理接口冻结，不再合入新的运行时架构。
+>
+> **专业版**（闭源）将单独提供，源码不在本仓库。购买入口尚未开放，开放后会写在本 README。吞吐与能力对比见 [社区版与专业版](#社区版与专业版)。
+
 ## <div align="center">🌠 近期更新</div>
+
+- 社区版（6.4）推理接口冻结；专业版将单独提供（购买入口尚未开放）。🌟 NEW
 
 - 🔥 **实战课程｜TensorRT × Triton Inference Server 模型部署**
   - **平台**: [BiliBili 课堂](https://www.bilibili.com/cheese/play/ss193350134) | [微信公众号](https://mp.weixin.qq.com/s/DVEo6RB-Wt4yDIX_3u-7Gw) 🚀 **HOT**
@@ -47,7 +54,6 @@
 - 2025-03-29: 添加对 [YOLO12](https://github.com/sunsmarterjie/yolov12) 的支持，包括分类、定向边界框、姿态估计以及实例分割，详见 [issues](https://github.com/sunsmarterjie/yolov12/issues/22)。🌟 NEW
 
 - [性能飞跃！TensorRT-YOLO 6.0 全面升级解析与实战指南](https://www.cnblogs.com/laugh12321/p/18693017) 🌟 NEW
-
 
 ## <div align="center">✨ 主要特性</div>
 
@@ -246,6 +252,34 @@ pip install dist/trtyolo-6.*-py3-none-any.whl
 
 > 更多部署案例请参考[模型部署示例](examples) .
 
+<a id="社区版与专业版"></a>
+
+## <div align="center">⚔️ 社区版与专业版</div>
+
+专业版相对社区版 6.4 不是小版本 bump，而是整条推理面重写。同一台 RTX 3080、YOLO11n FP16、batch=1 的 C++ 测速下，专业版墙钟吞吐更高：
+
+| 任务 | 社区版 6.4 | 专业版 | 吞吐 |
+|---|---|---|---|
+| Detect | 785.6 qps（1.273 ms） | **941.2 qps（1.063 ms）** | **+19.8%** |
+| Segment | 251.5 qps（3.976 ms） | **310.5 qps（3.221 ms）** | **+23.4%** |
+
+同轮 GPU latency：Detect 1.250 ms → **1.010 ms**，Segment 3.936 ms → **3.120 ms**。专业版还可看分阶段耗时（preprocess / compute / D2H / host postprocess）。
+
+| | 社区版 6.4 | 专业版 |
+|---|---|---|
+| 公开 API | `InferOption` + `DetectModel` / `ClassifyModel` / `SegmentModel` / `PoseModel` / `OBBModel` | `Executor::open` + `Context` + `Image` + SoA 租约 |
+| 多会话 | 靠 `clone()`，会再加载一份 engine | 同一 `Executor` 多次 `makeContext`，不重复加载 |
+| 头文件 | `#include "trtyolo.hpp"` | 只需 `#include <trtyolo.h>`（C ABI + C++） |
+| Python 任务 | 必须手填 `task=`，且与导出一致 | 默认同 engine 输出张量名推断，可用 `networkType` / `--task` 覆盖 |
+| TensorRT | ≥ 8.6.1 | **≥ 10**（硬下限） |
+| NMS 插件 | `IPluginV2DynamicExt`：Detect 用 NVIDIA 内置 EfficientNMS；Pose/Seg 用 `EfficientIdxNMS_TRT`；OBB 用 `EfficientRotatedNMS_TRT` | 单个 **IPluginV3** `EfficientNMS_TRT` v3，覆盖 Detect / Pose / Seg / OBB |
+| 构建 engine | Pose/Seg/OBB 要 `--staticPlugins` **且** `--setPluginsToSerialize` | 一律 `--staticPlugins`，不必序列化进 engine；推理再传 `pluginPath` |
+| CUDA Graph | 首次 `predict` 会把 capture 算进 `performanceReport`，且无法 reset | 库内自动 replay（动态/静态 batch 均可），调用方无感知 |
+| 性能统计 | 粗粒度，吞吐含 warmup | `resetPerformanceReport()` 后只统计稳态；可分阶段 GPU 计时 |
+| 源码与许可 | 本仓库，GPL-3.0 | 闭源，单独提供 |
+
+购买入口尚未开放，开放后会写在本 README。
+
 ## <div align="center">🌟 赞助与支持</div>
 
 开源不易，如果本项目对你有所帮助，欢迎通过赞助支持作者。你的支持是开发者持续维护的最大动力！
@@ -280,6 +314,8 @@ TensorRT-YOLO采用 **GPL-3.0许可证**，这个[OSI 批准](https://opensource
 
 对于 TensorRT-YOLO 的错误报告和功能请求，请访问 [GitHub Issues](https://github.com/laugh12321/TensorRT-YOLO/issues)！
 
+专业版尚未开放购买，请勿在 Issues 里询价；入口开放后会更新本 README。
+
 给项目点亮 ⭐ Star 可以帮助我们优先关注你的需求，加快响应速度～
 
 ## <div align="center">🙏 致谢</div>
@@ -287,7 +323,3 @@ TensorRT-YOLO采用 **GPL-3.0许可证**，这个[OSI 批准](https://opensource
 <div align="center">
 <a href="https://hellogithub.com/repository/942570b550824b1b9397e4291da3d17c" target="_blank"><img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=942570b550824b1b9397e4291da3d17c&claim_uid=2AGzE4dsO8ZUD9R&theme=neutral" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 </div>
-
-## <div align="center">🌟 Star History</div>
-
-[![Star History Chart](https://api.star-history.com/svg?repos=laugh12321/TensorRT-YOLO&type=date&legend=top-left)](https://www.star-history.com/#laugh12321/TensorRT-YOLO&type=date&legend=top-left)

@@ -24,7 +24,15 @@ English | [简体中文](README.md)
 
 </div>
 
+> [!IMPORTANT]
+>
+> **This repository is the Community Edition (6.4)**, licensed under [GPL-3.0](LICENSE). The community inference API is frozen; no new runtime architecture will be merged here.
+>
+> **Professional Edition** (closed-source) will be offered separately. Its source is not in this repository. Purchasing is not open yet; this README will be updated when it is. Throughput and capability comparison: [Community vs Professional](#community-vs-professional-edition).
+
 ## <div align="center">🌠 Recent updates</div>
+
+- Community Edition (6.4) inference API is frozen; Professional Edition will be offered separately (purchasing is not open yet). 🌟 NEW
 
 - 2026-03-20: Added support for [YOLO26](https://docs.ultralytics.com/models/yolo26/), including classification, oriented bounding boxes, pose estimation, and instance segmentation. 🌟 NEW
 
@@ -236,6 +244,34 @@ Simply pass the image to be inferred to the `predict` method. The `predict` meth
 
 > For more deployment examples, please refer to the [Model Deployment Examples](examples) section.
 
+<a id="community-vs-professional-edition"></a>
+
+## <div align="center">⚔️ Community vs Professional Edition</div>
+
+Professional Edition is a rewrite of the Community 6.4 inference surface, not a small bump. On the same RTX 3080, YOLO11n FP16, batch=1 C++ benchmark, Professional Edition has higher wall-clock throughput:
+
+| Task | Community 6.4 | Professional | Throughput |
+|---|---|---|---|
+| Detect | 785.6 qps (1.273 ms) | **941.2 qps (1.063 ms)** | **+19.8%** |
+| Segment | 251.5 qps (3.976 ms) | **310.5 qps (3.221 ms)** | **+23.4%** |
+
+Same-run GPU latency: Detect 1.250 ms → **1.010 ms**, Segment 3.936 ms → **3.120 ms**. Professional Edition can also report staged timings (preprocess / compute / D2H / host postprocess).
+
+| | Community 6.4 | Professional |
+|---|---|---|
+| Public API | `InferOption` + `DetectModel` / `ClassifyModel` / `SegmentModel` / `PoseModel` / `OBBModel` | `Executor::open` + `Context` + `Image` + SoA lease |
+| Multi-session | `clone()`, which reloads the engine | Multiple `makeContext` on one `Executor`, no reload |
+| Header | `#include "trtyolo.hpp"` | `#include <trtyolo.h>` only (C ABI + C++) |
+| Python task | Must pass `task=` and match export | Inferred from engine output tensor names; override with `networkType` / `--task` |
+| TensorRT | ≥ 8.6.1 | **≥ 10** (hard floor) |
+| NMS plugin | `IPluginV2DynamicExt`: Detect uses NVIDIA built-in EfficientNMS; Pose/Seg use `EfficientIdxNMS_TRT`; OBB uses `EfficientRotatedNMS_TRT` | Single **IPluginV3** `EfficientNMS_TRT` v3 covering Detect / Pose / Seg / OBB |
+| Building the engine | Pose/Seg/OBB need `--staticPlugins` **and** `--setPluginsToSerialize` | Always `--staticPlugins`; no serialize-into-engine; pass `pluginPath` at inference |
+| CUDA Graph | First `predict` folds capture into `performanceReport`; cannot reset | Library auto-replay (dynamic and static batch); caller-unaware |
+| Timing | Coarse; throughput includes warmup | `resetPerformanceReport()` for steady state; staged GPU timings |
+| Source & license | This repo, GPL-3.0 | Closed-source, offered separately |
+
+Purchasing is not open yet; this README will be updated when it is.
+
 ## <div align="center">🌟 Sponsorship & Support</div>
 
 Open-source projects thrive on support. If this project has been helpful to you, consider sponsoring the author. Your support is the greatest motivation for continued development!
@@ -269,6 +305,8 @@ Thank you for choosing TensorRT-YOLO; we encourage open collaboration and knowle
 ## <div align="center">📞 Contact</div>
 
 For bug reports and feature requests regarding TensorRT-YOLO, please visit [GitHub Issues](https://github.com/laugh12321/TensorRT-YOLO/issues)!
+
+Professional Edition is not open for purchase yet. Please do not ask about pricing in Issues; this README will be updated when purchasing opens.
 
 Giving the project a ⭐ Star helps us prioritize your needs and speed up the response time!
 
