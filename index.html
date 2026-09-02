@@ -16,17 +16,21 @@
         <img src="assets/png/logo-no-background.png" alt="TensorRT-YOLO">
       </a>
       <nav class="nav-links">
-        <a class="active" href="./"><span class="zh">首页</span><span class="en">Home</span></a>
-        <a href="models/"><span class="zh">模型支持</span><span class="en">Models</span></a>
-        <a href="pro/"><span class="zh">专业版</span><span class="en">Pro</span></a>
-        <a href="docs/"><span class="zh">社区文档</span><span class="en">Docs</span></a>
+        <a class="active" href="./"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#home"></use></svg><span class="zh">首页</span><span class="en">Home</span></a>
+        <a href="models/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#grid"></use></svg><span class="zh">模型支持</span><span class="en">Models</span></a>
+        <a href="pro/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#gauge"></use></svg><span class="zh">专业版</span><span class="en">Pro</span></a>
+        <a href="docs/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#book"></use></svg><span class="zh">社区文档</span><span class="en">Docs</span></a>
       </nav>
       <div class="nav-actions">
         <div class="lang-switch" role="group" aria-label="Language">
+          <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#globe"></use></svg>
           <button type="button" data-set-lang="zh" aria-pressed="true">中文</button>
           <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
         </div>
-        <a class="btn btn-gh" href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
+        <a class="btn btn-gh" href="https://github.com/laugh12321/TensorRT-YOLO" aria-label="GitHub">
+          <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#github"></use></svg>
+          <span class="btn-label">GitHub</span>
+        </a>
       </div>
     </div>
   </header>
@@ -44,12 +48,22 @@
             <span class="en">An easy, flexible, and high-performance toolkit for deploying YOLO models. TensorRT plugins handle post-processing; CUDA kernels and CUDA Graphs cut latency. Ready to use across YOLO families and variants.</span>
           </p>
           <div class="actions">
-            <a class="btn btn-primary" href="docs/"><span class="zh">开始使用</span><span class="en">Get started</span></a>
-            <a class="btn" href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
+            <a class="btn btn-primary" href="docs/"><span class="zh">开始使用</span><span class="en">Get started</span><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#arrow-right"></use></svg></a>
+            <a class="btn" href="https://github.com/laugh12321/TensorRT-YOLO"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#github"></use></svg>GitHub</a>
           </div>
         </div>
         <div class="hero-panel">
-          <div class="code-head"><span>quickstart.py</span><span class="zh">社区版</span><span class="en">Community</span></div>
+          <div class="code-head">
+            <span>quickstart.py</span>
+            <span class="code-head-meta">
+              <span class="zh">社区版</span><span class="en">Community</span>
+              <button type="button" class="copy-btn" data-copy=".hero-panel code">
+                <svg class="icon icon-copy" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#copy"></use></svg>
+                <svg class="icon icon-check" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#check"></use></svg>
+                <span class="zh">复制</span><span class="en">Copy</span>
+              </button>
+            </span>
+          </div>
           <pre><code class="language-python">from trtyolo import TRTYOLO
 
 model = TRTYOLO("yolo11n.engine", task="detect")
@@ -69,9 +83,9 @@ result = model.predict(image)</code></pre>
           </p>
         </div>
         <div class="actions">
-          <a class="btn btn-primary" href="https://github.com/laugh12321/TensorRT-YOLO">Star</a>
-          <a class="btn" href="https://github.com/laugh12321/TensorRT-YOLO/issues">Issues</a>
-          <a class="btn" href="https://afdian.com/a/laugh12321"><span class="zh">赞助</span><span class="en">Sponsor</span></a>
+          <a class="btn btn-primary" href="https://github.com/laugh12321/TensorRT-YOLO"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#star"></use></svg>Star</a>
+          <a class="btn" href="https://github.com/laugh12321/TensorRT-YOLO/issues"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#issues"></use></svg>Issues</a>
+          <a class="btn" href="https://afdian.com/a/laugh12321"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#heart"></use></svg><span class="zh">赞助</span><span class="en">Sponsor</span></a>
         </div>
       </div>
     </section>
@@ -86,6 +100,7 @@ result = model.predict(image)</code></pre>
         </p>
         <div class="feature-grid">
           <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><use href="assets/icons.svg#zap"></use></svg></div>
             <h3><span class="zh">开箱即用</span><span class="en">Ready to use</span></h3>
             <p>
               <span class="zh">C++ 一个头文件，Python 一次 <code>predict</code>。社区版 GPL-3.0，TensorRT ≥ 8.6.1。</span>
@@ -93,6 +108,7 @@ result = model.predict(image)</code></pre>
             </p>
           </article>
           <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><use href="assets/icons.svg#code"></use></svg></div>
             <h3><span class="zh">C++ 与 Python</span><span class="en">C++ and Python</span></h3>
             <p>
               <span class="zh">同一套推理接口，覆盖 Linux / Windows、x64 / ARM。</span>
@@ -100,6 +116,7 @@ result = model.predict(image)</code></pre>
             </p>
           </article>
           <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><use href="assets/icons.svg#layers"></use></svg></div>
             <h3><span class="zh">多种任务</span><span class="en">Multiple tasks</span></h3>
             <p>
               <span class="zh">目标检测、实例分割、图像分类、姿态识别、旋转目标检测，以及视频分析。</span>
@@ -107,6 +124,7 @@ result = model.predict(image)</code></pre>
             </p>
           </article>
           <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><use href="assets/icons.svg#upload"></use></svg></div>
             <h3><span class="zh">三步出 engine</span><span class="en">Engine in three steps</span></h3>
             <p>
               <span class="zh">导出 ONNX，<a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a> 转结构，再用 trtexec 构建。</span>
@@ -114,6 +132,7 @@ result = model.predict(image)</code></pre>
             </p>
           </article>
           <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><use href="assets/icons.svg#cpu"></use></svg></div>
             <h3><span class="zh">加速走 GPU</span><span class="en">GPU on the hot path</span></h3>
             <p>
               <span class="zh">TensorRT Plugin 加速后处理，CUDA Kernel 加速前处理，CUDA Graph 压低整体耗时。</span>
@@ -121,6 +140,7 @@ result = model.predict(image)</code></pre>
             </p>
           </article>
           <article class="feature-card">
+            <div class="feature-icon feature-icon-pro" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><use href="assets/icons.svg#gauge"></use></svg></div>
             <h3><span class="zh">专业版更快</span><span class="en">Pro is faster</span></h3>
             <p>
               <span class="zh">同台 RTX 3080、YOLO11n FP16：Detect +19.8%，Segment +23.4%。<a href="pro/">看对比 →</a></span>
@@ -153,7 +173,7 @@ result = model.predict(image)</code></pre>
               <li>C++ · Python，Linux · Windows</li>
               <li>TensorRT ≥ 8.6.1</li>
             </ul>
-            <a class="btn btn-primary" href="docs/"><span class="zh">看文档</span><span class="en">Read the docs</span></a>
+            <a class="btn btn-primary" href="docs/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#book"></use></svg><span class="zh">看文档</span><span class="en">Read the docs</span></a>
           </article>
           <article class="edition-card pro">
             <p class="tag tag-pro"><span class="zh">专业版</span><span class="en">Pro</span></p>
@@ -168,7 +188,7 @@ result = model.predict(image)</code></pre>
               <li><span class="zh">统一后处理插件，TensorRT ≥ 10</span><span class="en">Unified post-process plugin, TensorRT ≥ 10</span></li>
               <li><span class="zh">加载一次，多次开推理会话</span><span class="en">Load once, open many infer sessions</span></li>
             </ul>
-            <a class="btn btn-pro" href="pro/"><span class="zh">看对比</span><span class="en">See the comparison</span></a>
+            <a class="btn btn-pro" href="pro/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#gauge"></use></svg><span class="zh">看对比</span><span class="en">See the comparison</span></a>
           </article>
         </div>
       </div>
@@ -184,9 +204,9 @@ result = model.predict(image)</code></pre>
           </p>
           <div class="install-cmd">$ pip install trtyolo-export</div>
           <div class="actions">
-            <a class="btn btn-primary" href="docs/"><span class="zh">社区文档</span><span class="en">Docs</span></a>
-            <a class="btn" href="models/"><span class="zh">模型支持</span><span class="en">Models</span></a>
-            <a class="btn" href="pro/"><span class="zh">专业版</span><span class="en">Pro</span></a>
+            <a class="btn btn-primary" href="docs/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#book"></use></svg><span class="zh">社区文档</span><span class="en">Docs</span></a>
+            <a class="btn" href="models/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#grid"></use></svg><span class="zh">模型支持</span><span class="en">Models</span></a>
+            <a class="btn" href="pro/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#gauge"></use></svg><span class="zh">专业版</span><span class="en">Pro</span></a>
           </div>
         </div>
       </div>
@@ -204,17 +224,17 @@ result = model.predict(image)</code></pre>
       </div>
       <div class="footer-col">
         <h3><span class="zh">产品</span><span class="en">Product</span></h3>
-        <a href="./"><span class="zh">首页</span><span class="en">Home</span></a>
-        <a href="models/"><span class="zh">模型支持</span><span class="en">Models</span></a>
-        <a href="pro/"><span class="zh">专业版</span><span class="en">Pro</span></a>
-        <a href="docs/"><span class="zh">社区文档</span><span class="en">Docs</span></a>
+        <a href="./"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#home"></use></svg><span class="zh">首页</span><span class="en">Home</span></a>
+        <a href="models/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#grid"></use></svg><span class="zh">模型支持</span><span class="en">Models</span></a>
+        <a href="pro/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#gauge"></use></svg><span class="zh">专业版</span><span class="en">Pro</span></a>
+        <a href="docs/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#book"></use></svg><span class="zh">社区文档</span><span class="en">Docs</span></a>
       </div>
       <div class="footer-col">
         <h3><span class="zh">资源</span><span class="en">Resources</span></h3>
-        <a href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
-        <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
-        <a href="https://github.com/laugh12321/TensorRT-YOLO/issues">Issues</a>
-        <a href="https://afdian.com/a/laugh12321"><span class="zh">赞助</span><span class="en">Sponsor</span></a>
+        <a href="https://github.com/laugh12321/TensorRT-YOLO"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#github"></use></svg>GitHub</a>
+        <a href="https://github.com/laugh12321/trtyolo-export"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#upload"></use></svg>trtyolo-export</a>
+        <a href="https://github.com/laugh12321/TensorRT-YOLO/issues"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#issues"></use></svg>Issues</a>
+        <a href="https://afdian.com/a/laugh12321"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#heart"></use></svg><span class="zh">赞助</span><span class="en">Sponsor</span></a>
       </div>
       <div class="footer-col">
         <h3><span class="zh">许可</span><span class="en">License</span></h3>
@@ -226,5 +246,6 @@ result = model.predict(image)</code></pre>
   </footer>
   <script src="assets/prism.js"></script>
   <script src="assets/i18n.js"></script>
+  <script src="assets/site.js"></script>
 </body>
 </html>
