@@ -28,11 +28,11 @@
     <section class="hero">
       <div class="wrap hero-split">
         <div>
-          <h1>YOLO 部署。<br><em>专为 NVIDIA。</em></h1>
-          <p class="hero-sub">易用灵活、极致高效的 YOLO 系列推理部署工具。TensorRT 插件做后处理，CUDA 核函数与 CUDA 图压低推理耗时，C++ / Python 开箱即用。</p>
+          <h1>YOLO 部署<br><em>专为 NVIDIA</em></h1>
+          <p class="hero-sub">易用灵活、极致高效的 YOLO 系列推理部署工具。TensorRT Plugin 做后处理，CUDA Kernel 与 CUDA Graph 压低推理耗时，开箱即用，覆盖 YOLO 系列与变体。</p>
           <div class="actions">
             <a class="btn btn-primary" href="docs/">开始使用</a>
-            <a class="btn" href="https://github.com/laugh12321/TensorRT-YOLO">查看仓库</a>
+            <a class="btn" href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
           </div>
         </div>
         <div class="hero-panel">
@@ -50,7 +50,7 @@ result = model.predict(image)</code></pre>
       <div class="wrap">
         <div>
           <p class="kicker">支持</p>
-          <p>使用问题请开 GitHub Issues。喜欢这个项目可以点 Star 或赞助。请勿在 Issues 里询价。</p>
+          <p>最好的支持方式就是<a href="https://github.com/laugh12321/TensorRT-YOLO">给仓库点个 Star</a>。遇到问题或有建议，欢迎<a href="https://github.com/laugh12321/TensorRT-YOLO/issues">提交 issue</a>。</p>
         </div>
         <div class="actions">
           <a class="btn btn-primary" href="https://github.com/laugh12321/TensorRT-YOLO">Star</a>
@@ -62,33 +62,33 @@ result = model.predict(image)</code></pre>
 
     <section class="band" id="workflow">
       <div class="wrap">
-        <p class="kicker">一条路径</p>
+        <p class="kicker">能力</p>
         <h2 class="section-title">一套工具，覆盖导出到推理</h2>
-        <p class="section-lead">社区版把常用任务装上就能跑。专业版同一套任务，吞吐更高、会话更干净。</p>
+        <p class="section-lead">社区版现在就能把常用任务跑起来。需要更高吞吐时，再看专业版。</p>
         <div class="feature-grid">
           <article class="feature-card">
-            <h3>社区版 · GPL-3.0</h3>
-            <p>公开仓库默认分支。C++ 单头文件，Python 一次 <code>predict</code>。TensorRT ≥ 8.6.1。</p>
+            <h3>开箱即用</h3>
+            <p>C++ 一个头文件，Python 一次 <code>predict</code>。社区版 GPL-3.0，TensorRT ≥ 8.6.1。</p>
           </article>
           <article class="feature-card">
-            <h3>C++ / Python</h3>
-            <p>同一条推理路径。Linux、Windows，x64 与 ARM。接口按开箱即用来做。</p>
+            <h3>C++ 与 Python</h3>
+            <p>同一套推理接口，覆盖 Linux / Windows、x64 / ARM。</p>
           </article>
           <article class="feature-card">
-            <h3>六种任务</h3>
-            <p>目标检测、实例分割、图像分类、姿态识别、旋转目标检测、视频分析。</p>
+            <h3>多种任务</h3>
+            <p>目标检测、实例分割、图像分类、姿态识别、旋转目标检测，以及视频分析。</p>
           </article>
           <article class="feature-card">
-            <h3>导出到 engine</h3>
-            <p>YOLO 出 ONNX，<a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a> 转结构，trtexec 出 engine。</p>
+            <h3>三步出 engine</h3>
+            <p>导出 ONNX，<a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a> 转结构，再用 trtexec 构建。</p>
           </article>
           <article class="feature-card">
-            <h3>热路径在 GPU</h3>
-            <p>TensorRT 插件加强后处理，CUDA 核函数做前处理，CUDA 图回放推理。</p>
+            <h3>加速走 GPU</h3>
+            <p>TensorRT Plugin 加速后处理，CUDA Kernel 加速前处理，CUDA Graph 压低整体耗时。</p>
           </article>
           <article class="feature-card">
-            <h3>专业版更高吞吐</h3>
-            <p>同台 RTX 3080、YOLO11n FP16：Detect +19.8%，Segment +23.4%。<a href="pro/">看测速 →</a></p>
+            <h3>专业版更快</h3>
+            <p>同台 RTX 3080、YOLO11n FP16：Detect +19.8%，Segment +23.4%。<a href="pro/">看对比 →</a></p>
           </article>
         </div>
       </div>
@@ -97,32 +97,32 @@ result = model.predict(image)</code></pre>
     <section class="band" id="editions">
       <div class="wrap">
         <p class="kicker">版本</p>
-        <h2 class="section-title">按你的使用深度选择</h2>
-        <p class="section-lead">不写价格。专业版购买入口尚未开放。</p>
+        <h2 class="section-title">社区版现在就能用</h2>
+        <p class="section-lead">专业版闭源单独提供，购买入口尚未开放。</p>
         <div class="edition-grid">
           <article class="edition-card">
             <p class="tag">社区版</p>
             <h3>开源免费</h3>
             <p class="lead">GPL-3.0</p>
-            <p>适合把部署跑起来、二次开发与学习。</p>
+            <p>适合跑通部署、学习和二次开发。</p>
             <ul>
               <li>Detect / Segment / Classify / Pose / OBB</li>
               <li>C++ · Python，Linux · Windows</li>
               <li>TensorRT ≥ 8.6.1</li>
             </ul>
-            <a class="btn btn-primary" href="docs/">社区文档</a>
+            <a class="btn btn-primary" href="docs/">看文档</a>
           </article>
           <article class="edition-card pro">
             <p class="tag tag-pro">专业版</p>
-            <h3>闭源单独授权</h3>
+            <h3>更高吞吐</h3>
             <p class="lead">入口尚未开放</p>
-            <p>同一套任务，更高吞吐、更干净的会话模型。源码不在公开仓库。</p>
+            <p>同一套任务，会话更干净。源码不在公开仓库。</p>
             <ul>
               <li>Detect +19.8% / Segment +23.4% qps</li>
               <li>统一后处理插件，TensorRT ≥ 10</li>
               <li>加载一次，多次开推理会话</li>
             </ul>
-            <a class="btn btn-pro" href="pro/">测速与对比</a>
+            <a class="btn btn-pro" href="pro/">看对比</a>
           </article>
         </div>
       </div>
@@ -131,8 +131,8 @@ result = model.predict(image)</code></pre>
     <section class="install" id="start">
       <div class="wrap">
         <div class="install-panel">
-          <h2>先把转换工具装上</h2>
-          <p class="lede">权重先变成社区版可推理的 ONNX，再构建 engine。推理库的编译步骤见文档。</p>
+          <h2>从转换开始</h2>
+          <p class="lede">先把已导出的 ONNX 转成可推理结构，再按文档编译推理库、构建 engine。</p>
           <div class="install-cmd">$ pip install trtyolo-export</div>
           <div class="actions">
             <a class="btn btn-primary" href="docs/">社区文档</a>
@@ -148,7 +148,7 @@ result = model.predict(image)</code></pre>
     <div class="wrap footer-grid">
       <div class="footer-brand">
         <img src="assets/png/logo-no-background.png" alt="TensorRT-YOLO">
-        <p>专为 NVIDIA 设备设计的 YOLO 系列推理部署工具。</p>
+        <p>在 NVIDIA 设备上部署 YOLO 系列与变体。</p>
       </div>
       <div class="footer-col">
         <h3>产品</h3>

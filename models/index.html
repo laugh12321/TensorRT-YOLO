@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>模型支持 · TensorRT-YOLO</title>
-  <meta name="description" content="TensorRT-YOLO / trtyolo-export 支持的 YOLO 系列与任务：Detect、Segment、Classify、Pose、OBB。含 Ultralytics 主线，以及 YOLO-World、YOLOE、YOLO-Master 等变体。">
+  <meta name="description" content="TensorRT-YOLO 支持的 YOLO 系列与任务：Detect、Segment、Classify、Pose、OBB，以及 YOLO-World、YOLOE、YOLO-Master 等变体。">
   <link rel="stylesheet" href="../assets/site.css">
   <link rel="icon" type="image/png" href="../assets/png/logo-no-background.png">
 </head>
@@ -26,12 +26,12 @@
 
   <section class="page-hero">
     <div class="wrap">
-      <p class="tag">Model Zoo · trtyolo-export</p>
-      <h1>支持的 YOLO 系列与任务</h1>
+      <p class="tag">模型支持 · trtyolo-export</p>
+      <h1>YOLO 系列与任务</h1>
       <p class="lede">
-        官方转换工具 <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
-        把已导出的 YOLO ONNX 转成可推理结构。表与结构图对齐
-        <a href="https://github.com/laugh12321/trtyolo-export/blob/main/README.cn.md">README.cn.md</a>。
+        用 <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
+        把已导出的 YOLO ONNX 转成可推理结构。下表按系列和任务列出能否转换、能否直接推理，与
+        <a href="https://github.com/laugh12321/trtyolo-export/blob/main/README.cn.md">转换工具说明</a> 对齐。
       </p>
     </div>
   </section>
@@ -39,7 +39,7 @@
   <main class="wrap page">
 
     <h2 id="structure">转换结构</h2>
-    <p class="lede">转换后的 ONNX 针对 TensorRT 推理做了输出整理，并按任务接入对应插件。不同任务的图结构如下：</p>
+    <p class="lede">转换后会整理输出，并按任务挂上对应 TensorRT Plugin。各任务的图结构如下：</p>
     <img class="banner banner-wide" src="https://raw.githubusercontent.com/laugh12321/TensorRT-YOLO/main/assets/model-banner.png" alt="各任务转换后的 ONNX 结构">
 
     <h2 id="support-models">模型支持列表</h2>
@@ -254,11 +254,11 @@
         </tbody>
       </table>
     </div>
-    <p class="note">同一系列若有多行，表示官方仓库与 Ultralytics 导出路径都列了出来。青色圆点表示上游已带 NMS 等导出，通常不必再跑一遍 trtyolo-export。</p>
+    <p class="note">同一系列出现多行，表示官方仓库和 Ultralytics 两条导出路径都列了出来。青色圆点表示上游导出通常已能直接推理，不必再跑一遍 trtyolo-export。</p>
 
     <div class="actions">
-      <a class="btn btn-primary" href="../docs/#export">去看模型转换</a>
-      <a class="btn" href="https://github.com/laugh12321/trtyolo-export">trtyolo-export 仓库</a>
+      <a class="btn btn-primary" href="../docs/#export">看转换步骤</a>
+      <a class="btn" href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
     </div>
   </main>
 
@@ -266,7 +266,7 @@
     <div class="wrap footer-grid">
       <div class="footer-brand">
         <img src="../assets/png/logo-no-background.png" alt="TensorRT-YOLO">
-        <p>专为 NVIDIA 设备设计的 YOLO 系列推理部署工具。</p>
+        <p>在 NVIDIA 设备上部署 YOLO 系列与变体。</p>
       </div>
       <div class="footer-col">
         <h3>产品</h3>

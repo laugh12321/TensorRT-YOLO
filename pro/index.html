@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>专业版 · TensorRT-YOLO</title>
-  <meta name="description" content="TensorRT-YOLO 专业版相对社区版吞吐更高、路径更干净。闭源单独提供，购买入口尚未开放。">
+  <meta name="description" content="TensorRT-YOLO 专业版相对社区版吞吐更高。闭源单独提供，购买入口尚未开放。">
   <link rel="stylesheet" href="../assets/site.css">
   <link rel="icon" type="image/png" href="../assets/png/logo-no-background.png">
 </head>
@@ -27,8 +27,8 @@
   <section class="page-hero">
     <div class="wrap">
       <p class="tag tag-pro">专业版 · 闭源</p>
-      <h1>更快，也更好用</h1>
-      <p class="lede">对标测速与能力对比。源码不在公开仓库。购买入口尚未开放，开放后会写在本页与仓库 README。请勿在 Issues 询价。</p>
+      <h1>相对社区版，吞吐更高</h1>
+      <p class="lede">同一套任务，会话更干净。源码不在公开仓库。购买入口尚未开放，开放后会写在本页和仓库 README。</p>
     </div>
   </section>
 
@@ -36,19 +36,19 @@
     <section class="stats">
       <article class="stat">
         <div class="num">+19.8%</div>
-        <div class="label">Detect 墙钟吞吐（785.6 → 941.2 qps）</div>
+        <div class="label">Detect 墙钟吞吐，785.6 → 941.2 qps</div>
       </article>
       <article class="stat">
         <div class="num">+23.4%</div>
-        <div class="label">Segment 墙钟吞吐（251.5 → 310.5 qps）</div>
+        <div class="label">Segment 墙钟吞吐，251.5 → 310.5 qps</div>
       </article>
     </section>
     <p class="note">
-      YOLO11n FP16，NVIDIA RTX 3080，batch=1，C++ 热路径，warmup 20 次后 100 次迭代的墙钟吞吐中位数。
-      桌面合成约占用 1.1 GiB 显存，不是独占空卡。只测了 Detect / Segment。
+      条件：YOLO11n FP16，RTX 3080，batch=1，C++，warmup 20 次后跑 100 次，取墙钟吞吐中位数。
+      对比时桌面合成大约占用 1.1 GiB 显存，不是独占空卡。只测了 Detect / Segment。
     </p>
 
-    <h2>测速摘要</h2>
+    <h2>吞吐对比</h2>
     <table>
       <thead>
         <tr>
@@ -73,9 +73,9 @@
         </tr>
       </tbody>
     </table>
-    <p class="lede">同轮 GPU latency：Detect 1.250 ms → 1.010 ms，Segment 3.936 ms → 3.120 ms。专业版可看分阶段耗时，测速轮均启用 CUDA Graph。</p>
+    <p class="lede">同轮 GPU 延迟：Detect 1.250 ms → 1.010 ms，Segment 3.936 ms → 3.120 ms。专业版可以看分阶段耗时，这一轮对比都开了 CUDA Graph。</p>
 
-    <h2>工程能力</h2>
+    <h2>能力对比</h2>
     <table>
       <thead>
         <tr>
@@ -118,7 +118,7 @@
         <tr>
           <td>构建 engine</td>
           <td>Pose / Seg / OBB 还需把插件编进 engine</td>
-          <td>构建步骤更简单；社区版 engine 不能直接用，须重导出</td>
+          <td>构建步骤更简单；社区版 engine 不能直接用，需要重新导出</td>
         </tr>
         <tr>
           <td>CUDA Graph</td>
@@ -137,12 +137,12 @@
         </tr>
       </tbody>
     </table>
-    <p class="note">社区版 engine 不能直接给专业版用。须用当前 <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a> 重导出后再构建。</p>
+    <p class="note">社区版 engine 不能直接给专业版用，需要用当前的 <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a> 重新导出后再构建。</p>
 
     <div class="actions">
       <a class="btn btn-primary" href="../docs/">先用社区版</a>
       <a class="btn" href="../models/">模型支持</a>
-      <a class="btn" href="https://github.com/laugh12321/TensorRT-YOLO">给仓库点 Star</a>
+      <a class="btn" href="https://github.com/laugh12321/TensorRT-YOLO">Star</a>
     </div>
   </main>
 
@@ -150,7 +150,7 @@
     <div class="wrap footer-grid">
       <div class="footer-brand">
         <img src="../assets/png/logo-no-background.png" alt="TensorRT-YOLO">
-        <p>专为 NVIDIA 设备设计的 YOLO 系列推理部署工具。</p>
+        <p>在 NVIDIA 设备上部署 YOLO 系列与变体。</p>
       </div>
       <div class="footer-col">
         <h3>产品</h3>
