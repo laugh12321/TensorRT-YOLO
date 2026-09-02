@@ -61,33 +61,32 @@
       <li>TensorRT ≥ 8.6.1</li>
       <li>操作系统：推荐 Linux（x86_64 或 ARM），也支持 Windows</li>
     </ul>
-    <p>Windows 可参考：<a href="https://www.cnblogs.com/laugh12321/p/17830096.html">NVIDIA 环境</a>、<a href="https://www.cnblogs.com/laugh12321/p/17827624.html">C++ 环境</a>。</p>
 
     <h2 id="build">2. 编译安装</h2>
-    <pre><code>git clone https://github.com/laugh12321/TensorRT-YOLO
+    <pre data-lang="Shell"><code class="language-bash">git clone https://github.com/laugh12321/TensorRT-YOLO
 cd TensorRT-YOLO
 pip install "pybind11[global]"
 cmake -S . -B build -D TRT_PATH=/your/tensorrt/dir -D BUILD_PYTHON=ON -D CMAKE_INSTALL_PREFIX=/your/tensorrt-yolo/install/dir
 cmake --build build -j$(nproc) --config Release --target install</code></pre>
     <p>安装目录里有头文件、<code>trtyolo</code> 和 <code>custom_plugins</code>。构建 OBB / Segment / Pose 的 engine 时需要 TensorRT Plugin。把安装前缀加入 <code>PATH</code>，<code>find_package</code> 才能找到配置文件：</p>
-    <pre><code>export PATH=$PATH:/your/tensorrt-yolo/install/dir   # Linux
+    <pre data-lang="Shell"><code class="language-bash">export PATH=$PATH:/your/tensorrt-yolo/install/dir   # Linux
 # PowerShell
 $env:PATH = "$env:PATH;C:\your\tensorrt-yolo\install\dir;C:\your\tensorrt-yolo\install\dir\bin"</code></pre>
     <p>若编译时打开了 <code>BUILD_PYTHON</code>，再装 Python 包：</p>
-    <pre><code>pip install --upgrade build
+    <pre data-lang="Shell"><code class="language-bash">pip install --upgrade build
 python -m build --wheel
 pip install dist/trtyolo-*-py3-none-any.whl</code></pre>
 
     <h2 id="export">3. 模型转换</h2>
     <p>先把权重导出为 ONNX，再用 <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a> 转结构，最后用 <code>trtexec</code> 出 engine。各系列和任务能否转换，见 <a href="../models/">模型支持</a>。Detect 示例：</p>
-    <pre><code>yolo export model=models/yolo11n.pt format=onnx batch=1
+    <pre data-lang="Shell"><code class="language-bash">yolo export model=models/yolo11n.pt format=onnx batch=1
 trtyolo-export -i models/yolo11n.onnx -o models/yolo11n-trtyolo.onnx -s
 trtexec --onnx=models/yolo11n-trtyolo.onnx --saveEngine=models/yolo11n.engine --fp16</code></pre>
     <p>Pose / Segment / OBB 构建 engine 时还要加上 <code>--staticPlugins</code> 和 <code>--setPluginsToSerialize</code>，指向安装目录里的 <code>libcustom_plugins</code>。各任务完整命令见仓库 <a href="https://github.com/laugh12321/TensorRT-YOLO/tree/dev/examples">examples</a>。</p>
 
     <h2 id="python">4. Python 推理</h2>
     <p><code>task</code> 必须和导出时的任务一致。</p>
-    <pre><code>import cv2
+    <pre data-lang="Python"><code class="language-python">import cv2
 import supervision as sv
 from trtyolo import TRTYOLO
 
@@ -102,7 +101,7 @@ throughput, cpu_latency, gpu_latency = model.profile()
 cloned_model = model.clone()</code></pre>
 
     <h2 id="cpp">5. C++ 推理</h2>
-    <pre><code>#include &lt;memory&gt;
+    <pre data-lang="C++"><code class="language-cpp">#include &lt;memory&gt;
 #include &lt;opencv2/opencv.hpp&gt;
 #include "trtyolo.hpp"
 
@@ -151,5 +150,6 @@ int main() {
     </div>
     <div class="wrap footer-bar">社区版 GPL-3.0 · 专业版单独授权</div>
   </footer>
+  <script src="../assets/prism.js"></script>
 </body>
 </html>

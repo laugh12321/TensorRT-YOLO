@@ -7,6 +7,7 @@
   --muted: #8aa4bb;
   --blue: #0074d9;
   --blue-deep: #0059a5;
+  --blue-bright: #4da3ff;
   --cyan: #3dd3ff;
   --nvidia: #76B900;
   --nvidia-deep: #4d7a00;
@@ -473,6 +474,23 @@ pre {
   line-height: 1.5;
 }
 
+pre[data-lang] {
+  position: relative;
+  padding-top: 34px;
+}
+
+pre[data-lang]::before {
+  content: attr(data-lang);
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 code { color: #c9e9ff; }
 
 p code, li code {
@@ -480,6 +498,64 @@ p code, li code {
   padding: 1px 6px;
   border-radius: 6px;
   font-size: 0.9em;
+}
+
+.token.comment,
+.token.prolog {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.token.punctuation,
+.token.operator {
+  color: #9bb6cc;
+}
+
+.token.keyword,
+.token.atrule,
+.token.important,
+.token.directive-hash,
+.token.directive.keyword {
+  color: var(--blue-bright);
+}
+
+.token.function,
+.token.builtin,
+.token.property,
+.token.attr-name,
+.token.selector {
+  color: var(--cyan);
+}
+
+.token.class-name,
+.token.boolean,
+.token.constant,
+.token.symbol,
+.token.environment,
+.token.macro {
+  color: var(--cyan);
+}
+
+.token.string,
+.token.char,
+.token.attr-value,
+.token.number,
+.token.regex {
+  color: var(--nvidia);
+}
+
+.token.variable,
+.token.parameter {
+  color: var(--text);
+}
+
+.token.tag,
+.token.deleted {
+  color: var(--blue-bright);
+}
+
+.token.inserted {
+  color: var(--nvidia);
 }
 
 .toc {
