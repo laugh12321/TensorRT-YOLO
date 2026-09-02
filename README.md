@@ -254,7 +254,7 @@ pip install dist/trtyolo-6.*-py3-none-any.whl
 
 <a id="社区版与专业版"></a>
 
-## <div align="center">🆚 社区版与专业版</div>
+## <div align="center">⚔️ 社区版与专业版</div>
 
 专业版相对社区版 6.4 不是小版本 bump，而是整条推理面重写。同一台 RTX 3080、YOLO11n FP16、batch=1 的 C++ 测速下，专业版墙钟吞吐更高：
 

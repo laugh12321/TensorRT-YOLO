@@ -246,7 +246,7 @@ Simply pass the image to be inferred to the `predict` method. The `predict` meth
 
 <a id="community-vs-professional-edition"></a>
 
-## <div align="center">🆚 Community vs Professional Edition</div>
+## <div align="center">⚔️ Community vs Professional Edition</div>
 
 Professional Edition is a rewrite of the Community 6.4 inference surface, not a small bump. On the same RTX 3080, YOLO11n FP16, batch=1 C++ benchmark, Professional Edition has higher wall-clock throughput:
 
