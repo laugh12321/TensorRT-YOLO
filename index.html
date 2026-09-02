@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TensorRT-YOLO · 易用灵活，极致高效</title>
+  <meta name="description" content="TensorRT-YOLO 是一款专为 NVIDIA 设备设计的易用灵活、极致高效的 YOLO 系列推理部署工具。社区版开源，专业版闭源单独提供。">
+  <link rel="stylesheet" href="assets/site.css">
+  <link rel="icon" type="image/png" href="assets/png/logo-no-background.png">
+</head>
+<body>
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="./">
+        <img src="assets/png/logo-no-background.png" alt="TensorRT-YOLO">
+      </a>
+      <nav class="nav-links">
+        <a class="active" href="./">首页</a>
+        <a href="models/">模型支持</a>
+        <a href="pro/">专业版</a>
+        <a href="docs/">社区文档</a>
+      </nav>
+      <a class="btn btn-gh" href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-split">
+        <div>
+          <h1>YOLO 部署。<br><em>专为 NVIDIA。</em></h1>
+          <p class="hero-sub">易用灵活、极致高效的 YOLO 系列推理部署工具。TensorRT 插件做后处理，CUDA 核函数与 CUDA 图压低推理耗时，C++ / Python 开箱即用。</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="docs/">开始使用</a>
+            <a class="btn" href="https://github.com/laugh12321/TensorRT-YOLO">查看仓库</a>
+          </div>
+        </div>
+        <div class="hero-panel">
+          <div class="code-head"><span>quickstart.py</span><span>社区版</span></div>
+          <pre><code>from trtyolo import TRTYOLO
+
+model = TRTYOLO("yolo11n.engine", task="detect")
+result = model.predict(image)</code></pre>
+          <img class="hero-shot" src="https://raw.githubusercontent.com/laugh12321/TensorRT-YOLO/main/assets/task-banner.png" alt="目标检测、分割、分类、姿态、旋转框">
+        </div>
+      </div>
+    </section>
+
+    <section class="support-strip" id="support">
+      <div class="wrap">
+        <div>
+          <p class="kicker">支持</p>
+          <p>使用问题请开 GitHub Issues。喜欢这个项目可以点 Star 或赞助。请勿在 Issues 里询价。</p>
+        </div>
+        <div class="actions">
+          <a class="btn btn-primary" href="https://github.com/laugh12321/TensorRT-YOLO">Star</a>
+          <a class="btn" href="https://github.com/laugh12321/TensorRT-YOLO/issues">Issues</a>
+          <a class="btn" href="https://afdian.com/a/laugh12321">赞助</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="workflow">
+      <div class="wrap">
+        <p class="kicker">一条路径</p>
+        <h2 class="section-title">一套工具，覆盖导出到推理</h2>
+        <p class="section-lead">社区版把常用任务装上就能跑。专业版同一套任务，吞吐更高、会话更干净。</p>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <h3>社区版 · GPL-3.0</h3>
+            <p>公开仓库默认分支。C++ 单头文件，Python 一次 <code>predict</code>。TensorRT ≥ 8.6.1。</p>
+          </article>
+          <article class="feature-card">
+            <h3>C++ / Python</h3>
+            <p>同一条推理路径。Linux、Windows，x64 与 ARM。接口按开箱即用来做。</p>
+          </article>
+          <article class="feature-card">
+            <h3>六种任务</h3>
+            <p>目标检测、实例分割、图像分类、姿态识别、旋转目标检测、视频分析。</p>
+          </article>
+          <article class="feature-card">
+            <h3>导出到 engine</h3>
+            <p>YOLO 出 ONNX，<a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a> 转结构，trtexec 出 engine。</p>
+          </article>
+          <article class="feature-card">
+            <h3>热路径在 GPU</h3>
+            <p>TensorRT 插件加强后处理，CUDA 核函数做前处理，CUDA 图回放推理。</p>
+          </article>
+          <article class="feature-card">
+            <h3>专业版更高吞吐</h3>
+            <p>同台 RTX 3080、YOLO11n FP16：Detect +19.8%，Segment +23.4%。<a href="pro/">看测速 →</a></p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="editions">
+      <div class="wrap">
+        <p class="kicker">版本</p>
+        <h2 class="section-title">按你的使用深度选择</h2>
+        <p class="section-lead">不写价格。专业版购买入口尚未开放。</p>
+        <div class="edition-grid">
+          <article class="edition-card">
+            <p class="tag">社区版</p>
+            <h3>开源免费</h3>
+            <p class="lead">GPL-3.0</p>
+            <p>适合把部署跑起来、二次开发与学习。</p>
+            <ul>
+              <li>Detect / Segment / Classify / Pose / OBB</li>
+              <li>C++ · Python，Linux · Windows</li>
+              <li>TensorRT ≥ 8.6.1</li>
+            </ul>
+            <a class="btn btn-primary" href="docs/">社区文档</a>
+          </article>
+          <article class="edition-card pro">
+            <p class="tag tag-pro">专业版</p>
+            <h3>闭源单独授权</h3>
+            <p class="lead">入口尚未开放</p>
+            <p>同一套任务，更高吞吐、更干净的会话模型。源码不在公开仓库。</p>
+            <ul>
+              <li>Detect +19.8% / Segment +23.4% qps</li>
+              <li>统一后处理插件，TensorRT ≥ 10</li>
+              <li>加载一次，多次开推理会话</li>
+            </ul>
+            <a class="btn btn-pro" href="pro/">测速与对比</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="install" id="start">
+      <div class="wrap">
+        <div class="install-panel">
+          <h2>先把转换工具装上</h2>
+          <p class="lede">权重先变成社区版可推理的 ONNX，再构建 engine。推理库的编译步骤见文档。</p>
+          <div class="install-cmd">$ pip install trtyolo-export</div>
+          <div class="actions">
+            <a class="btn btn-primary" href="docs/">社区文档</a>
+            <a class="btn" href="models/">模型支持</a>
+            <a class="btn" href="pro/">专业版</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div class="footer-brand">
+        <img src="assets/png/logo-no-background.png" alt="TensorRT-YOLO">
+        <p>专为 NVIDIA 设备设计的 YOLO 系列推理部署工具。</p>
+      </div>
+      <div class="footer-col">
+        <h3>产品</h3>
+        <a href="./">首页</a>
+        <a href="models/">模型支持</a>
+        <a href="pro/">专业版</a>
+        <a href="docs/">社区文档</a>
+      </div>
+      <div class="footer-col">
+        <h3>资源</h3>
+        <a href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
+        <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
+        <a href="https://github.com/laugh12321/TensorRT-YOLO/issues">Issues</a>
+        <a href="https://afdian.com/a/laugh12321">赞助</a>
+      </div>
+      <div class="footer-col">
+        <h3>许可</h3>
+        <span>社区版 GPL-3.0</span>
+        <span>专业版单独授权</span>
+      </div>
+    </div>
+    <div class="wrap footer-bar">社区版 GPL-3.0 · 专业版单独授权</div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>专业版 · TensorRT-YOLO</title>
+  <meta name="description" content="TensorRT-YOLO 专业版相对社区版吞吐更高、路径更干净。闭源单独提供，购买入口尚未开放。">
+  <link rel="stylesheet" href="../assets/site.css">
+  <link rel="icon" type="image/png" href="../assets/png/logo-no-background.png">
+</head>
+<body>
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="../">
+        <img src="../assets/png/logo-no-background.png" alt="TensorRT-YOLO">
+      </a>
+      <nav class="nav-links">
+        <a href="../">首页</a>
+        <a href="../models/">模型支持</a>
+        <a class="active" href="./">专业版</a>
+        <a href="../docs/">社区文档</a>
+      </nav>
+      <a class="btn btn-gh" href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
+    </div>
+  </header>
+
+  <section class="page-hero">
+    <div class="wrap">
+      <p class="tag tag-pro">专业版 · 闭源</p>
+      <h1>更快，也更好用</h1>
+      <p class="lede">对标测速与能力对比。源码不在公开仓库。购买入口尚未开放，开放后会写在本页与仓库 README。请勿在 Issues 询价。</p>
+    </div>
+  </section>
+
+  <main class="wrap page">
+    <section class="stats">
+      <article class="stat">
+        <div class="num">+19.8%</div>
+        <div class="label">Detect 墙钟吞吐（785.6 → 941.2 qps）</div>
+      </article>
+      <article class="stat">
+        <div class="num">+23.4%</div>
+        <div class="label">Segment 墙钟吞吐（251.5 → 310.5 qps）</div>
+      </article>
+    </section>
+    <p class="note">
+      YOLO11n FP16，NVIDIA RTX 3080，batch=1，C++ 热路径，warmup 20 次后 100 次迭代的墙钟吞吐中位数。
+      桌面合成约占用 1.1 GiB 显存，不是独占空卡。只测了 Detect / Segment。
+    </p>
+
+    <h2>测速摘要</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>任务</th>
+          <th>社区版</th>
+          <th>专业版</th>
+          <th>吞吐</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Detect</td>
+          <td>785.6 qps（1.273 ms）</td>
+          <td><strong>941.2 qps（1.063 ms）</strong></td>
+          <td><strong>+19.8%</strong></td>
+        </tr>
+        <tr>
+          <td>Segment</td>
+          <td>251.5 qps（3.976 ms）</td>
+          <td><strong>310.5 qps（3.221 ms）</strong></td>
+          <td><strong>+23.4%</strong></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="lede">同轮 GPU latency：Detect 1.250 ms → 1.010 ms，Segment 3.936 ms → 3.120 ms。专业版可看分阶段耗时，测速轮均启用 CUDA Graph。</p>
+
+    <h2>工程能力</h2>
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>社区版</th>
+          <th>专业版</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>公开接口</td>
+          <td><code>InferOption</code> + 按任务拆的 Model；一次 <code>predict</code></td>
+          <td>加载一次模型，多次开推理会话；按帧读取结果</td>
+        </tr>
+        <tr>
+          <td>多会话</td>
+          <td>再开会话要复制实例</td>
+          <td>已加载的模型上直接开多会话，不重复加载</td>
+        </tr>
+        <tr>
+          <td>头文件</td>
+          <td><code>#include "trtyolo.hpp"</code></td>
+          <td>单一公开头</td>
+        </tr>
+        <tr>
+          <td>Python 任务</td>
+          <td>必须手填 <code>task=</code>，且与导出一致</td>
+          <td>默认同 engine 推断，可覆盖</td>
+        </tr>
+        <tr>
+          <td>TensorRT</td>
+          <td>≥ 8.6.1</td>
+          <td><strong>≥ 10</strong>（硬下限）</td>
+        </tr>
+        <tr>
+          <td>后处理插件</td>
+          <td>检测走内置 NMS；Pose / Seg / OBB 各有插件</td>
+          <td>一套插件覆盖 Detect / Pose / Seg / OBB</td>
+        </tr>
+        <tr>
+          <td>构建 engine</td>
+          <td>Pose / Seg / OBB 还需把插件编进 engine</td>
+          <td>构建步骤更简单；社区版 engine 不能直接用，须重导出</td>
+        </tr>
+        <tr>
+          <td>CUDA Graph</td>
+          <td>首次推理会把 capture 算进性能报告，且无法只看稳态</td>
+          <td>库内自动回放，调用方无感知</td>
+        </tr>
+        <tr>
+          <td>性能统计</td>
+          <td>粗粒度，吞吐含 warmup</td>
+          <td>可重置后只统计稳态，可看分阶段 GPU 耗时</td>
+        </tr>
+        <tr>
+          <td>源码与许可</td>
+          <td>公开仓库，GPL-3.0</td>
+          <td>闭源，单独授权</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="note">社区版 engine 不能直接给专业版用。须用当前 <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a> 重导出后再构建。</p>
+
+    <div class="actions">
+      <a class="btn btn-primary" href="../docs/">先用社区版</a>
+      <a class="btn" href="../models/">模型支持</a>
+      <a class="btn" href="https://github.com/laugh12321/TensorRT-YOLO">给仓库点 Star</a>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div class="footer-brand">
+        <img src="../assets/png/logo-no-background.png" alt="TensorRT-YOLO">
+        <p>专为 NVIDIA 设备设计的 YOLO 系列推理部署工具。</p>
+      </div>
+      <div class="footer-col">
+        <h3>产品</h3>
+        <a href="../">首页</a>
+        <a href="../models/">模型支持</a>
+        <a href="./">专业版</a>
+        <a href="../docs/">社区文档</a>
+      </div>
+      <div class="footer-col">
+        <h3>资源</h3>
+        <a href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
+        <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
+        <a href="https://github.com/laugh12321/TensorRT-YOLO/issues">Issues</a>
+        <a href="https://afdian.com/a/laugh12321">赞助</a>
+      </div>
+      <div class="footer-col">
+        <h3>许可</h3>
+        <span>社区版 GPL-3.0</span>
+        <span>专业版单独授权</span>
+      </div>
+    </div>
+    <div class="wrap footer-bar">社区版 GPL-3.0 · 专业版单独授权</div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>模型支持 · TensorRT-YOLO</title>
+  <meta name="description" content="TensorRT-YOLO / trtyolo-export 支持的 YOLO 系列与任务：Detect、Segment、Classify、Pose、OBB。含 Ultralytics 主线，以及 YOLO-World、YOLOE、YOLO-Master 等变体。">
+  <link rel="stylesheet" href="../assets/site.css">
+  <link rel="icon" type="image/png" href="../assets/png/logo-no-background.png">
+</head>
+<body>
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="../">
+        <img src="../assets/png/logo-no-background.png" alt="TensorRT-YOLO">
+      </a>
+      <nav class="nav-links">
+        <a href="../">首页</a>
+        <a class="active" href="./">模型支持</a>
+        <a href="../pro/">专业版</a>
+        <a href="../docs/">社区文档</a>
+      </nav>
+      <a class="btn btn-gh" href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
+    </div>
+  </header>
+
+  <section class="page-hero">
+    <div class="wrap">
+      <p class="tag">Model Zoo · trtyolo-export</p>
+      <h1>支持的 YOLO 系列与任务</h1>
+      <p class="lede">
+        官方转换工具 <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
+        把已导出的 YOLO ONNX 转成可推理结构。表与结构图对齐
+        <a href="https://github.com/laugh12321/trtyolo-export/blob/main/README.cn.md">README.cn.md</a>。
+      </p>
+    </div>
+  </section>
+
+  <main class="wrap page">
+
+    <h2 id="structure">转换结构</h2>
+    <p class="lede">转换后的 ONNX 针对 TensorRT 推理做了输出整理，并按任务接入对应插件。不同任务的图结构如下：</p>
+    <img class="banner banner-wide" src="https://raw.githubusercontent.com/laugh12321/TensorRT-YOLO/main/assets/model-banner.png" alt="各任务转换后的 ONNX 结构">
+
+    <h2 id="support-models">模型支持列表</h2>
+    <div class="legend">
+      <span><i class="mark mark-ok">✓</i> 可转换且可推理</span>
+      <span><i class="mark mark-up">●</i> 上游或仓库导出路径可直接推理</span>
+      <span><i class="mark mark-na">—</i> 该任务不提供</span>
+    </div>
+    <div class="table-wrap">
+      <table class="support-table">
+        <thead>
+          <tr>
+            <th>YOLO 系列</th>
+            <th>来源仓库</th>
+            <th>Detect</th>
+            <th>Segment</th>
+            <th>Classify</th>
+            <th>Pose</th>
+            <th>OBB</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>YOLOv3</td>
+            <td><a href="https://github.com/ultralytics/yolov3">ultralytics/yolov3</a></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+          </tr>
+          <tr>
+            <td>YOLOv3</td>
+            <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+          </tr>
+          <tr>
+            <td>YOLOv5</td>
+            <td><a href="https://github.com/ultralytics/yolov5">ultralytics/yolov5</a></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+          </tr>
+          <tr>
+            <td>YOLOv5</td>
+            <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+          </tr>
+          <tr>
+            <td>YOLOv6</td>
+            <td><a href="https://github.com/meituan/YOLOv6">meituan/YOLOv6</a></td>
+            <td><i class="mark mark-up">●</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+          </tr>
+          <tr>
+            <td>YOLOv6</td>
+            <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+          </tr>
+          <tr>
+            <td>YOLOv7</td>
+            <td><a href="https://github.com/WongKinYiu/yolov7">WongKinYiu/yolov7</a></td>
+            <td><i class="mark mark-up">●</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+          </tr>
+          <tr>
+            <td>YOLOv8</td>
+            <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+          </tr>
+          <tr>
+            <td>YOLOv9</td>
+            <td><a href="https://github.com/WongKinYiu/yolov9">WongKinYiu/yolov9</a></td>
+            <td><i class="mark mark-up">●</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+          </tr>
+          <tr>
+            <td>YOLOv9</td>
+            <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+          </tr>
+          <tr>
+            <td>YOLOv10</td>
+            <td><a href="https://github.com/THU-MIG/yolov10">THU-MIG/yolov10</a></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+          </tr>
+          <tr>
+            <td>YOLOv10</td>
+            <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+          </tr>
+          <tr>
+            <td>YOLO11</td>
+            <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+          </tr>
+          <tr>
+            <td>YOLO12</td>
+            <td><a href="https://github.com/sunsmarterjie/yolov12">sunsmarterjie/yolov12</a></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+          </tr>
+          <tr>
+            <td>YOLO12</td>
+            <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+          </tr>
+          <tr>
+            <td>YOLO13</td>
+            <td><a href="https://github.com/iMoonLab/yolov13">iMoonLab/yolov13</a></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+          </tr>
+          <tr>
+            <td>YOLO26</td>
+            <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+          </tr>
+          <tr>
+            <td>YOLO-World</td>
+            <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+          </tr>
+          <tr>
+            <td>YOLOE</td>
+            <td><a href="https://github.com/THU-MIG/yoloe">THU-MIG/yoloe</a></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+          </tr>
+          <tr>
+            <td>YOLOE</td>
+            <td><a href="https://github.com/ultralytics/ultralytics">ultralytics/ultralytics</a></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+          </tr>
+          <tr>
+            <td>YOLO-Master</td>
+            <td><a href="https://github.com/isLinXu/YOLO-Master">isLinXu/YOLO-Master</a></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-ok">✓</i></td>
+            <td><i class="mark mark-na">—</i></td>
+            <td><i class="mark mark-na">—</i></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">同一系列若有多行，表示官方仓库与 Ultralytics 导出路径都列了出来。青色圆点表示上游已带 NMS 等导出，通常不必再跑一遍 trtyolo-export。</p>
+
+    <div class="actions">
+      <a class="btn btn-primary" href="../docs/#export">去看模型转换</a>
+      <a class="btn" href="https://github.com/laugh12321/trtyolo-export">trtyolo-export 仓库</a>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div class="footer-brand">
+        <img src="../assets/png/logo-no-background.png" alt="TensorRT-YOLO">
+        <p>专为 NVIDIA 设备设计的 YOLO 系列推理部署工具。</p>
+      </div>
+      <div class="footer-col">
+        <h3>产品</h3>
+        <a href="../">首页</a>
+        <a href="./">模型支持</a>
+        <a href="../pro/">专业版</a>
+        <a href="../docs/">社区文档</a>
+      </div>
+      <div class="footer-col">
+        <h3>资源</h3>
+        <a href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
+        <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
+        <a href="https://github.com/laugh12321/TensorRT-YOLO/issues">Issues</a>
+        <a href="https://afdian.com/a/laugh12321">赞助</a>
+      </div>
+      <div class="footer-col">
+        <h3>许可</h3>
+        <span>社区版 GPL-3.0</span>
+        <span>专业版单独授权</span>
+      </div>
+    </div>
+    <div class="wrap footer-bar">社区版 GPL-3.0 · 专业版单独授权</div>
+  </footer>
+</body>
+</html>
