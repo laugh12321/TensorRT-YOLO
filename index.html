@@ -4,22 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script>(function(){try{if(localStorage.getItem("trtyolo-lang")==="en")document.documentElement.lang="en";}catch(e){}})();</script>
-  <title data-zh="TensorRT-YOLO · 易用灵活，极致高效" data-en="TensorRT-YOLO · Easy, flexible, fast">TensorRT-YOLO · 易用灵活，极致高效</title>
-  <meta name="description" data-zh="TensorRT-YOLO 是一款专为 NVIDIA 设备设计的易用灵活、极致高效的 YOLO 系列推理部署工具。社区版开源，专业版闭源单独提供。" data-en="TensorRT-YOLO is an easy, flexible, and high-performance YOLO inference toolkit for NVIDIA devices. Community is open source; Pro is closed source and sold separately." content="TensorRT-YOLO 是一款专为 NVIDIA 设备设计的易用灵活、极致高效的 YOLO 系列推理部署工具。社区版开源，专业版闭源单独提供。">
+  <title data-zh="TensorRT-YOLO · 专为 NVIDIA · 灵活易用 · 极致速度" data-en="TensorRT-YOLO · Easier and faster YOLO deployment. Built for NVIDIA.">TensorRT-YOLO · 专为 NVIDIA · 灵活易用 · 极致速度</title>
+  <meta name="description" data-zh="专为 NVIDIA 设备设计的、灵活易用、极致高效的 YOLO 系列推理部署工具。社区版开源，专业版闭源单独提供。" data-en="Easier and faster YOLO deployment toolkit built for NVIDIA. Community is open source; Pro is closed source and sold separately." content="专为 NVIDIA 设备设计的、灵活易用、极致高效的 YOLO 系列推理部署工具。社区版开源，专业版闭源单独提供。">
   <link rel="stylesheet" href="assets/site.css">
   <link rel="icon" type="image/png" href="assets/png/logo-no-background.png">
+  <noscript><style>[data-reveal]{opacity:1;transform:none}</style></noscript>
 </head>
 <body>
   <header class="nav">
     <div class="wrap nav-inner">
       <a class="brand" href="./">
-        <img src="assets/png/logo-no-background.png" alt="TensorRT-YOLO">
+        <img src="assets/svg/logo-no-background.svg" alt="TensorRT-YOLO">
       </a>
       <nav class="nav-links">
-        <a class="active" href="./"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#home"></use></svg><span class="zh">首页</span><span class="en">Home</span></a>
-        <a href="models/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#grid"></use></svg><span class="zh">模型支持</span><span class="en">Models</span></a>
-        <a href="pro/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#gauge"></use></svg><span class="zh">专业版</span><span class="en">Pro</span></a>
-        <a href="docs/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#book"></use></svg><span class="zh">社区文档</span><span class="en">Docs</span></a>
+        <a class="active" href="./"><span class="zh">首页</span><span class="en">Home</span></a>
+        <a href="models/"><span class="zh">模型支持</span><span class="en">Models</span></a>
+        <a href="pro/"><span class="zh">专业版</span><span class="en">Pro</span></a>
+        <a href="docs/"><span class="zh">社区文档</span><span class="en">Docs</span></a>
       </nav>
       <div class="nav-actions">
         <div class="lang-switch" role="group" aria-label="Language">
@@ -38,21 +39,21 @@
   <main>
     <section class="hero">
       <div class="wrap hero-split">
-        <div>
+        <div data-reveal>
           <h1>
-            <span class="zh">YOLO 部署<br><em>专为 NVIDIA</em></span>
-            <span class="en">YOLO inference<br><em>Built for NVIDIA</em></span>
+            <span class="zh">专为 <em class="accent-nvidia">NVIDIA</em><br>灵活易用 · 极致速度</span>
+            <span class="en">Easier. Faster.<br>Built for <em class="accent-nvidia">NVIDIA</em>.</span>
           </h1>
           <p class="hero-sub">
-            <span class="zh">易用灵活、极致高效的 YOLO 系列推理部署工具。TensorRT Plugin 做后处理，CUDA Kernel 与 CUDA Graph 压低推理耗时，开箱即用，覆盖 YOLO 系列与变体。</span>
-            <span class="en">An easy, flexible, and high-performance toolkit for deploying YOLO models. TensorRT plugins handle post-processing; CUDA kernels and CUDA Graphs cut latency. Ready to use across YOLO families and variants.</span>
+            <span class="zh">专为 NVIDIA 设备设计的 YOLO 系列推理部署工具：灵活易用，把模型跑到最快。<span class="evidence">TensorRT Plugin、CUDA Kernel 与 CUDA Graph 压低整条推理路径的耗时。</span></span>
+            <span class="en">An easier, faster YOLO deployment toolkit built for NVIDIA devices.<span class="evidence">TensorRT plugins, CUDA kernels, and CUDA Graphs cut latency across the inference path.</span></span>
           </p>
           <div class="actions">
             <a class="btn btn-primary" href="docs/"><span class="zh">开始使用</span><span class="en">Get started</span><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#arrow-right"></use></svg></a>
-            <a class="btn" href="https://github.com/laugh12321/TensorRT-YOLO"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#github"></use></svg>GitHub</a>
+            <a class="btn btn-ghost" href="pro/"><span class="zh">看专业版</span><span class="en">See Pro</span></a>
           </div>
         </div>
-        <div class="hero-panel">
+        <div class="hero-panel" data-reveal style="--reveal-delay: 80ms">
           <div class="code-head">
             <span>quickstart.py</span>
             <span class="code-head-meta">
@@ -73,94 +74,120 @@ result = model.predict(image)</code></pre>
       </div>
     </section>
 
-    <section class="support-strip" id="support">
-      <div class="wrap">
-        <div>
-          <p class="kicker"><span class="zh">支持</span><span class="en">Support</span></p>
-          <p>
-            <span class="zh">最好的支持方式就是<a href="https://github.com/laugh12321/TensorRT-YOLO">给仓库点个 Star</a>。遇到问题或有建议，欢迎<a href="https://github.com/laugh12321/TensorRT-YOLO/issues">提交 issue</a>。</span>
-            <span class="en">The best way to support the project is to <a href="https://github.com/laugh12321/TensorRT-YOLO">star the repo</a>. Questions and ideas are welcome in <a href="https://github.com/laugh12321/TensorRT-YOLO/issues">issues</a>.</span>
+    <section class="chapter" id="nvidia">
+      <div class="wrap chapter-split">
+        <div data-reveal>
+          <div class="pillar-icon pillar-icon-nvidia" aria-hidden="true">
+            <svg class="icon icon-lg" viewBox="0 0 24 24"><use href="assets/icons.svg#gpu"></use></svg>
+          </div>
+          <p class="kicker kicker-nvidia"><span class="zh">专为 NVIDIA</span><span class="en">Built for NVIDIA</span></p>
+          <h2><span class="zh">为 NVIDIA 设备而生</span><span class="en">Designed for NVIDIA hardware</span></h2>
+          <p class="section-lead">
+            <span class="zh">不是通用框架的适配层。运行时、插件与图捕获都按 NVIDIA GPU 来设计，在 Linux / Windows、x64 / ARM 上同一套接口。</span>
+            <span class="en">Not a generic adapter. The runtime, plugins, and graph capture are built for NVIDIA GPUs — one API on Linux / Windows, x64 / ARM.</span>
           </p>
         </div>
-        <div class="actions">
-          <a class="btn btn-primary" href="https://github.com/laugh12321/TensorRT-YOLO"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#star"></use></svg>Star</a>
-          <a class="btn" href="https://github.com/laugh12321/TensorRT-YOLO/issues"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#issues"></use></svg>Issues</a>
-          <a class="btn" href="https://afdian.com/a/laugh12321"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#heart"></use></svg><span class="zh">赞助</span><span class="en">Sponsor</span></a>
-        </div>
+        <ul class="proof-list">
+          <li data-reveal style="--reveal-delay: 60ms">
+            <svg class="icon icon-lg accent-nvidia" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#check"></use></svg>
+            <div>
+              <h3>TensorRT ≥ 8.6.1</h3>
+              <p><span class="zh">社区版硬下限。专业版要求 TensorRT ≥ 10。</span><span class="en">Community floor. Pro requires TensorRT ≥ 10.</span></p>
+            </div>
+          </li>
+          <li data-reveal style="--reveal-delay: 130ms">
+            <svg class="icon icon-lg accent-nvidia" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#check"></use></svg>
+            <div>
+              <h3>CUDA Graph</h3>
+              <p><span class="zh">把启动开销压下去，让 GPU 走稳态。</span><span class="en">Cuts launch overhead so the GPU stays in steady state.</span></p>
+            </div>
+          </li>
+          <li data-reveal style="--reveal-delay: 200ms">
+            <svg class="icon icon-lg accent-nvidia" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#check"></use></svg>
+            <div>
+              <h3><span class="zh">专为 NVIDIA 设备</span><span class="en">NVIDIA devices only</span></h3>
+              <p><span class="zh">TensorRT Plugin 做后处理，CUDA Kernel 做前处理。</span><span class="en">TensorRT plugins for post-process, CUDA kernels for pre-process.</span></p>
+            </div>
+          </li>
+        </ul>
       </div>
     </section>
 
-    <section class="band" id="workflow">
+    <section class="chapter" id="fastest">
       <div class="wrap">
-        <p class="kicker"><span class="zh">能力</span><span class="en">Capabilities</span></p>
-        <h2 class="section-title"><span class="zh">一套工具，覆盖导出到推理</span><span class="en">One toolkit from export to inference</span></h2>
-        <p class="section-lead">
-          <span class="zh">社区版现在就能把常用任务跑起来。需要更高吞吐时，再看专业版。</span>
-          <span class="en">Community covers the common tasks today. Need more throughput? See Pro.</span>
-        </p>
-        <div class="feature-grid">
-          <article class="feature-card">
-            <div class="feature-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><use href="assets/icons.svg#zap"></use></svg></div>
-            <h3><span class="zh">开箱即用</span><span class="en">Ready to use</span></h3>
-            <p>
-              <span class="zh">C++ 一个头文件，Python 一次 <code>predict</code>。社区版 GPL-3.0，TensorRT ≥ 8.6.1。</span>
-              <span class="en">One C++ header, one Python <code>predict</code>. Community is GPL-3.0, TensorRT ≥ 8.6.1.</span>
-            </p>
+        <div data-reveal>
+          <div class="pillar-icon pillar-icon-speed" aria-hidden="true">
+            <svg class="icon icon-lg" viewBox="0 0 24 24"><use href="assets/icons.svg#zap"></use></svg>
+          </div>
+          <p class="kicker kicker-nvidia"><span class="zh">极致速度</span><span class="en">Fastest</span></p>
+          <h2><span class="zh">专业版，同卡更快</span><span class="en">Pro. Faster on the same GPU.</span></h2>
+          <p class="section-lead">
+            <span class="zh">同一台 RTX 3080、YOLO11n FP16。社区版已经很快；专业版把 Detect 和 Segment 再往前推。</span>
+            <span class="en">Same RTX 3080, YOLO11n FP16. Community is already fast. Pro pushes Detect and Segment further.</span>
+          </p>
+        </div>
+        <div class="speed-stats">
+          <a class="speed-stat" href="pro/" data-reveal style="--reveal-delay: 70ms">
+            <div class="num" data-count="19.8" data-prefix="+" data-suffix="%">+19.8%</div>
+            <div class="label">Detect · 785.6 → 941.2 qps</div>
+          </a>
+          <a class="speed-stat" href="pro/" data-reveal style="--reveal-delay: 140ms">
+            <div class="num" data-count="23.4" data-prefix="+" data-suffix="%">+23.4%</div>
+            <div class="label">Segment · 251.5 → 310.5 qps</div>
+          </a>
+        </div>
+        <a class="chapter-link" href="pro/" data-reveal>
+          <span class="zh">看完整对比</span><span class="en">See the full comparison</span>
+          <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#arrow-right"></use></svg>
+        </a>
+      </div>
+    </section>
+
+    <section class="chapter" id="easier">
+      <div class="wrap">
+        <div data-reveal>
+          <div class="pillar-icon pillar-icon-easy" aria-hidden="true">
+            <svg class="icon icon-lg" viewBox="0 0 24 24"><use href="assets/icons.svg#code"></use></svg>
+          </div>
+          <p class="kicker kicker-easy"><span class="zh">灵活易用</span><span class="en">Easier</span></p>
+          <h2><span class="zh">一个头文件，一次 predict</span><span class="en">One header. One predict.</span></h2>
+          <p class="section-lead">
+            <span class="zh">C++ 引入 <code>trtyolo.hpp</code>，Python 一次 <code>predict</code>。同一套接口覆盖检测、分割、分类、姿态和旋转框。</span>
+            <span class="en">Include <code>trtyolo.hpp</code> in C++. Call <code>predict</code> once in Python. The same API covers detect, segment, classify, pose, and OBB.</span>
+          </p>
+        </div>
+        <div class="api-panels">
+          <article class="api-panel" data-reveal style="--reveal-delay: 70ms">
+            <div class="code-head">C++</div>
+            <pre><code class="language-cpp">#include "trtyolo.hpp"</code></pre>
           </article>
-          <article class="feature-card">
-            <div class="feature-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><use href="assets/icons.svg#code"></use></svg></div>
-            <h3><span class="zh">C++ 与 Python</span><span class="en">C++ and Python</span></h3>
-            <p>
-              <span class="zh">同一套推理接口，覆盖 Linux / Windows、x64 / ARM。</span>
-              <span class="en">The same inference API on Linux / Windows, x64 / ARM.</span>
-            </p>
-          </article>
-          <article class="feature-card">
-            <div class="feature-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><use href="assets/icons.svg#layers"></use></svg></div>
-            <h3><span class="zh">多种任务</span><span class="en">Multiple tasks</span></h3>
-            <p>
-              <span class="zh">目标检测、实例分割、图像分类、姿态识别、旋转目标检测，以及视频分析。</span>
-              <span class="en">Detect, segment, classify, pose, rotated boxes, and video analytics.</span>
-            </p>
-          </article>
-          <article class="feature-card">
-            <div class="feature-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><use href="assets/icons.svg#upload"></use></svg></div>
-            <h3><span class="zh">三步出 engine</span><span class="en">Engine in three steps</span></h3>
-            <p>
-              <span class="zh">导出 ONNX，<a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a> 转结构，再用 trtexec 构建。</span>
-              <span class="en">Export ONNX, convert with <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>, then build with trtexec.</span>
-            </p>
-          </article>
-          <article class="feature-card">
-            <div class="feature-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><use href="assets/icons.svg#cpu"></use></svg></div>
-            <h3><span class="zh">加速走 GPU</span><span class="en">GPU on the hot path</span></h3>
-            <p>
-              <span class="zh">TensorRT Plugin 加速后处理，CUDA Kernel 加速前处理，CUDA Graph 压低整体耗时。</span>
-              <span class="en">TensorRT plugins speed up post-processing, CUDA kernels speed up pre-processing, CUDA Graphs cut overall latency.</span>
-            </p>
-          </article>
-          <article class="feature-card">
-            <div class="feature-icon feature-icon-pro" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><use href="assets/icons.svg#gauge"></use></svg></div>
-            <h3><span class="zh">专业版更快</span><span class="en">Pro is faster</span></h3>
-            <p>
-              <span class="zh">同台 RTX 3080、YOLO11n FP16：Detect +19.8%，Segment +23.4%。<a href="pro/">看对比 →</a></span>
-              <span class="en">Same RTX 3080, YOLO11n FP16: Detect +19.8%, Segment +23.4%. <a href="pro/">See the numbers →</a></span>
-            </p>
+          <article class="api-panel" data-reveal style="--reveal-delay: 140ms">
+            <div class="code-head">Python</div>
+            <pre><code class="language-python">result = model.predict(image)</code></pre>
           </article>
         </div>
+        <ul class="task-pills" data-reveal>
+          <li>Detect</li>
+          <li>Segment</li>
+          <li>Classify</li>
+          <li>Pose</li>
+          <li>OBB</li>
+        </ul>
       </div>
     </section>
 
     <section class="band" id="editions">
       <div class="wrap">
-        <p class="kicker"><span class="zh">版本</span><span class="en">Editions</span></p>
-        <h2 class="section-title"><span class="zh">社区版现在就能用</span><span class="en">Community is ready now</span></h2>
-        <p class="section-lead">
-          <span class="zh">专业版闭源单独提供，购买入口尚未开放。</span>
-          <span class="en">Pro is closed source and sold separately. Purchase is not open yet.</span>
-        </p>
+        <div data-reveal>
+          <p class="kicker"><span class="zh">版本</span><span class="en">Editions</span></p>
+          <h2 class="section-title"><span class="zh">社区版现在就能用</span><span class="en">Community is ready now</span></h2>
+          <p class="section-lead">
+            <span class="zh">专业版闭源单独提供，购买入口尚未开放。</span>
+            <span class="en">Pro is closed source and sold separately. Purchase is not open yet.</span>
+          </p>
+        </div>
         <div class="edition-grid">
-          <article class="edition-card">
+          <article class="edition-card" data-reveal>
             <p class="tag"><span class="zh">社区版</span><span class="en">Community</span></p>
             <h3><span class="zh">开源免费</span><span class="en">Open source, free</span></h3>
             <p class="lead">GPL-3.0</p>
@@ -173,9 +200,9 @@ result = model.predict(image)</code></pre>
               <li>C++ · Python，Linux · Windows</li>
               <li>TensorRT ≥ 8.6.1</li>
             </ul>
-            <a class="btn btn-primary" href="docs/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#book"></use></svg><span class="zh">看文档</span><span class="en">Read the docs</span></a>
+            <a class="btn btn-primary" href="docs/"><span class="zh">看文档</span><span class="en">Read the docs</span></a>
           </article>
-          <article class="edition-card pro">
+          <article class="edition-card pro" data-reveal style="--reveal-delay: 80ms">
             <p class="tag tag-pro"><span class="zh">专业版</span><span class="en">Pro</span></p>
             <h3><span class="zh">更高吞吐</span><span class="en">Higher throughput</span></h3>
             <p class="lead"><span class="zh">入口尚未开放</span><span class="en">Purchase not open yet</span></p>
@@ -188,7 +215,7 @@ result = model.predict(image)</code></pre>
               <li><span class="zh">统一后处理插件，TensorRT ≥ 10</span><span class="en">Unified post-process plugin, TensorRT ≥ 10</span></li>
               <li><span class="zh">加载一次，多次开推理会话</span><span class="en">Load once, open many infer sessions</span></li>
             </ul>
-            <a class="btn btn-pro" href="pro/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#gauge"></use></svg><span class="zh">看对比</span><span class="en">See the comparison</span></a>
+            <a class="btn btn-pro" href="pro/"><span class="zh">看对比</span><span class="en">See the comparison</span></a>
           </article>
         </div>
       </div>
@@ -196,7 +223,7 @@ result = model.predict(image)</code></pre>
 
     <section class="install" id="start">
       <div class="wrap">
-        <div class="install-panel">
+        <div class="install-panel" data-reveal>
           <h2><span class="zh">从转换开始</span><span class="en">Start with conversion</span></h2>
           <p class="lede">
             <span class="zh">先把已导出的 ONNX 转成可推理结构，再按文档编译推理库、构建 engine。</span>
@@ -204,10 +231,23 @@ result = model.predict(image)</code></pre>
           </p>
           <div class="install-cmd">$ pip install trtyolo-export</div>
           <div class="actions">
-            <a class="btn btn-primary" href="docs/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#book"></use></svg><span class="zh">社区文档</span><span class="en">Docs</span></a>
-            <a class="btn" href="models/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#grid"></use></svg><span class="zh">模型支持</span><span class="en">Models</span></a>
-            <a class="btn" href="pro/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#gauge"></use></svg><span class="zh">专业版</span><span class="en">Pro</span></a>
+            <a class="btn btn-primary" href="docs/"><span class="zh">社区文档</span><span class="en">Docs</span></a>
+            <a class="btn btn-ghost" href="models/"><span class="zh">模型支持</span><span class="en">Models</span></a>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="support-strip" id="support">
+      <div class="wrap">
+        <p>
+          <span class="zh">最好的支持方式是给仓库点个 Star。遇到问题或有建议，欢迎提交 issue。</span>
+          <span class="en">The best way to support the project is to star the repo. Questions and ideas are welcome in issues.</span>
+        </p>
+        <div class="support-links">
+          <a href="https://github.com/laugh12321/TensorRT-YOLO"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#github"></use></svg>Star</a>
+          <a href="https://github.com/laugh12321/TensorRT-YOLO/issues"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#issues"></use></svg>Issues</a>
+          <a href="https://afdian.com/a/laugh12321"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#heart"></use></svg><span class="zh">赞助</span><span class="en">Sponsor</span></a>
         </div>
       </div>
     </section>
@@ -216,25 +256,25 @@ result = model.predict(image)</code></pre>
   <footer class="footer">
     <div class="wrap footer-grid">
       <div class="footer-brand">
-        <img src="assets/png/logo-no-background.png" alt="TensorRT-YOLO">
+        <img src="assets/svg/logo-no-background.svg" alt="TensorRT-YOLO">
         <p>
-          <span class="zh">在 NVIDIA 设备上部署 YOLO 系列与变体。</span>
-          <span class="en">Deploy YOLO models and variants on NVIDIA devices.</span>
+          <span class="zh">专为 NVIDIA · 灵活易用 · 极致速度</span>
+          <span class="en">Easier and faster YOLO deployment. Built for NVIDIA.</span>
         </p>
       </div>
       <div class="footer-col">
         <h3><span class="zh">产品</span><span class="en">Product</span></h3>
-        <a href="./"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#home"></use></svg><span class="zh">首页</span><span class="en">Home</span></a>
-        <a href="models/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#grid"></use></svg><span class="zh">模型支持</span><span class="en">Models</span></a>
-        <a href="pro/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#gauge"></use></svg><span class="zh">专业版</span><span class="en">Pro</span></a>
-        <a href="docs/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#book"></use></svg><span class="zh">社区文档</span><span class="en">Docs</span></a>
+        <a href="./"><span class="zh">首页</span><span class="en">Home</span></a>
+        <a href="models/"><span class="zh">模型支持</span><span class="en">Models</span></a>
+        <a href="pro/"><span class="zh">专业版</span><span class="en">Pro</span></a>
+        <a href="docs/"><span class="zh">社区文档</span><span class="en">Docs</span></a>
       </div>
       <div class="footer-col">
         <h3><span class="zh">资源</span><span class="en">Resources</span></h3>
-        <a href="https://github.com/laugh12321/TensorRT-YOLO"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#github"></use></svg>GitHub</a>
-        <a href="https://github.com/laugh12321/trtyolo-export"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#upload"></use></svg>trtyolo-export</a>
-        <a href="https://github.com/laugh12321/TensorRT-YOLO/issues"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#issues"></use></svg>Issues</a>
-        <a href="https://afdian.com/a/laugh12321"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="assets/icons.svg#heart"></use></svg><span class="zh">赞助</span><span class="en">Sponsor</span></a>
+        <a href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
+        <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
+        <a href="https://github.com/laugh12321/TensorRT-YOLO/issues">Issues</a>
+        <a href="https://afdian.com/a/laugh12321"><span class="zh">赞助</span><span class="en">Sponsor</span></a>
       </div>
       <div class="footer-col">
         <h3><span class="zh">许可</span><span class="en">License</span></h3>

@@ -8,18 +8,19 @@
   <meta name="description" data-zh="TensorRT-YOLO 支持的 YOLO 系列与任务：Detect、Segment、Classify、Pose、OBB，以及 YOLO-World、YOLOE、YOLO-Master 等变体。" data-en="YOLO families and tasks supported by TensorRT-YOLO: Detect, Segment, Classify, Pose, OBB, plus variants such as YOLO-World, YOLOE, and YOLO-Master." content="TensorRT-YOLO 支持的 YOLO 系列与任务：Detect、Segment、Classify、Pose、OBB，以及 YOLO-World、YOLOE、YOLO-Master 等变体。">
   <link rel="stylesheet" href="../assets/site.css">
   <link rel="icon" type="image/png" href="../assets/png/logo-no-background.png">
+  <noscript><style>[data-reveal]{opacity:1;transform:none}</style></noscript>
 </head>
 <body>
   <header class="nav">
     <div class="wrap nav-inner">
       <a class="brand" href="../">
-        <img src="../assets/png/logo-no-background.png" alt="TensorRT-YOLO">
+        <img src="../assets/svg/logo-no-background.svg" alt="TensorRT-YOLO">
       </a>
       <nav class="nav-links">
-        <a href="../"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#home"></use></svg><span class="zh">首页</span><span class="en">Home</span></a>
-        <a class="active" href="./"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#grid"></use></svg><span class="zh">模型支持</span><span class="en">Models</span></a>
-        <a href="../pro/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#gauge"></use></svg><span class="zh">专业版</span><span class="en">Pro</span></a>
-        <a href="../docs/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#book"></use></svg><span class="zh">社区文档</span><span class="en">Docs</span></a>
+        <a href="../"><span class="zh">首页</span><span class="en">Home</span></a>
+        <a class="active" href="./"><span class="zh">模型支持</span><span class="en">Models</span></a>
+        <a href="../pro/"><span class="zh">专业版</span><span class="en">Pro</span></a>
+        <a href="../docs/"><span class="zh">社区文档</span><span class="en">Docs</span></a>
       </nav>
       <div class="nav-actions">
         <div class="lang-switch" role="group" aria-label="Language">
@@ -36,18 +37,18 @@
   </header>
 
   <section class="page-hero">
-    <div class="wrap">
-      <p class="tag"><span class="zh">模型支持 · trtyolo-export</span><span class="en">Models · trtyolo-export</span></p>
-      <h1><span class="zh">YOLO 系列与任务</span><span class="en">YOLO families and tasks</span></h1>
+    <div class="wrap" data-reveal>
+      <p class="kicker kicker-easy"><span class="zh">模型支持 · 灵活易用</span><span class="en">Models · Easier</span></p>
+      <h1><span class="zh">覆盖 YOLO 系列与任务</span><span class="en">YOLO families and tasks. Covered.</span></h1>
       <p class="lede">
         <span class="zh">
           用 <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
-          把已导出的 YOLO ONNX 转成可推理结构。下表按系列和任务列出能否转换、能否直接推理，与
+          把已导出的 YOLO ONNX 转成可推理结构。Detect、Segment、Classify、Pose、OBB，以及 YOLO-World、YOLOE、YOLO-Master 等变体，一张表看清，与
           <a href="https://github.com/laugh12321/trtyolo-export/blob/main/README.cn.md">转换工具说明</a> 对齐。
         </span>
         <span class="en">
           <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
-          converts an exported YOLO ONNX graph into an inference-ready structure. The table lists convert/infer support by family and task, aligned with the
+          converts an exported YOLO ONNX graph into an inference-ready structure. Detect, segment, classify, pose, OBB, plus variants such as YOLO-World, YOLOE, and YOLO-Master — one table, aligned with the
           <a href="https://github.com/laugh12321/trtyolo-export/blob/main/README.md">converter docs</a>.
         </span>
       </p>
@@ -69,7 +70,7 @@
       <span><i class="mark mark-up">●</i> <span class="zh">上游或仓库导出路径可直接推理</span><span class="en">Upstream or repo export can run directly</span></span>
       <span><i class="mark mark-na">—</i> <span class="zh">该任务不提供</span><span class="en">Not offered for this task</span></span>
     </div>
-    <div class="table-wrap">
+    <div class="table-wrap" data-reveal>
       <table class="support-table">
         <thead>
           <tr>
@@ -281,33 +282,33 @@
     </p>
 
     <div class="actions">
-      <a class="btn btn-primary" href="../docs/#export"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#book"></use></svg><span class="zh">看转换步骤</span><span class="en">Conversion steps</span></a>
-      <a class="btn" href="https://github.com/laugh12321/trtyolo-export"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#upload"></use></svg>trtyolo-export</a>
+      <a class="btn btn-primary" href="../docs/#export"><span class="zh">看转换步骤</span><span class="en">Conversion steps</span></a>
+      <a class="btn btn-ghost" href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
     </div>
   </main>
 
   <footer class="footer">
     <div class="wrap footer-grid">
       <div class="footer-brand">
-        <img src="../assets/png/logo-no-background.png" alt="TensorRT-YOLO">
+        <img src="../assets/svg/logo-no-background.svg" alt="TensorRT-YOLO">
         <p>
-          <span class="zh">在 NVIDIA 设备上部署 YOLO 系列与变体。</span>
-          <span class="en">Deploy YOLO models and variants on NVIDIA devices.</span>
+          <span class="zh">专为 NVIDIA · 灵活易用 · 极致速度</span>
+          <span class="en">Easier and faster YOLO deployment. Built for NVIDIA.</span>
         </p>
       </div>
       <div class="footer-col">
         <h3><span class="zh">产品</span><span class="en">Product</span></h3>
-        <a href="../"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#home"></use></svg><span class="zh">首页</span><span class="en">Home</span></a>
-        <a href="./"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#grid"></use></svg><span class="zh">模型支持</span><span class="en">Models</span></a>
-        <a href="../pro/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#gauge"></use></svg><span class="zh">专业版</span><span class="en">Pro</span></a>
-        <a href="../docs/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#book"></use></svg><span class="zh">社区文档</span><span class="en">Docs</span></a>
+        <a href="../"><span class="zh">首页</span><span class="en">Home</span></a>
+        <a href="./"><span class="zh">模型支持</span><span class="en">Models</span></a>
+        <a href="../pro/"><span class="zh">专业版</span><span class="en">Pro</span></a>
+        <a href="../docs/"><span class="zh">社区文档</span><span class="en">Docs</span></a>
       </div>
       <div class="footer-col">
         <h3><span class="zh">资源</span><span class="en">Resources</span></h3>
-        <a href="https://github.com/laugh12321/TensorRT-YOLO"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#github"></use></svg>GitHub</a>
-        <a href="https://github.com/laugh12321/trtyolo-export"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#upload"></use></svg>trtyolo-export</a>
-        <a href="https://github.com/laugh12321/TensorRT-YOLO/issues"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#issues"></use></svg>Issues</a>
-        <a href="https://afdian.com/a/laugh12321"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#heart"></use></svg><span class="zh">赞助</span><span class="en">Sponsor</span></a>
+        <a href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
+        <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
+        <a href="https://github.com/laugh12321/TensorRT-YOLO/issues">Issues</a>
+        <a href="https://afdian.com/a/laugh12321"><span class="zh">赞助</span><span class="en">Sponsor</span></a>
       </div>
       <div class="footer-col">
         <h3><span class="zh">许可</span><span class="en">License</span></h3>

@@ -8,18 +8,19 @@
   <meta name="description" data-zh="TensorRT-YOLO 社区版安装与推理：依赖、编译、模型转换，以及 Python / C++ 示例。" data-en="TensorRT-YOLO Community install and inference: dependencies, build, model conversion, plus Python / C++ examples." content="TensorRT-YOLO 社区版安装与推理：依赖、编译、模型转换，以及 Python / C++ 示例。">
   <link rel="stylesheet" href="../assets/site.css">
   <link rel="icon" type="image/png" href="../assets/png/logo-no-background.png">
+  <noscript><style>[data-reveal]{opacity:1;transform:none}</style></noscript>
 </head>
 <body>
   <header class="nav">
     <div class="wrap nav-inner">
       <a class="brand" href="../">
-        <img src="../assets/png/logo-no-background.png" alt="TensorRT-YOLO">
+        <img src="../assets/svg/logo-no-background.svg" alt="TensorRT-YOLO">
       </a>
       <nav class="nav-links">
-        <a href="../"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#home"></use></svg><span class="zh">首页</span><span class="en">Home</span></a>
-        <a href="../models/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#grid"></use></svg><span class="zh">模型支持</span><span class="en">Models</span></a>
-        <a href="../pro/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#gauge"></use></svg><span class="zh">专业版</span><span class="en">Pro</span></a>
-        <a class="active" href="./"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#book"></use></svg><span class="zh">社区文档</span><span class="en">Docs</span></a>
+        <a href="../"><span class="zh">首页</span><span class="en">Home</span></a>
+        <a href="../models/"><span class="zh">模型支持</span><span class="en">Models</span></a>
+        <a href="../pro/"><span class="zh">专业版</span><span class="en">Pro</span></a>
+        <a class="active" href="./"><span class="zh">社区文档</span><span class="en">Docs</span></a>
       </nav>
       <div class="nav-actions">
         <div class="lang-switch" role="group" aria-label="Language">
@@ -36,18 +37,18 @@
   </header>
 
   <section class="page-hero">
-    <div class="wrap">
-      <p class="tag"><span class="zh">社区文档</span><span class="en">Community docs</span></p>
-      <h1><span class="zh">安装、转换与推理</span><span class="en">Build, convert, and infer</span></h1>
+    <div class="wrap" data-reveal>
+      <p class="kicker kicker-easy"><span class="zh">社区文档 · 灵活易用</span><span class="en">Docs · Easier</span></p>
+      <h1><span class="zh">一个头文件，一次 predict</span><span class="en">One header. One predict.</span></h1>
       <p class="lede">
-        <span class="zh">C++ 一个头文件 <code>trtyolo.hpp</code>，Python 一次 <code>predict</code>。按依赖、编译、转换和示例往下走。</span>
-        <span class="en">One C++ header <code>trtyolo.hpp</code>, one Python <code>predict</code>. Follow the steps for dependencies, build, conversion, and examples.</span>
+        <span class="zh">C++ 引入 <code>trtyolo.hpp</code>，Python 一次 <code>predict</code>。按依赖、编译、转换和示例往下走，在 <em class="accent-nvidia">NVIDIA</em> 设备上把 YOLO 跑起来。</span>
+        <span class="en">Include <code>trtyolo.hpp</code> in C++. Call <code>predict</code> once in Python. Follow dependencies, build, conversion, and examples to run YOLO on <em class="accent-nvidia">NVIDIA</em> hardware.</span>
       </p>
     </div>
   </section>
 
   <main class="wrap page">
-    <div class="install-panel left">
+    <div class="install-panel left" data-reveal>
       <h2><span class="zh">从转换开始</span><span class="en">Start with conversion</span></h2>
       <p class="lede">
         <span class="zh">先把已导出的 ONNX 转成可推理结构，再按下面步骤编译推理库、构建 engine。</span>
@@ -55,8 +56,8 @@
       </p>
       <div class="install-cmd">$ pip install trtyolo-export</div>
       <div class="actions">
-        <a class="btn btn-primary" href="https://github.com/laugh12321/trtyolo-export"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#upload"></use></svg>trtyolo-export</a>
-        <a class="btn" href="../models/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#grid"></use></svg><span class="zh">模型支持</span><span class="en">Models</span></a>
+        <a class="btn btn-primary" href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
+        <a class="btn btn-ghost" href="../models/"><span class="zh">模型支持</span><span class="en">Models</span></a>
       </div>
     </div>
 
@@ -162,25 +163,25 @@ int main() {
   <footer class="footer">
     <div class="wrap footer-grid">
       <div class="footer-brand">
-        <img src="../assets/png/logo-no-background.png" alt="TensorRT-YOLO">
+        <img src="../assets/svg/logo-no-background.svg" alt="TensorRT-YOLO">
         <p>
-          <span class="zh">在 NVIDIA 设备上部署 YOLO 系列与变体。</span>
-          <span class="en">Deploy YOLO models and variants on NVIDIA devices.</span>
+          <span class="zh">专为 NVIDIA · 灵活易用 · 极致速度</span>
+          <span class="en">Easier and faster YOLO deployment. Built for NVIDIA.</span>
         </p>
       </div>
       <div class="footer-col">
         <h3><span class="zh">产品</span><span class="en">Product</span></h3>
-        <a href="../"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#home"></use></svg><span class="zh">首页</span><span class="en">Home</span></a>
-        <a href="../models/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#grid"></use></svg><span class="zh">模型支持</span><span class="en">Models</span></a>
-        <a href="../pro/"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#gauge"></use></svg><span class="zh">专业版</span><span class="en">Pro</span></a>
-        <a href="./"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#book"></use></svg><span class="zh">社区文档</span><span class="en">Docs</span></a>
+        <a href="../"><span class="zh">首页</span><span class="en">Home</span></a>
+        <a href="../models/"><span class="zh">模型支持</span><span class="en">Models</span></a>
+        <a href="../pro/"><span class="zh">专业版</span><span class="en">Pro</span></a>
+        <a href="./"><span class="zh">社区文档</span><span class="en">Docs</span></a>
       </div>
       <div class="footer-col">
         <h3><span class="zh">资源</span><span class="en">Resources</span></h3>
-        <a href="https://github.com/laugh12321/TensorRT-YOLO"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#github"></use></svg>GitHub</a>
-        <a href="https://github.com/laugh12321/trtyolo-export"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#upload"></use></svg>trtyolo-export</a>
-        <a href="https://github.com/laugh12321/TensorRT-YOLO/issues"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#issues"></use></svg>Issues</a>
-        <a href="https://afdian.com/a/laugh12321"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="../assets/icons.svg#heart"></use></svg><span class="zh">赞助</span><span class="en">Sponsor</span></a>
+        <a href="https://github.com/laugh12321/TensorRT-YOLO">GitHub</a>
+        <a href="https://github.com/laugh12321/trtyolo-export">trtyolo-export</a>
+        <a href="https://github.com/laugh12321/TensorRT-YOLO/issues">Issues</a>
+        <a href="https://afdian.com/a/laugh12321"><span class="zh">赞助</span><span class="en">Sponsor</span></a>
       </div>
       <div class="footer-col">
         <h3><span class="zh">许可</span><span class="en">License</span></h3>
