@@ -315,6 +315,7 @@ html:not([lang="en"]) .en { display: none !important; }
 
 .accent-nvidia { color: var(--nvidia); font-style: normal; }
 .accent-cyan { color: var(--cyan); font-style: normal; }
+.accent-blue { color: var(--blue); font-weight: 600; }
 
 .kicker,
 .tag {

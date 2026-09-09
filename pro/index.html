@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script>(function(){try{if(localStorage.getItem("trtyolo-lang")==="en")document.documentElement.lang="en";}catch(e){}})();</script>
   <title data-zh="专业版 · TensorRT-YOLO" data-en="Pro · TensorRT-YOLO">专业版 · TensorRT-YOLO</title>
-  <meta name="description" data-zh="TensorRT-YOLO 专业版相对社区版吞吐更高。闭源单独提供，购买入口尚未开放。" data-en="TensorRT-YOLO Pro delivers higher throughput than Community. Closed source, sold separately. Purchase is not open yet." content="TensorRT-YOLO 专业版相对社区版吞吐更高。闭源单独提供，购买入口尚未开放。">
+  <meta name="description" data-zh="TensorRT-YOLO 专业版相对社区版吞吐最高 +26.2%（Detect），支持双帧流水线与多模型 Ensemble。闭源单独提供，购买入口尚未开放。" data-en="TensorRT-YOLO Pro delivers up to +26.2% Detect throughput vs Community, with dual-frame pipeline and multi-model Ensemble. Closed source, sold separately. Purchase is not open yet." content="TensorRT-YOLO 专业版相对社区版吞吐最高 +26.2%（Detect），支持双帧流水线与多模型 Ensemble。闭源单独提供，购买入口尚未开放。">
   <link rel="stylesheet" href="../assets/site.css">
   <link rel="icon" type="image/png" href="../assets/png/logo-no-background.png">
   <noscript><style>[data-reveal]{opacity:1;transform:none}</style></noscript>
@@ -50,23 +50,23 @@
   <main class="wrap page">
     <section class="stats">
       <article class="stat" data-reveal>
-        <div class="num" data-count="19.8" data-prefix="+" data-suffix="%">+19.8%</div>
+        <div class="num" data-count="26.2" data-prefix="+" data-suffix="%">+26.2%</div>
         <div class="label">
-          <span class="zh">Detect 墙钟吞吐，785.6 → 941.2 qps</span>
-          <span class="en">Detect wall-clock throughput, 785.6 → 941.2 qps</span>
+          <span class="zh">Detect 墙钟吞吐，社区（同步）→ 专业（双帧流水线）</span>
+          <span class="en">Detect wall-clock throughput, Community (sync) → Pro (dual-frame pipeline)</span>
         </div>
       </article>
       <article class="stat" data-reveal style="--reveal-delay: 70ms">
-        <div class="num" data-count="23.4" data-prefix="+" data-suffix="%">+23.4%</div>
+        <div class="num" data-count="20.1" data-prefix="+" data-suffix="%">+20.1%</div>
         <div class="label">
-          <span class="zh">Segment 墙钟吞吐，251.5 → 310.5 qps</span>
-          <span class="en">Segment wall-clock throughput, 251.5 → 310.5 qps</span>
+          <span class="zh">Segment 墙钟吞吐，社区（同步）→ 专业（双帧流水线）</span>
+          <span class="en">Segment wall-clock throughput, Community (sync) → Pro (dual-frame pipeline)</span>
         </div>
       </article>
     </section>
     <p class="note">
-      <span class="zh">条件：YOLO11n FP16，RTX 3080，batch=1，C++，warmup 20 次后跑 100 次，取墙钟吞吐中位数。对比时桌面合成大约占用 1.1 GiB 显存，不是独占空卡。只测了 Detect / Segment。</span>
-      <span class="en">Setup: YOLO11n FP16, RTX 3080, batch=1, C++, 20 warmup iterations then 100 timed runs, median wall-clock throughput. Desktop compositing used about 1.1 GiB VRAM; this was not an idle exclusive GPU. Only Detect / Segment were measured.</span>
+      <span class="zh">条件：YOLO11n FP16，RTX 3080，batch=1，dummy 640×640，C++。warmup 100 次、iterations 1000，每组 3 次取墙钟吞吐中位数。<br>社区版同步 <code>predict()</code>；专业版 <code>submit</code>/<code>dequeue</code>，含同步与双帧流水线。只测了 Detect / Segment。</span>
+      <span class="en">Setup: YOLO11n FP16, RTX 3080, batch=1, dummy 640×640, C++. warmup=100, iterations=1000, median of 3 wall-clock runs.<br>Community uses synchronous <code>predict()</code>; Pro uses <code>submit</code>/<code>dequeue</code>, both sync and dual-frame pipeline. Only Detect / Segment were measured.</span>
     </p>
 
     <h2 class="compare-title"><span class="zh">吞吐对比</span><span class="en">Throughput</span></h2>
@@ -74,29 +74,68 @@
       <thead>
         <tr>
           <th><span class="zh">任务</span><span class="en">Task</span></th>
-          <th><span class="zh">社区版</span><span class="en">Community</span></th>
-          <th><span class="zh">专业版</span><span class="en">Pro</span></th>
-          <th><span class="zh">吞吐</span><span class="en">Throughput</span></th>
+          <th><span class="zh">社区版（同步）</span><span class="en">Community (sync)</span></th>
+          <th><span class="zh">专业版（同步）</span><span class="en">Pro (sync)</span></th>
+          <th><span class="zh">专业版（双帧流水线）</span><span class="en">Pro (dual-frame pipeline)</span></th>
+          <th><span class="zh">提升*</span><span class="en">Gain*</span></th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td>Detect</td>
-          <td>785.6 qps（1.273 ms）</td>
-          <td><strong class="pro-text">941.2 qps（1.063 ms）</strong></td>
-          <td><strong class="pro-text">+19.8%</strong></td>
+          <td>877.7 qps（1.139 ms）</td>
+          <td><strong class="accent-blue">1022.9 qps（0.978 ms）</strong></td>
+          <td><strong class="pro-text">1107.5 qps（0.903 ms）</strong></td>
+          <td><strong class="pro-text">+26.2%</strong></td>
         </tr>
         <tr>
           <td>Segment</td>
-          <td>251.5 qps（3.976 ms）</td>
-          <td><strong class="pro-text">310.5 qps（3.221 ms）</strong></td>
-          <td><strong class="pro-text">+23.4%</strong></td>
+          <td>273.1 qps（3.661 ms）</td>
+          <td><strong class="accent-blue">321.5 qps（3.111 ms）</strong></td>
+          <td><strong class="pro-text">328.1 qps（3.048 ms）</strong></td>
+          <td><strong class="pro-text">+20.1%</strong></td>
         </tr>
       </tbody>
     </table>
-    <p class="lede">
-      <span class="zh">同轮 GPU 延迟：Detect 1.250 ms → 1.010 ms，Segment 3.936 ms → 3.120 ms。专业版可以看分阶段耗时，这一轮对比都开了 CUDA Graph。</span>
-      <span class="en">Same-run GPU latency: Detect 1.250 ms → 1.010 ms, Segment 3.936 ms → 3.120 ms. Pro can report staged timings. CUDA Graph was on for this comparison.</span>
+    <p class="note">
+      <span class="zh">*提升 = 社区版（同步）→ 专业版（双帧流水线）。<br>双帧流水线：先提交 2 帧，再交错取结果，让 GPU 前后帧重叠；社区版无此 API，本轮 CUDA Graph 全开。</span>
+      <span class="en">*Gain = Community (sync) → Pro (dual-frame pipeline).<br>Dual-frame pipeline: submit 2 frames, then dequeue and submit in turn so the GPU overlaps consecutive frames; Community has no such API. CUDA Graph was on throughout.</span>
+    </p>
+
+    <h2 class="compare-title"><span class="zh">多模型 Ensemble（专业版独有）</span><span class="en">Multi-model Ensemble (Pro only)</span></h2>
+    <table>
+      <thead>
+        <tr>
+          <th><span class="zh">组合</span><span class="en">Combo</span></th>
+          <th><span class="zh">社区版</span><span class="en">Community</span></th>
+          <th><span class="zh">专业版（同步）</span><span class="en">Pro (sync)</span></th>
+          <th><span class="zh">专业版（双帧流水线）</span><span class="en">Pro (dual-frame pipeline)</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Detect ×2</td>
+          <td>N/A</td>
+          <td><strong class="accent-blue">542.1 qps</strong></td>
+          <td><strong class="pro-text">558.2 qps</strong></td>
+        </tr>
+        <tr>
+          <td>Detect + Segment</td>
+          <td>N/A</td>
+          <td><strong class="accent-blue">272.9 qps</strong></td>
+          <td><strong class="pro-text">278.8 qps</strong></td>
+        </tr>
+        <tr>
+          <td>Segment ×2</td>
+          <td>N/A</td>
+          <td><strong class="accent-blue">172.4 qps</strong></td>
+          <td><strong class="pro-text">176.1 qps</strong></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="note">
+      <span class="zh">一次 <code>Executor::open</code> 装多个 member、共享前处理，社区版无 ensemble API。</span>
+      <span class="en">One <code>Executor::open</code> loads multiple members with shared pre-process. Community has no ensemble API.</span>
     </p>
 
     <h2 class="compare-title"><span class="zh">能力对比</span><span class="en">Capabilities</span></h2>
@@ -110,15 +149,67 @@
       </thead>
       <tbody>
         <tr>
-          <td><span class="zh">公开接口</span><span class="en">Public API</span></td>
+          <td><span class="zh">流水线深度</span><span class="en">Pipeline depth</span></td>
           <td>
-            <span class="zh"><code>InferOption</code> + 按任务拆的 Model；一次 <code>predict</code></span>
-            <span class="en"><code>InferOption</code> plus per-task Model; one <code>predict</code></span>
+            <span class="zh">仅同步 <code>predict()</code>，无 <code>submit</code>/<code>dequeue</code></span>
+            <span class="en">Synchronous <code>predict()</code> only; no <code>submit</code>/<code>dequeue</code></span>
           </td>
           <td>
             <span class="pro-text">
-              <span class="zh">加载一次模型，多次开推理会话；按帧读取结果</span>
-              <span class="en">Load the model once, open many infer sessions; read results per frame</span>
+              <span class="zh">可配置 in-flight 深度；推荐双帧流水线，Detect +8.3% 吞吐</span>
+              <span class="en">Configurable in-flight depth; dual-frame pipeline recommended, Detect +8.3% throughput</span>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td><span class="zh">多模型 Ensemble</span><span class="en">Multi-model Ensemble</span></td>
+          <td>
+            <span class="zh">无 API</span>
+            <span class="en">No API</span>
+          </td>
+          <td>
+            <span class="pro-text">
+              <span class="zh">一次 <code>Executor::open</code> 装多个 member、共享前处理，省一份输入显存</span>
+              <span class="en">One <code>Executor::open</code> loads multiple members with shared pre-process — saves input VRAM</span>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td><span class="zh">前处理</span><span class="en">Pre-process</span></td>
+          <td>
+            <span class="zh">对齐 OpenCV；绝大多数像素误差为 0，少数 ±1</span>
+            <span class="en">OpenCV-aligned; pixel error 0 in most cases, occasionally ±1</span>
+          </td>
+          <td>
+            <span class="pro-text">
+              <span class="zh">与 OpenCV 逐像素全零对齐；LUT 特化核，比开源版更快</span>
+              <span class="en">Bit-exact OpenCV match (zero pixel error); LUT-specialized kernels, faster than Community</span>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td>CUDA Graph</td>
+          <td>
+            <span class="zh">首次推理会把 capture 算进性能报告，且无法只看稳态</span>
+            <span class="en">First-run capture is included in the report; cannot isolate steady state</span>
+          </td>
+          <td>
+            <span class="pro-text">
+              <span class="zh">库内自动回放；稳态跳过 SetParams；GPU timing 在图外</span>
+              <span class="en">Automatic replay; steady-state SetParams skip; GPU timing off-graph</span>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td><span class="zh">后处理插件</span><span class="en">Post-process plugin</span></td>
+          <td>
+            <span class="zh">检测走内置 NMS；Pose / Seg / OBB 各有插件</span>
+            <span class="en">Detect uses built-in NMS; Pose / Seg / OBB each have a plugin</span>
+          </td>
+          <td>
+            <span class="pro-text">
+              <span class="zh">一套插件覆盖 Detect / Pose / Seg / OBB</span>
+              <span class="en">One plugin covers Detect / Pose / Seg / OBB</span>
             </span>
           </td>
         </tr>
@@ -136,12 +227,28 @@
           </td>
         </tr>
         <tr>
-          <td><span class="zh">头文件</span><span class="en">Headers</span></td>
-          <td><code>#include "trtyolo.hpp"</code></td>
+          <td><span class="zh">公开接口</span><span class="en">Public API</span></td>
+          <td>
+            <span class="zh"><code>InferOption</code> + 按任务拆的 Model；一次 <code>predict</code></span>
+            <span class="en"><code>InferOption</code> plus per-task Model; one <code>predict</code></span>
+          </td>
           <td>
             <span class="pro-text">
-              <span class="zh">单一公开头</span>
-              <span class="en">One public header</span>
+              <span class="zh">加载一次模型，多次开推理会话；按帧读取结果</span>
+              <span class="en">Load the model once, open many infer sessions; read results per frame</span>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td><span class="zh">构建 engine</span><span class="en">Build engine</span></td>
+          <td>
+            <span class="zh">Pose / Seg / OBB 还需把插件编进 engine</span>
+            <span class="en">Pose / Seg / OBB still need the plugin compiled into the engine</span>
+          </td>
+          <td>
+            <span class="pro-text">
+              <span class="zh">构建步骤更简单；社区版 engine 不能直接用，需要重新导出</span>
+              <span class="en">Simpler build; Community engines cannot be reused — re-export is required</span>
             </span>
           </td>
         </tr>
@@ -162,58 +269,6 @@
           <td>TensorRT</td>
           <td>≥ 8.6.1</td>
           <td><strong class="pro-text">≥ 10</strong><span class="zh">（硬下限）</span><span class="en"> (hard floor)</span></td>
-        </tr>
-        <tr>
-          <td><span class="zh">后处理插件</span><span class="en">Post-process plugin</span></td>
-          <td>
-            <span class="zh">检测走内置 NMS；Pose / Seg / OBB 各有插件</span>
-            <span class="en">Detect uses built-in NMS; Pose / Seg / OBB each have a plugin</span>
-          </td>
-          <td>
-            <span class="pro-text">
-              <span class="zh">一套插件覆盖 Detect / Pose / Seg / OBB</span>
-              <span class="en">One plugin covers Detect / Pose / Seg / OBB</span>
-            </span>
-          </td>
-        </tr>
-        <tr>
-          <td><span class="zh">构建 engine</span><span class="en">Build engine</span></td>
-          <td>
-            <span class="zh">Pose / Seg / OBB 还需把插件编进 engine</span>
-            <span class="en">Pose / Seg / OBB still need the plugin compiled into the engine</span>
-          </td>
-          <td>
-            <span class="pro-text">
-              <span class="zh">构建步骤更简单；社区版 engine 不能直接用，需要重新导出</span>
-              <span class="en">Simpler build; Community engines cannot be reused — re-export is required</span>
-            </span>
-          </td>
-        </tr>
-        <tr>
-          <td>CUDA Graph</td>
-          <td>
-            <span class="zh">首次推理会把 capture 算进性能报告，且无法只看稳态</span>
-            <span class="en">First-run capture is included in the report; cannot isolate steady state</span>
-          </td>
-          <td>
-            <span class="pro-text">
-              <span class="zh">库内自动回放，调用方无感知</span>
-              <span class="en">Automatic replay inside the library; callers do not manage it</span>
-            </span>
-          </td>
-        </tr>
-        <tr>
-          <td><span class="zh">性能统计</span><span class="en">Profiling</span></td>
-          <td>
-            <span class="zh">粗粒度，吞吐含 warmup</span>
-            <span class="en">Coarse; throughput includes warmup</span>
-          </td>
-          <td>
-            <span class="pro-text">
-              <span class="zh">可重置后只统计稳态，可看分阶段 GPU 耗时</span>
-              <span class="en">Reset to measure steady state; staged GPU timings available</span>
-            </span>
-          </td>
         </tr>
         <tr>
           <td><span class="zh">源码与许可</span><span class="en">Source and license</span></td>

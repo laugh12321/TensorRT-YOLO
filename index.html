@@ -122,18 +122,18 @@ result = model.predict(image)</code></pre>
           <p class="kicker kicker-nvidia"><span class="zh">极致速度</span><span class="en">Fastest</span></p>
           <h2><span class="zh">专业版，同卡更快</span><span class="en">Pro. Faster on the same GPU.</span></h2>
           <p class="section-lead">
-            <span class="zh">同一台 RTX 3080、YOLO11n FP16。社区版已经很快；专业版把 Detect 和 Segment 再往前推。</span>
-            <span class="en">Same RTX 3080, YOLO11n FP16. Community is already fast. Pro pushes Detect and Segment further.</span>
+            <span class="zh">同一台 RTX 3080、YOLO11n FP16。社区版（同步）已经很快；专业版（双帧流水线）把 Detect 和 Segment 再往前推。</span>
+            <span class="en">Same RTX 3080, YOLO11n FP16. Community (sync) is already fast. Pro (dual-frame pipeline) pushes Detect and Segment further.</span>
           </p>
         </div>
         <div class="speed-stats">
           <a class="speed-stat" href="pro/" data-reveal style="--reveal-delay: 70ms">
-            <div class="num" data-count="19.8" data-prefix="+" data-suffix="%">+19.8%</div>
-            <div class="label">Detect · 785.6 → 941.2 qps</div>
+            <div class="num" data-count="26.2" data-prefix="+" data-suffix="%">+26.2%</div>
+            <div class="label">Detect · 877.7 → 1107.5 qps</div>
           </a>
           <a class="speed-stat" href="pro/" data-reveal style="--reveal-delay: 140ms">
-            <div class="num" data-count="23.4" data-prefix="+" data-suffix="%">+23.4%</div>
-            <div class="label">Segment · 251.5 → 310.5 qps</div>
+            <div class="num" data-count="20.1" data-prefix="+" data-suffix="%">+20.1%</div>
+            <div class="label">Segment · 273.1 → 328.1 qps</div>
           </a>
         </div>
         <a class="chapter-link" href="pro/" data-reveal>
@@ -211,7 +211,8 @@ result = model.predict(image)</code></pre>
               <span class="en">Same tasks, cleaner sessions. Source is not in the public repo.</span>
             </p>
             <ul>
-              <li>Detect +19.8% / Segment +23.4% qps</li>
+              <li><span class="zh">Detect +26.2% / Segment +20.1% 吞吐（社区同步 → 专业双帧流水线）</span><span class="en">Detect +26.2% / Segment +20.1% throughput (Community sync → Pro dual-frame pipeline)</span></li>
+              <li><span class="zh">双帧流水线 + 多模型 Ensemble</span><span class="en">Dual-frame pipeline + multi-model Ensemble</span></li>
               <li><span class="zh">统一后处理插件，TensorRT ≥ 10</span><span class="en">Unified post-process plugin, TensorRT ≥ 10</span></li>
               <li><span class="zh">加载一次，多次开推理会话</span><span class="en">Load once, open many infer sessions</span></li>
             </ul>
