@@ -248,27 +248,41 @@ Simply pass the image to be inferred to the `predict` method. The `predict` meth
 
 ## <div align="center">⚔️ Community vs Professional Edition</div>
 
-Professional Edition is a rewrite of the Community 6.4 inference surface, not a small bump. On the same RTX 3080, YOLO11n FP16, batch=1 C++ benchmark, Professional Edition has higher wall-clock throughput:
+Professional Edition is a rewrite of the Community inference surface, not a small bump. On the same RTX 3080, YOLO11n FP16, batch=1, dummy 640×640 C++ benchmark, Pro wall-clock throughput is higher: Detect **+26.2%**, Segment **+20.1%**. Full comparison: [Pro page](https://trtyolo.laugh12321.cn/pro/).
 
-| Task | Community 6.4 | Professional | Throughput |
+Setup: warmup=100, iterations=1000, median of 3 wall-clock runs. Community uses synchronous `predict()`; Pro uses `submit`/`dequeue`, both sync and dual-frame pipeline. Only Detect / Segment were measured. CUDA Graph was on throughout.
+
+| Task | Community (sync) | Pro (sync) | Pro (dual-frame pipeline) | Gain* |
+|---|---|---|---|---|
+| Detect | 877.7 qps (1.139 ms) | **1022.9 qps (0.978 ms)** | **1107.5 qps (0.903 ms)** | **+26.2%** |
+| Segment | 273.1 qps (3.661 ms) | **321.5 qps (3.111 ms)** | **328.1 qps (3.048 ms)** | **+20.1%** |
+
+\*Gain = Community (sync) → Pro (dual-frame pipeline). Dual-frame pipeline: submit 2 frames, then dequeue and submit in turn so the GPU overlaps consecutive frames; Community has no such API.
+
+Multi-model Ensemble (Pro only):
+
+| Combo | Community | Pro (sync) | Pro (dual-frame pipeline) |
 |---|---|---|---|
-| Detect | 785.6 qps (1.273 ms) | **941.2 qps (1.063 ms)** | **+19.8%** |
-| Segment | 251.5 qps (3.976 ms) | **310.5 qps (3.221 ms)** | **+23.4%** |
+| Detect ×2 | N/A | **542.1 qps** | **558.2 qps** |
+| Detect + Segment | N/A | **272.9 qps** | **278.8 qps** |
+| Segment ×2 | N/A | **172.4 qps** | **176.1 qps** |
 
-Same-run GPU latency: Detect 1.250 ms → **1.010 ms**, Segment 3.936 ms → **3.120 ms**. Professional Edition can also report staged timings (preprocess / compute / D2H / host postprocess).
+One `Executor::open` loads multiple members with shared pre-process. Community has no ensemble API.
 
-| | Community 6.4 | Professional |
+| | Community | Professional |
 |---|---|---|
-| Public API | `InferOption` + `DetectModel` / `ClassifyModel` / `SegmentModel` / `PoseModel` / `OBBModel` | `Executor::open` + `Context` + `Image` + SoA lease |
+| Pipeline depth | Synchronous `predict()` only; no `submit`/`dequeue` | Configurable in-flight depth; dual-frame pipeline recommended, Detect +8.3% throughput |
+| Multi-model Ensemble | No API | One `Executor::open` loads multiple members with shared pre-process — saves input VRAM |
+| Pre-process | OpenCV-aligned; pixel error 0 in most cases, occasionally ±1 | Bit-exact OpenCV match (zero pixel error); LUT-specialized kernels, faster than Community |
+| CUDA Graph | First-run capture is included in the report; cannot isolate steady state | Automatic replay; steady-state SetParams skip; GPU timing off-graph |
+| Post-process plugin | Detect uses built-in NMS; Pose / Seg / OBB each have a plugin | One **IPluginV3** covers Detect / Pose / Seg / OBB |
 | Multi-session | `clone()`, which reloads the engine | Multiple `makeContext` on one `Executor`, no reload |
+| Public API | `InferOption` plus per-task Model; one `predict` | Load the model once, open many infer sessions; `submit`/`dequeue` per frame |
 | Header | `#include "trtyolo.hpp"` | `#include <trtyolo.h>` only (C ABI + C++) |
-| Python task | Must pass `task=` and match export | Inferred from engine output tensor names; override with `networkType` / `--task` |
+| Building the engine | Pose / Seg / OBB need `--staticPlugins` **and** `--setPluginsToSerialize` | Always `--staticPlugins`; no serialize-into-engine; Community engines cannot be reused — re-export is required |
+| Python task | Must pass `task=` and match export | Inferred from the engine by default; override with `networkType` / `--task` |
 | TensorRT | ≥ 8.6.1 | **≥ 10** (hard floor) |
-| NMS plugin | `IPluginV2DynamicExt`: Detect uses NVIDIA built-in EfficientNMS; Pose/Seg use `EfficientIdxNMS_TRT`; OBB uses `EfficientRotatedNMS_TRT` | Single **IPluginV3** `EfficientNMS_TRT` v3 covering Detect / Pose / Seg / OBB |
-| Building the engine | Pose/Seg/OBB need `--staticPlugins` **and** `--setPluginsToSerialize` | Always `--staticPlugins`; no serialize-into-engine; pass `pluginPath` at inference |
-| CUDA Graph | First `predict` folds capture into `performanceReport`; cannot reset | Library auto-replay (dynamic and static batch); caller-unaware |
-| Timing | Coarse; throughput includes warmup | `resetPerformanceReport()` for steady state; staged GPU timings |
-| Source & license | This repo, GPL-3.0 | Closed-source, offered separately |
+| Source & license | This repo, GPL-3.0 | Closed source, licensed separately |
 
 Purchasing is not open yet; this README will be updated when it is.
 

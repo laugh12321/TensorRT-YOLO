@@ -256,27 +256,41 @@ pip install dist/trtyolo-6.*-py3-none-any.whl
 
 ## <div align="center">⚔️ 社区版与专业版</div>
 
-专业版相对社区版 6.4 不是小版本 bump，而是整条推理面重写。同一台 RTX 3080、YOLO11n FP16、batch=1 的 C++ 测速下，专业版墙钟吞吐更高：
+专业版相对社区版不是小版本 bump，而是整条推理面重写。同一台 RTX 3080、YOLO11n FP16、batch=1、dummy 640×640 的 C++ 测速下，专业版墙钟吞吐更高：Detect **+26.2%**，Segment **+20.1%**。完整对比见 [专业版页面](https://trtyolo.laugh12321.cn/pro/)。
 
-| 任务 | 社区版 6.4 | 专业版 | 吞吐 |
+条件：warmup 100 次、iterations 1000，每组 3 次取墙钟吞吐中位数。社区版同步 `predict()`；专业版 `submit`/`dequeue`，含同步与双帧流水线。只测了 Detect / Segment。本轮 CUDA Graph 全开。
+
+| 任务 | 社区版（同步） | 专业版（同步） | 专业版（双帧流水线） | 提升* |
+|---|---|---|---|---|
+| Detect | 877.7 qps（1.139 ms） | **1022.9 qps（0.978 ms）** | **1107.5 qps（0.903 ms）** | **+26.2%** |
+| Segment | 273.1 qps（3.661 ms） | **321.5 qps（3.111 ms）** | **328.1 qps（3.048 ms）** | **+20.1%** |
+
+\*提升 = 社区版（同步）→ 专业版（双帧流水线）。双帧流水线：先提交 2 帧，再交错取结果，让 GPU 前后帧重叠；社区版无此 API。
+
+多模型 Ensemble（专业版独有）：
+
+| 组合 | 社区版 | 专业版（同步） | 专业版（双帧流水线） |
 |---|---|---|---|
-| Detect | 785.6 qps（1.273 ms） | **941.2 qps（1.063 ms）** | **+19.8%** |
-| Segment | 251.5 qps（3.976 ms） | **310.5 qps（3.221 ms）** | **+23.4%** |
+| Detect ×2 | N/A | **542.1 qps** | **558.2 qps** |
+| Detect + Segment | N/A | **272.9 qps** | **278.8 qps** |
+| Segment ×2 | N/A | **172.4 qps** | **176.1 qps** |
 
-同轮 GPU latency：Detect 1.250 ms → **1.010 ms**，Segment 3.936 ms → **3.120 ms**。专业版还可看分阶段耗时（preprocess / compute / D2H / host postprocess）。
+一次 `Executor::open` 装多个 member、共享前处理，社区版无 ensemble API。
 
-| | 社区版 6.4 | 专业版 |
+| | 社区版 | 专业版 |
 |---|---|---|
-| 公开 API | `InferOption` + `DetectModel` / `ClassifyModel` / `SegmentModel` / `PoseModel` / `OBBModel` | `Executor::open` + `Context` + `Image` + SoA 租约 |
-| 多会话 | 靠 `clone()`，会再加载一份 engine | 同一 `Executor` 多次 `makeContext`，不重复加载 |
+| 流水线深度 | 仅同步 `predict()`，无 `submit`/`dequeue` | 可配置 in-flight 深度；推荐双帧流水线，Detect +8.3% 吞吐 |
+| 多模型 Ensemble | 无 API | 一次 `Executor::open` 装多个 member、共享前处理，省一份输入显存 |
+| 前处理 | 对齐 OpenCV；绝大多数像素误差为 0，少数 ±1 | 与 OpenCV 逐像素全零对齐；LUT 特化核，比开源版更快 |
+| CUDA Graph | 首次推理会把 capture 算进性能报告，且无法只看稳态 | 库内自动回放；稳态跳过 SetParams；GPU timing 在图外 |
+| 后处理插件 | 检测走内置 NMS；Pose / Seg / OBB 各有插件 | 一套 **IPluginV3** 覆盖 Detect / Pose / Seg / OBB |
+| 多会话 | 再开会话要 `clone()`，会再加载一份 engine | 同一 `Executor` 多次 `makeContext`，不重复加载 |
+| 公开接口 | `InferOption` + 按任务拆的 Model；一次 `predict` | 加载一次模型，多次开推理会话；按帧 `submit`/`dequeue` |
 | 头文件 | `#include "trtyolo.hpp"` | 只需 `#include <trtyolo.h>`（C ABI + C++） |
-| Python 任务 | 必须手填 `task=`，且与导出一致 | 默认同 engine 输出张量名推断，可用 `networkType` / `--task` 覆盖 |
+| 构建 engine | Pose / Seg / OBB 要 `--staticPlugins` **且** `--setPluginsToSerialize` | 一律 `--staticPlugins`，不必序列化进 engine；社区版 engine 不能直接用，需要重新导出 |
+| Python 任务 | 必须手填 `task=`，且与导出一致 | 默认同 engine 推断，可用 `networkType` / `--task` 覆盖 |
 | TensorRT | ≥ 8.6.1 | **≥ 10**（硬下限） |
-| NMS 插件 | `IPluginV2DynamicExt`：Detect 用 NVIDIA 内置 EfficientNMS；Pose/Seg 用 `EfficientIdxNMS_TRT`；OBB 用 `EfficientRotatedNMS_TRT` | 单个 **IPluginV3** `EfficientNMS_TRT` v3，覆盖 Detect / Pose / Seg / OBB |
-| 构建 engine | Pose/Seg/OBB 要 `--staticPlugins` **且** `--setPluginsToSerialize` | 一律 `--staticPlugins`，不必序列化进 engine；推理再传 `pluginPath` |
-| CUDA Graph | 首次 `predict` 会把 capture 算进 `performanceReport`，且无法 reset | 库内自动 replay（动态/静态 batch 均可），调用方无感知 |
-| 性能统计 | 粗粒度，吞吐含 warmup | `resetPerformanceReport()` 后只统计稳态；可分阶段 GPU 计时 |
-| 源码与许可 | 本仓库，GPL-3.0 | 闭源，单独提供 |
+| 源码与许可 | 本仓库，GPL-3.0 | 闭源，单独授权 |
 
 购买入口尚未开放，开放后会写在本 README。
 
