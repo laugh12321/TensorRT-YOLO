@@ -258,16 +258,18 @@ pip install dist/trtyolo-6.*-py3-none-any.whl
 
 专业版相对社区版不是小版本 bump，而是整条推理面重写。同一台 RTX 3080、YOLO11n FP16、batch=1、dummy 640×640 的 C++ 测速下，专业版墙钟吞吐更高：Detect **+26.2%**，Segment **+20.1%**。完整对比见 [专业版页面](https://trtyolo.laugh12321.cn/pro/)。
 
-条件：warmup 100 次、iterations 1000，每组 3 次取墙钟吞吐中位数。社区版同步 `predict()`；专业版 `submit`/`dequeue`，含同步与双帧流水线。只测了 Detect / Segment。本轮 CUDA Graph 全开。
+> 条件：warmup 100 次、iterations 1000，每组 3 次取墙钟吞吐中位数。社区版同步 `predict()`；专业版 `submit`/`dequeue`，含同步与双帧流水线。只测了 Detect / Segment。本轮 CUDA Graph 全开。
+
+### 吞吐对比
 
 | 任务 | 社区版（同步） | 专业版（同步） | 专业版（双帧流水线） | 提升* |
 |---|---|---|---|---|
 | Detect | 877.7 qps（1.139 ms） | **1022.9 qps（0.978 ms）** | **1107.5 qps（0.903 ms）** | **+26.2%** |
 | Segment | 273.1 qps（3.661 ms） | **321.5 qps（3.111 ms）** | **328.1 qps（3.048 ms）** | **+20.1%** |
 
-\*提升 = 社区版（同步）→ 专业版（双帧流水线）。双帧流水线：先提交 2 帧，再交错取结果，让 GPU 前后帧重叠；社区版无此 API。
+> \*提升 = 社区版（同步）→ 专业版（双帧流水线）。双帧流水线：先提交 2 帧，再交错取结果，让 GPU 前后帧重叠；社区版无此 API。
 
-多模型 Ensemble（专业版独有）：
+### 多模型 Ensemble（专业版独有）
 
 | 组合 | 社区版 | 专业版（同步） | 专业版（双帧流水线） |
 |---|---|---|---|
@@ -275,7 +277,9 @@ pip install dist/trtyolo-6.*-py3-none-any.whl
 | Detect + Segment | N/A | **272.9 qps** | **278.8 qps** |
 | Segment ×2 | N/A | **172.4 qps** | **176.1 qps** |
 
-一次 `Executor::open` 装多个 member、共享前处理，社区版无 ensemble API。
+> 一次 `Executor::open` 装多个 member、共享前处理，社区版无 ensemble API。
+
+### 能力对比
 
 | | 社区版 | 专业版 |
 |---|---|---|
@@ -283,16 +287,15 @@ pip install dist/trtyolo-6.*-py3-none-any.whl
 | 多模型 Ensemble | 无 API | 一次 `Executor::open` 装多个 member、共享前处理，省一份输入显存 |
 | 前处理 | 对齐 OpenCV；绝大多数像素误差为 0，少数 ±1 | 与 OpenCV 逐像素全零对齐；LUT 特化核，比开源版更快 |
 | CUDA Graph | 首次推理会把 capture 算进性能报告，且无法只看稳态 | 库内自动回放；稳态跳过 SetParams；GPU timing 在图外 |
-| 后处理插件 | 检测走内置 NMS；Pose / Seg / OBB 各有插件 | 一套 **IPluginV3** 覆盖 Detect / Pose / Seg / OBB |
-| 多会话 | 再开会话要 `clone()`，会再加载一份 engine | 同一 `Executor` 多次 `makeContext`，不重复加载 |
-| 公开接口 | `InferOption` + 按任务拆的 Model；一次 `predict` | 加载一次模型，多次开推理会话；按帧 `submit`/`dequeue` |
-| 头文件 | `#include "trtyolo.hpp"` | 只需 `#include <trtyolo.h>`（C ABI + C++） |
-| 构建 engine | Pose / Seg / OBB 要 `--staticPlugins` **且** `--setPluginsToSerialize` | 一律 `--staticPlugins`，不必序列化进 engine；社区版 engine 不能直接用，需要重新导出 |
-| Python 任务 | 必须手填 `task=`，且与导出一致 | 默认同 engine 推断，可用 `networkType` / `--task` 覆盖 |
+| 后处理插件 | 检测走内置 NMS；Pose / Seg / OBB 各有插件 | 一套插件覆盖 Detect / Pose / Seg / OBB |
+| 多会话 | 再开会话要复制实例 | 已加载的模型上直接开多会话，不重复加载 |
+| 公开接口 | `InferOption` + 按任务拆的 Model；一次 `predict` | 加载一次模型，多次开推理会话；按帧读取结果 |
+| 构建 engine | Pose / Seg / OBB 还需把插件编进 engine | 构建步骤更简单；社区版 engine 不能直接用，需要重新导出 |
+| Python 任务 | 必须手填 `task=`，且与导出一致 | 默认同 engine 推断，可覆盖 |
 | TensorRT | ≥ 8.6.1 | **≥ 10**（硬下限） |
-| 源码与许可 | 本仓库，GPL-3.0 | 闭源，单独授权 |
+| 源码与许可 | 公开仓库，GPL-3.0 | 闭源，单独授权 |
 
-购买入口尚未开放，开放后会写在本 README。
+> 购买入口尚未开放，开放后会写在本 README。
 
 ## <div align="center">🌟 赞助与支持</div>
 
