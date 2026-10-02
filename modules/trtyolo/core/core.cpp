@@ -70,8 +70,8 @@ void TRTManager::initialize(void const* blob, std::size_t size) {
 
 // 克隆方法
 std::unique_ptr<TRTManager> TRTManager::clone() const {
-    if (!engine_ || !runtime_) {
-        throw std::runtime_error("Invalid engine or runtime in TRTManager.");
+    if (!engine_) {
+        throw std::runtime_error("Invalid engine in TRTManager.");
     }
 
     // 创建新的 TRTManager 实例
