@@ -53,17 +53,18 @@ void predict(trtyolo::DetectModel* model, int thread_id, const std::vector<std::
     auto batch_size = model->batch();
 
     for (size_t start_idx = 0; start_idx < image_paths.size(); start_idx += batch_size) {
+        std::vector<cv::Mat>        images;
         std::vector<trtyolo::Image> img_batch;
-
-        std::transform(image_paths.begin() + start_idx,
-                       image_paths.begin() + std::min(start_idx + batch_size, image_paths.size()),
-                       std::back_inserter(img_batch), [](const std::string& image_path) {
-                           cv::Mat image = cv::imread(image_path, cv::IMREAD_COLOR);
-                           if (image.empty()) {
-                               throw std::runtime_error("Failed to read image from path: " + image_path);
-                           }
-                           return trtyolo::Image{image.data, image.cols, image.rows};
-                       });
+        const auto end_idx = std::min(start_idx + batch_size, image_paths.size());
+        images.reserve(end_idx - start_idx);
+        img_batch.reserve(end_idx - start_idx);
+        for (size_t i = start_idx; i < end_idx; ++i) {
+            images.push_back(cv::imread(image_paths[i], cv::IMREAD_COLOR));
+            if (images.back().empty()) {
+                throw std::runtime_error("Failed to read image from path: " + image_paths[i]);
+            }
+            img_batch.emplace_back(images.back().data, images.back().cols, images.back().rows);
+        }
 
         auto results = model->predict(img_batch);
     }
